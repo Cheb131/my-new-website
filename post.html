@@ -8,7 +8,7 @@
   <!-- SEO (copy theo index, bạn có thể chỉnh lại nếu muốn) -->
   <meta name="description" content="Đăng bài viết mới" />
   <meta name="keywords" content="đăng bài, bài viết" />
-  <meta name="author" content="Trường Đại học Khoa học Xã hội và Nhân văn" />
+  <meta name="author" content="Trung tâm bồi dưỡng Chính trị phường Phú Nhuận" />
   <meta name="robots" content="index, follow" />
 
   <meta property="og:title" content="Đăng bài viết" />
@@ -193,16 +193,16 @@
             <ul class="dropdown user-dropdown" id="userDropdown"></ul>
           </li>
 
-          <!-- SEARCH -->
-          <li class="nav-search">
-            <form class="search" action="#" role="search" id="searchForm">
-              <input id="searchInput" type="search" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" />
-              <button class="search__btn" type="submit" aria-label="Tìm">
-                <img src="Assets/icons/search.png" alt="">
-              </button>
-              <div class="search-results" id="searchResults" hidden></div>
-            </form>
-          </li>
+            <!-- SEARCH -->
+            <li class="nav-search">
+              <form class="search" action="list.html" method="get" role="search">
+                <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
+                <button class="search__btn" type="submit" aria-label="Tìm">
+                  <img src="Assets/icons/search.png" alt="">
+                </button>
+              </form>
+            </li>
+
         </ul>
       </div>
     </nav>

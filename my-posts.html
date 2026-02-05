@@ -221,8 +221,7 @@
     <!-- HEADER giống index -->
     <header class="site-header">
       <div class="header-banner">
-        <img src="Assets/images/banner.png" alt="Banner" class="banner-bg" />
-        f
+        <img src="Assets/images/banner.png" alt="Banner" class="banner-bg" />        
         <div class="banner-inner container">
           <div class="logo-group left">
             <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
@@ -272,15 +271,16 @@
             <ul class="dropdown user-dropdown" id="userDropdown"></ul>
           </li>
 
-          <li class="nav-search">
-            <form class="search" action="#" role="search" id="searchForm">
-              <input id="searchInput" type="search" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" />
-              <button class="search__btn" type="submit" aria-label="Tìm">
-                <img src="Assets/icons/search.png" alt="">
-              </button>
-              <div class="search-results" id="searchResults" hidden></div>
-            </form>
-          </li>
+            <!-- SEARCH -->
+            <li class="nav-search">
+              <form class="search" action="list.html" method="get" role="search">
+                <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
+                <button class="search__btn" type="submit" aria-label="Tìm">
+                  <img src="Assets/icons/search.png" alt="">
+                </button>
+              </form>
+            </li>
+
         </ul>
       </div>
     </nav>
