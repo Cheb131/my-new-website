@@ -83,56 +83,55 @@
       </div>
     </header>
 
-      <!-- ===== NAV ===== -->
-      <nav class="main-nav" aria-label="Điều hướng chính">
-        <div class="container">
-          <ul class="nav-list">
-            <li class=""><a href="index.html">Trang chủ</a></li>
+    <!-- ===== NAV ===== -->
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <div class="container">
+        <ul class="nav-list">
+          <li class="active"><a href="index.html">Trang chủ</a></li>
 
-            <li class="has-dropdown active">
-              <a href="list.html">Tin tức, sự kiện</a>
-              <ul class="dropdown">
-                <li><a href="#">Tin tức</a></li>
-                <li><a href="#">Sự kiện</a></li>
-                <li><a href="#">Thông báo</a></li>
-              </ul>
-            </li>
+          <li class="has-dropdown">
+            <a href="list.html">Tin tức, sự kiện</a>
+            <ul class="dropdown">
+              <li><a href="#">Tin tức</a></li>
+              <li><a href="#">Sự kiện</a></li>
+              <li><a href="#">Thông báo</a></li>
+            </ul>
+          </li>
 
-            <li class="has-dropdown">
-              <a href="#">Văn bản</a>
-              <ul class="dropdown">
-                <li><a href="#">Văn bản chỉ đạo điều hành</a></li>
-              </ul>
-            </li>
+          <li class="has-dropdown">
+            <a href="#">Văn bản</a>
+            <ul class="dropdown">
+              <li><a href="#">Văn bản chỉ đạo điều hành</a></li>
+            </ul>
+          </li>
 
-            <li><a href="#">Hoạt động</a></li>
-            <li><a href="#">Tài liệu</a></li>
+          <li><a href="#">Hoạt động</a></li>
+          <li><a href="https://stbook.vn/">Tủ sách điện tử</a></li>
 
-            <!-- USER -->
-            <li class="nav-user has-dropdown" id="navUserBox">
-              <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
-                <span class="nav-user-ico">
-                  <img src="Assets/icons/account.png" alt="">
-                </span>
-                <span id="userName" class="nav-user-name" hidden></span>
-                <span class="nav-user-caret">▾</span>
+          <!-- USER -->
+          <li class="nav-user has-dropdown" id="navUserBox">
+            <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+              <span class="nav-user-ico">
+                <img src="Assets/icons/account.png" alt="">
+              </span>
+              <span id="userName" class="nav-user-name" hidden></span>
+              <span class="nav-user-caret">▾</span>
+            </button>
+            <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+          </li>
+
+          <!-- SEARCH -->
+          <li class="nav-search">
+            <form class="search" action="list.html" method="get" role="search">
+              <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
+              <button class="search__btn" type="submit" aria-label="Tìm">
+                <img src="Assets/icons/search.png" alt="">
               </button>
-              <ul class="dropdown user-dropdown" id="userDropdown"></ul>
-            </li>
-
-            <!-- SEARCH -->
-            <li class="nav-search">
-              <form class="search" action="list.html" method="get" role="search">
-                <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
-                <button class="search__btn" type="submit" aria-label="Tìm">
-                  <img src="Assets/icons/search.png" alt="">
-                </button>
-              </form>
-            </li>
-
-          </ul>
-        </div>
-      </nav>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
   <!-- ===== MAIN ===== -->
     <main class="main-content">

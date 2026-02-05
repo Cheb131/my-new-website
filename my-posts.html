@@ -237,11 +237,11 @@
       </div>
     </header>
 
-    <!-- NAV giống index -->
+    <!-- ===== NAV ===== -->
     <nav class="main-nav" aria-label="Điều hướng chính">
       <div class="container">
         <ul class="nav-list">
-          <li><a href="index.html">Trang chủ</a></li>
+          <li class="active"><a href="index.html">Trang chủ</a></li>
 
           <li class="has-dropdown">
             <a href="list.html">Tin tức, sự kiện</a>
@@ -260,27 +260,29 @@
           </li>
 
           <li><a href="#">Hoạt động</a></li>
-          <li><a href="#">Tài liệu</a></li>
+          <li><a href="https://stbook.vn/">Tủ sách điện tử</a></li>
 
+          <!-- USER -->
           <li class="nav-user has-dropdown" id="navUserBox">
             <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
-              <span class="nav-user-ico"><img src="Assets/icons/account.png" alt=""></span>
+              <span class="nav-user-ico">
+                <img src="Assets/icons/account.png" alt="">
+              </span>
               <span id="userName" class="nav-user-name" hidden></span>
               <span class="nav-user-caret">▾</span>
             </button>
             <ul class="dropdown user-dropdown" id="userDropdown"></ul>
           </li>
 
-            <!-- SEARCH -->
-            <li class="nav-search">
-              <form class="search" action="list.html" method="get" role="search">
-                <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
-                <button class="search__btn" type="submit" aria-label="Tìm">
-                  <img src="Assets/icons/search.png" alt="">
-                </button>
-              </form>
-            </li>
-
+          <!-- SEARCH -->
+          <li class="nav-search">
+            <form class="search" action="list.html" method="get" role="search">
+              <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
+              <button class="search__btn" type="submit" aria-label="Tìm">
+                <img src="Assets/icons/search.png" alt="">
+              </button>
+            </form>
+          </li>
         </ul>
       </div>
     </nav>
