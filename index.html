@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trung tâm bồi dưỡng Chính trị phường Phú Nhuận</title>
+
+  <meta name="description" content="Không gian văn hoá Hồ Chí Minh tại Trường Đại học Khoa học Xã hội và Nhân văn – ĐHQG TP.HCM." />
+  <meta name="keywords" content="Không gian văn hoá Hồ Chí Minh, USSH, ĐHQG HCM" />
+  <meta name="author" content="Trường Đại học Khoa học Xã hội và Nhân văn" />
+  <meta name="robots" content="index, follow" />
+
+  <meta property="og:title" content="Không gian văn hoá Hồ Chí Minh" />
+  <meta property="og:description" content="Không gian văn hoá Hồ Chí Minh – Trường Đại học Khoa học Xã hội và Nhân văn" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="Assets/images/og-image.jpg" />
+  <meta property="og:url" content="https://your-domain.vn" />
+
+  <link rel="stylesheet" href="CSS/style.css" />
+
+</head>
+
+<body>
+  <!-- ===== LOGIN MODAL ===== -->
+  <div class="login-modal" id="loginModal" hidden>
+    <div class="login-box">
+      <h3>Đăng nhập</h3>
+      <div id="loginError" style="display:none;color:#b91c1c;font-size:13px;margin:6px 0 10px;"></div>
+      <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
+        <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
+        <button type="submit">Đăng nhập</button>        
+      </form>
+
+      <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <!-- ===== HEADER ===== -->
+    <header class="site-header">
+      <div class="header-banner">
+        <img src="Assets/images/banner.png" alt="Banner" class="banner-bg" />
+
+        <div class="banner-inner container">
+          <div class="logo-group left">
+
+            <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
+              <img src="Assets/icons/menu.png" alt="">
+            </button>
+          </div>
+
+          <div class="logo-group right">
+            <img src="Assets/images/sample.png" alt="Logo đơn vị" />
+            <img src="Assets/images/sample.png" alt="Logo đơn vị" />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== NAV ===== -->
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <div class="container">
+        <ul class="nav-list">
+          <li class="active"><a href="index.html">Trang chủ</a></li>
+
+          <li class="has-dropdown">
+            <a href="list.html">Tin tức, sự kiện</a>
+            <ul class="dropdown">
+              <li><a href="#">Tin tức</a></li>
+              <li><a href="#">Sự kiện</a></li>
+              <li><a href="#">Thông báo</a></li>
+            </ul>
+          </li>
+
+          <li class="has-dropdown">
+            <a href="#">Văn bản</a>
+            <ul class="dropdown">
+              <li><a href="#">Văn bản chỉ đạo điều hành</a></li>
+            </ul>
+          </li>
+
+          <li><a href="#">Hoạt động</a></li>
+          <li><a href="#">Tài liệu</a></li>
+
+          <!-- USER -->
+          <li class="nav-user has-dropdown" id="navUserBox">
+            <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+              <span class="nav-user-ico">
+                <img src="Assets/icons/account.png" alt="">
+              </span>
+              <span id="userName" class="nav-user-name" hidden></span>
+              <span class="nav-user-caret">▾</span>
+            </button>
+            <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+          </li>
+
+          <!-- SEARCH -->
+          <li class="nav-search">
+            <form class="search" action="list.html" method="get" role="search">
+              <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
+              <button class="search__btn" type="submit" aria-label="Tìm">
+                <img src="Assets/icons/search.png" alt="">
+              </button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main-content">
+
+      <section class="hero hero--slider">
+        <div class="hero-slides">
+          <div class="hero-slide is-active" style="background-image:url('Assets/images/sample.png')"></div>
+          <div class="hero-slide" style="background-image:url('Assets/images/sample.png')"></div>
+          <div class="hero-slide" style="background-image:url('Assets/images/sample.png')"></div>
+        </div>
+
+        <div class="container hero-content">
+          <h1>Không gian văn hoá Hồ Chí Minh</h1>
+          <p>Trường Đại học Khoa học Xã hội và Nhân văn – Đại học Quốc gia TP. Hồ Chí Minh</p>
+        </div>
+
+        <div class="hero-dots">
+          <button class="dot is-active" aria-label="Slide 1"></button>
+          <button class="dot" aria-label="Slide 2"></button>
+          <button class="dot" aria-label="Slide 3"></button>
+        </div>
+      </section>
+
+      <section class="featured">
+        <div class="container">
+          <header class="section-header"></header>
+
+          <div class="featured-content">
+            <article class="featured-main" id="featuredArticle"></article>
+            <section class="news-list" id="articleList"></section>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="container footer-top">
+      <div class="footer-info">
+        <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
+        <p>Địa chỉ: 178 Lê Văn Sỹ, Phường 10, Quận Phú Nhuận, TP Hồ Chí Minh</p>
+        <p>Điện thoại: </p>
+        <p>Email: ttbdctpn@gmail.com</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script src="JS/menu.js"></script>
+  <script src="JS/core.js"></script>
+</body>
+</html>

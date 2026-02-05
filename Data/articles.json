@@ -1,0 +1,69 @@
+[
+  {
+    "id": 1,
+    "title": "Chi bộ Sinh viên 1 gặp gỡ Đảng viên",
+    "excerpt": "Chiều 10/3/2024, Chi bộ Sinh viên 1...",
+    "image": "Assets/images/sample.png",
+    "date": "10/03/2024",
+    "category": "Tin tức"
+  },
+  {
+    "id": 2,
+    "title": "Chi bộ Sinh viên 1 gặp gỡ Đảng viên",
+    "excerpt": "Chủ sdjsjw efef dfgeg",
+    "image": "Assets/images/sample.png",
+    "date": "10/03/2024",
+    "category": "Tin tức"
+  },
+  {
+    "id": 3,
+    "title": "Chi bộ Sinh viên 1 gặp gỡ Đảng viên",
+    "excerpt": "Tối nay Bủ ark thì được",
+    "image": "Assets/images/sample.png",
+    "date": "10/03/2024",
+    "category": "Tin tức"
+  },
+  {
+    "id": 4,
+    "title": "Chi bộ Sinh viên 1 gặp gỡ Đảng viên",
+    "excerpt": "Sáng mai ỉa chãy ác",
+    "image": "Assets/images/sample.png",
+    "date": "10/03/2024",
+    "category": "Tin tức"
+  },
+  {
+  "id": 101,
+  "title": "Ra mắt Không gian văn hoá Hồ Chí Minh tại Trường ĐH KHXH&NV – ĐHQG TP.HCM",
+  "excerpt": "Sáng 28/01/2026, nhà trường tổ chức lễ ra mắt Không gian văn hoá Hồ Chí Minh nhằm lan toả giá trị tư tưởng, đạo đức, phong cách Hồ Chí Minh trong cán bộ, giảng viên và sinh viên.",
+  "image": "Assets/images/sample.png",
+  "date": "28/01/2026",
+  "category": "Tin tức",
+  "content": "<p><strong>Sáng 28/01/2026</strong>, Trường ĐH KHXH&NV – ĐHQG TP.HCM tổ chức lễ ra mắt <em>Không gian văn hoá Hồ Chí Minh</em> với sự tham dự của đại diện lãnh đạo nhà trường, giảng viên, sinh viên và các đơn vị phối hợp.</p>\n\n<h2>Mục tiêu & ý nghĩa</h2>\n<p>Không gian văn hoá Hồ Chí Minh là nơi trưng bày, giới thiệu tư liệu, hình ảnh, hiện vật và các hoạt động trải nghiệm nhằm:</p>\n<ul>\n  <li>Góp phần giáo dục lý tưởng, đạo đức, lối sống cho sinh viên.</li>\n  <li>Lan toả tinh thần học tập và làm theo tư tưởng, đạo đức, phong cách Hồ Chí Minh.</li>\n  <li>Tạo điểm đến sinh hoạt chuyên đề cho các chi bộ, đoàn thể.</li>\n</ul>\n\n<h2>Nội dung trưng bày</h2>\n<p>Khu vực trưng bày gồm 3 nhóm nội dung chính:</p>\n<ol>\n  <li><strong>Tư liệu - hình ảnh</strong>: mốc thời gian, câu chuyện, trích dẫn.</li>\n  <li><strong>Không gian trải nghiệm</strong>: góc đọc sách, góc multimedia, thư viện số.</li>\n  <li><strong>Hoạt động học thuật</strong>: seminar, toạ đàm, sinh hoạt chuyên đề.</li>\n</ol>\n\n<blockquote>“Học tập và làm theo tư tưởng, đạo đức, phong cách Hồ Chí Minh là việc làm thường xuyên, suốt đời.”</blockquote>\n\n<h3>Một số hình ảnh hoạt động</h3>\n<p><img src=\"Assets/images/article-1.jpg\" alt=\"Hình ảnh hoạt động 1\"></p>\n<p><img src=\"Assets/images/sample.png\" alt=\"Hình ảnh hoạt động 2\"></p>\n\n<h2>Thời gian mở cửa</h2>\n<p>Không gian mở cửa từ <strong>thứ Hai đến thứ Sáu</strong> (08:00 – 16:30). Đăng ký tham quan theo đoàn qua email đơn vị phụ trách.</p>\n\n<h2>Tài liệu đính kèm</h2>\n<ul>\n  <li><a href=\"#\">Kế hoạch tổ chức hoạt động năm 2026 (PDF)</a></li>\n  <li><a href=\"#\">Danh mục sách gợi ý (DOCX)</a></li>\n</ul>\n\n<p><em>Bài viết: Ban Truyền thông</em></p>"
+},
+  {
+  "id": 101,
+  "title": "Ra mắt Không gian văn hoá Hồ Chí Minh tại Trường ĐH KHXH&NV – ĐHQG TP.HCM",
+  "excerpt": "Sáng 28/01/2026, nhà trường tổ chức lễ ra mắt Không gian văn hoá Hồ Chí Minh nhằm lan toả giá trị tư tưởng, đạo đức, phong cách Hồ Chí Minh trong cán bộ, giảng viên và sinh viên.",
+  "image": "Assets/images/sample.png",
+  "date": "28/01/2026",
+  "category": "Tin tức",
+  "content": "<p><strong>Sáng 28/01/2026</strong>, Trường ĐH KHXH&NV – ĐHQG TP.HCM tổ chức lễ ra mắt <em>Không gian văn hoá Hồ Chí Minh</em> với sự tham dự của đại diện lãnh đạo nhà trường, giảng viên, sinh viên và các đơn vị phối hợp.</p>\n\n<h2>Mục tiêu & ý nghĩa</h2>\n<p>Không gian văn hoá Hồ Chí Minh là nơi trưng bày, giới thiệu tư liệu, hình ảnh, hiện vật và các hoạt động trải nghiệm nhằm:</p>\n<ul>\n  <li>Góp phần giáo dục lý tưởng, đạo đức, lối sống cho sinh viên.</li>\n  <li>Lan toả tinh thần học tập và làm theo tư tưởng, đạo đức, phong cách Hồ Chí Minh.</li>\n  <li>Tạo điểm đến sinh hoạt chuyên đề cho các chi bộ, đoàn thể.</li>\n</ul>\n\n<h2>Nội dung trưng bày</h2>\n<p>Khu vực trưng bày gồm 3 nhóm nội dung chính:</p>\n<ol>\n  <li><strong>Tư liệu - hình ảnh</strong>: mốc thời gian, câu chuyện, trích dẫn.</li>\n  <li><strong>Không gian trải nghiệm</strong>: góc đọc sách, góc multimedia, thư viện số.</li>\n  <li><strong>Hoạt động học thuật</strong>: seminar, toạ đàm, sinh hoạt chuyên đề.</li>\n</ol>\n\n<blockquote>“Học tập và làm theo tư tưởng, đạo đức, phong cách Hồ Chí Minh là việc làm thường xuyên, suốt đời.”</blockquote>\n\n<h3>Một số hình ảnh hoạt động</h3>\n<p><img src=\"Assets/images/article-1.jpg\" alt=\"Hình ảnh hoạt động 1\"></p>\n<p><img src=\"Assets/images/sample.png\" alt=\"Hình ảnh hoạt động 2\"></p>\n\n<h2>Thời gian mở cửa</h2>\n<p>Không gian mở cửa từ <strong>thứ Hai đến thứ Sáu</strong> (08:00 – 16:30). Đăng ký tham quan theo đoàn qua email đơn vị phụ trách.</p>\n\n<h2>Tài liệu đính kèm</h2>\n<ul>\n  <li><a href=\"#\">Kế hoạch tổ chức hoạt động năm 2026 (PDF)</a></li>\n  <li><a href=\"#\">Danh mục sách gợi ý (DOCX)</a></li>\n</ul>\n\n<p><em>Bài viết: Ban Truyền thông</em></p>"
+},
+{
+    "id": 5,
+    "title": "Chi bộ Sinh viên 1 gặp gỡ Đảng viên",
+    "excerpt": "Sáng mai ỉa chãy ác",
+    "image": "Assets/images/sample.png",
+    "date": "10/03/2024",
+    "category": "Tin tức"
+  },
+  {
+    "id": 6,
+    "title": "Chi bộ Sinh viên 1 gặp gỡ Đảng viên",
+    "excerpt": "Sáng mai ỉa chãy ác",
+    "image": "Assets/images/sample.png",
+    "date": "10/03/2024",
+    "category": "Tin tức"
+  }
+
+]

@@ -1,0 +1,91 @@
+/* =========================================================
+   ARTICLE PAGE LAYOUT
+========================================================= */
+.article-page { padding: 2.5rem 0; }
+
+.article-page__grid{
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.article-page .sidebar-box {
+  background: #fff;
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(15,23,42,0.08);
+  padding: 12px;
+  height: 100%;
+}
+
+/* =========================================================
+   LIST PAGE (Danh sách tin)
+========================================================= */
+.list-page { padding: 24px 0 40px; }
+
+.list-page__header{
+  margin-bottom: 12px;
+}
+
+.list-page__title{
+  font-size: 1.2rem;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+/* Khung list giống cổng thông tin */
+.post-list{
+  background: #fff;
+  border: 1px solid rgba(15,23,42,0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(15,23,42,0.08);
+}
+
+/* Mỗi dòng */
+.post-row{
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  padding: 12px;
+  align-items: center;
+  border-top: 1px solid rgba(15,23,42,0.10);
+}
+
+.post-row:first-child{ border-top: 0; }
+
+.post-row:hover{
+  background: rgba(139,30,30,0.05);
+}
+
+/* Ảnh trái */
+.post-row__thumb{
+  width: 110px;
+  height: 70px;
+  border: 1px solid rgba(15,23,42,0.18);
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.post-row__thumb img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Text phải */
+.post-row__title{
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.post-row__title a:hover{ text-decoration: underline; }
+
+.post-row__meta{
+  margin-top: 6px;
+  font-size: .85rem;
+  color: var(--text-muted);
+}

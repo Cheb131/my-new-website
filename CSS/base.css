@@ -1,0 +1,63 @@
+/* =========================================================
+   ROOT VARIABLES
+========================================================= */
+:root {
+  --primary: #8b1e1e;
+  --secondary: #003a8f;
+
+  --text-dark: #1f2937;
+  --text-muted: #6b7280;
+
+  --bg-light: #f8fafc;
+  --border-light: #e5e7eb;
+
+  /* Nền 2 bên */
+  --side-bg: linear-gradient(180deg, #facc15, #b45309);
+}
+
+/* =========================================================
+   RESET & BASE
+========================================================= */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden; 
+}
+
+body{
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: var(--text-dark);
+
+  background-image: url("../assets/images/background.png"); 
+  background-repeat: repeat; 
+  background-position: center top;
+  background-size: 11%;
+
+  background-color: #f6c945;
+}
+
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+p {
+  color: var(--text-muted);
+}
+
+h1, h2, h3, h4 {
+  font-weight: 600;
+  line-height: 1.35;
+}

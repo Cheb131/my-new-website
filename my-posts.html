@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý bài viết</title>
+
+  <link rel="stylesheet" href="CSS/style.css" />
+  <link rel="stylesheet" href="CSS/responsive.css" />
+
+  <style>
+    .myposts { padding: 18px 0 32px; }
+    .myposts .box{
+      background:#fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+      overflow:hidden;
+      border-top: 4px solid var(--primary, #b30000);
+    }
+    .myposts .box-head{
+      padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+      display:flex; align-items:flex-start; justify-content:space-between; gap: 12px;
+      flex-wrap: wrap;
+    }
+    .myposts .title{
+      margin:0;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--primary, #b30000);
+      text-transform: uppercase;
+      letter-spacing:.4px;
+    }
+    .myposts .sub{
+      margin:6px 0 0;
+      font-size: 13px;
+      color:#666;
+      line-height:1.35;
+      max-width: 720px;
+    }
+    .myposts .actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .myposts .btn{
+      height: 38px;
+      border-radius: 10px;
+      border:0;
+      padding: 0 12px;
+      font-weight: 800;
+      cursor:pointer;
+      font-size: 14px;
+      text-decoration:none;
+      display:inline-flex; align-items:center; justify-content:center;
+    }
+    .myposts .btn.primary{ background: var(--primary, #b30000); color:#fff; }
+    .myposts .btn.ghost{ background:#f0f0f0; color:#111; }
+    .myposts .btn.danger{ background:#fff1f1; color:#b42318; border:1px solid #ffd2d2; }
+
+    .myposts .toolbar{
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+    }
+    .myposts .search{
+      display:flex; gap:8px; align-items:center;
+      width: min(520px, 100%);
+    }
+    .myposts .search input{
+      width: 100%;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      outline:none;
+      padding: 0 12px;
+      font-size: 14px;
+    }
+
+    .myposts .meta{
+      font-size: 12px;
+      color:#666;
+      margin-left:auto;
+      white-space: nowrap;
+    }
+
+    .myposts .list{ padding: 12px 16px 18px; display:grid; gap: 10px; }
+    .myposts .empty{
+      padding: 18px 16px;
+      color:#666;
+      background:#fafafa;
+      border: 1px dashed #ddd;
+      border-radius: 12px;
+    }
+
+    .post-card{
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 12px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+    }
+    .post-card img{
+      width: 120px;
+      height: 84px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #e5e5e5;
+      background:#fff;
+      flex: 0 0 auto;
+    }
+    .post-card__body{ flex: 1; min-width: 0; }
+    .post-card__title{
+      margin: 0 0 6px;
+      font-size: 15px;
+      font-weight: 900;
+      color:#111;
+      line-height: 1.25;
+    }
+    .post-card__meta{ font-size: 12px; color:#666; margin-bottom: 6px; }
+    .post-card__excerpt{ font-size: 13px; color:#444; margin: 0; line-height: 1.35; }
+
+    .post-card__actions{
+      display:flex;
+      gap: 8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      align-items:center;
+      flex: 0 0 auto;
+    }
+    .post-card__actions .btn{ height: 34px; padding: 0 10px; font-size: 13px; }
+
+    /* Modal dùng chung */
+    .modal{
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.4);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+      z-index: 9999;
+    }
+    .modal.open{ display:flex; }
+    .modal__box{
+      width: min(760px, 100%);
+      background:#fff;
+      border-radius: 14px;
+      overflow:hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,.22);
+      border-top: 4px solid var(--primary, #b30000);
+    }
+    .modal__head{
+      padding: 12px 14px;
+      border-bottom: 1px solid #eee;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+    }
+    .modal__title{
+      margin:0;
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--primary, #b30000);
+      text-transform: uppercase;
+      letter-spacing:.35px;
+    }
+    .modal__close{
+      border:0;
+      background:#f0f0f0;
+      border-radius: 10px;
+      height: 34px;
+      padding: 0 10px;
+      cursor:pointer;
+      font-weight: 900;
+    }
+    .modal__body{ padding: 14px; }
+
+    /* Form sửa */
+    .edit-form{ display:grid; gap: 10px; }
+    .edit-form label{ display:block; font-size: 13px; font-weight: 800; margin-bottom: 6px; color:#333; }
+    .edit-form input, .edit-form select, .edit-form textarea{
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      outline:none;
+      font-size: 14px;
+      padding: 10px 12px;
+      box-sizing:border-box;
+      background:#fff;
+    }
+    .edit-form textarea{ min-height: 160px; resize: vertical; }
+    .edit-form .row{ display:grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+    .edit-form .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .edit-form .msg{ display:none; padding: 10px 12px; border-radius: 10px; font-size: 13px; }
+    .edit-form .msg.error{ background:#fff1f1; border:1px solid #ffd2d2; color:#b42318; }
+    .edit-form .msg.ok{ background:#ecfdf3; border:1px solid #abefc6; color:#067647; }
+
+    @media (max-width: 760px){
+      .post-card{ flex-direction: column; }
+      .post-card img{ width:100%; height: 170px; }
+      .post-card__actions{ justify-content:flex-start; }
+      .edit-form .row, .edit-form .row3{ grid-template-columns: 1fr; }
+      .myposts .meta{ margin-left: 0; width: 100%; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- LOGIN MODAL giống index -->
+  <div class="login-modal" id="loginModal" hidden>
+    <div class="login-box">
+      <h3>Đăng nhập</h3>
+      <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
+        <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
+        <button type="submit">Đăng nhập</button>
+      </form>
+      <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <!-- HEADER giống index -->
+    <header class="site-header">
+      <div class="header-banner">
+        <img src="Assets/images/banner.png" alt="Banner" class="banner-bg" />
+        f
+        <div class="banner-inner container">
+          <div class="logo-group left">
+            <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
+              <img src="Assets/icons/menu.png" alt="">
+            </button>
+          </div>
+
+          <div class="logo-group right">
+            <img src="Assets/images/sample.png" alt="Logo đơn vị" />
+            <img src="Assets/images/sample.png" alt="Logo đơn vị" />
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- NAV giống index -->
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <div class="container">
+        <ul class="nav-list">
+          <li><a href="index.html">Trang chủ</a></li>
+
+          <li class="has-dropdown">
+            <a href="list.html">Tin tức, sự kiện</a>
+            <ul class="dropdown">
+              <li><a href="#">Tin tức</a></li>
+              <li><a href="#">Sự kiện</a></li>
+              <li><a href="#">Thông báo</a></li>
+            </ul>
+          </li>
+
+          <li class="has-dropdown">
+            <a href="#">Văn bản</a>
+            <ul class="dropdown">
+              <li><a href="#">Văn bản chỉ đạo điều hành</a></li>
+            </ul>
+          </li>
+
+          <li><a href="#">Hoạt động</a></li>
+          <li><a href="#">Tài liệu</a></li>
+
+          <li class="nav-user has-dropdown" id="navUserBox">
+            <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+              <span class="nav-user-ico"><img src="Assets/icons/account.png" alt=""></span>
+              <span id="userName" class="nav-user-name" hidden></span>
+              <span class="nav-user-caret">▾</span>
+            </button>
+            <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+          </li>
+
+          <li class="nav-search">
+            <form class="search" action="#" role="search" id="searchForm">
+              <input id="searchInput" type="search" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" />
+              <button class="search__btn" type="submit" aria-label="Tìm">
+                <img src="Assets/icons/search.png" alt="">
+              </button>
+              <div class="search-results" id="searchResults" hidden></div>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <section class="myposts">
+        <div class="container">
+          <div class="box">
+            <div class="box-head">
+              <div>
+                <h1 class="title">Quản lý bài viết</h1>
+              </div>
+
+              <div class="actions">
+                <a class="btn ghost" href="post.html">Đăng bài mới</a>
+                <a class="btn ghost" href="index.html">Về trang chủ</a>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <div class="search">
+                <input id="filterInput" type="search" placeholder="Lọc theo tiêu đề / danh mục..." />
+              </div>
+              <div class="meta">
+                <span id="countText">0 bài</span>
+              </div>
+            </div>
+
+            <div class="list" id="postListBox">
+              <!-- render ở đây -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER giống index -->
+    <footer class="site-footer">
+      <div class="container footer-top">
+        <div class="footer-info">
+          <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
+          <p>Địa chỉ: 178 Lê Văn Sỹ, Phường 10, Quận Phú Nhuận, TP Hồ Chí Minh</p>
+          <p>Điện thoại: </p>
+          <p>Email: ttbdctpn@gmail.com</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Modal xem -->
+  <div class="modal" id="viewModal" aria-hidden="true">
+    <div class="modal__box">
+      <div class="modal__head">
+        <h3 class="modal__title">Xem bài viết</h3>
+        <button class="modal__close" type="button" data-close>✕</button>
+      </div>
+      <div class="modal__body" id="viewBody"></div>
+    </div>
+  </div>
+
+  <!-- Modal sửa -->
+  <div class="modal" id="editModal" aria-hidden="true">
+    <div class="modal__box">
+      <div class="modal__head">
+        <h3 class="modal__title">Sửa bài viết</h3>
+        <button class="modal__close" type="button" data-close>✕</button>
+      </div>
+      <div class="modal__body">
+        <form class="edit-form" id="editForm" novalidate>
+          <div class="msg error" id="editError"></div>
+          <div class="msg ok" id="editOk"></div>
+
+          <input type="hidden" id="editId" />
+
+          <div class="row">
+            <div>
+              <label for="editTitle">Tiêu đề</label>
+              <input id="editTitle" type="text" required maxlength="140" />
+            </div>
+            <div>
+              <label for="editDate">Ngày đăng</label>
+              <input id="editDate" type="text" placeholder="DD/MM/YYYY" required />
+            </div>
+          </div>
+
+          <div class="row3">
+            <div>
+              <label for="editCategory">Danh mục</label>
+              <select id="editCategory" required>
+                <option value="">-- Chọn danh mục --</option>
+                <option value="Tin tức">Tin tức</option>
+                <option value="Sự kiện">Sự kiện</option>
+                <option value="Thông báo">Thông báo</option>
+                <option value="Hoạt động">Hoạt động</option>
+                <option value="Tài liệu">Tài liệu</option>
+              </select>
+            </div>
+            <div>
+              <label for="editImage">Ảnh (URL)</label>
+              <input id="editImage" type="url" placeholder="Assets/images/sample.png" />
+            </div>
+            <div>
+              <label for="editAuthor">Tác giả</label>
+              <input id="editAuthor" type="text" maxlength="60" />
+            </div>
+          </div>
+
+          <div>
+            <label for="editExcerpt">Mô tả ngắn</label>
+            <textarea id="editExcerpt" maxlength="240"></textarea>
+          </div>
+
+          <div>
+            <label for="editContent">Nội dung</label>
+            <textarea id="editContent" required></textarea>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;">
+            <button class="btn ghost" type="button" data-close>Huỷ</button>
+            <button class="btn primary" type="submit">Lưu thay đổi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="JS/menu.js"></script>
+  <script src="JS/core.js"></script>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+
+    // ===== LocalStorage helpers =====
+    function getPosts() {
+      return JSON.parse(localStorage.getItem("posts") || "[]");
+    }
+    function savePosts(posts) {
+      localStorage.setItem("posts", JSON.stringify(posts));
+    }
+
+    // ===== UI helpers =====
+    const listBox = $("#postListBox");
+    const countText = $("#countText");
+    const filterInput = $("#filterInput");
+
+    const viewModal = $("#viewModal");
+    const viewBody = $("#viewBody");
+    const editModal = $("#editModal");
+
+    function openModal(modal) {
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden", "false");
+      // khóa scroll nếu cần
+      document.body.style.overflow = "hidden";
+    }
+    function closeModal(modal) {
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    // close modal by [data-close] / click outside / ESC
+    document.addEventListener("click", (e) => {
+      if (e.target.matches("[data-close]")) {
+        const modal = e.target.closest(".modal");
+        if (modal) closeModal(modal);
+      }
+      if (e.target.classList.contains("modal")) closeModal(e.target);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        [viewModal, editModal].forEach(m => m.classList.contains("open") && closeModal(m));
+      }
+    });
+
+    function render(posts, keyword) {
+      const kw = (keyword || "").trim().toLowerCase();
+
+      let filtered = posts;
+      if (kw) {
+        filtered = posts.filter(p =>
+          `${p.title || ""} ${p.category || ""}`.toLowerCase().includes(kw)
+        );
+      }
+
+      countText.textContent = `${filtered.length} bài`;
+
+      if (filtered.length === 0) {
+        listBox.innerHTML = `
+          <div class="empty">
+            ${posts.length === 0
+              ? `Chưa có bài viết nào. Bấm <b>Đăng bài mới</b> để tạo bài.`
+              : `Không có bài phù hợp với từ khoá lọc.`}
+          </div>
+        `;
+        return;
+      }
+
+      listBox.innerHTML = filtered.map(p => `
+        <div class="post-card" data-id="${p.id}">
+          <img src="${p.image || "Assets/images/sample.png"}" alt="">
+          <div class="post-card__body">
+            <h3 class="post-card__title">${escapeHtml(p.title || "")}</h3>
+            <div class="post-card__meta">${escapeHtml(p.date || "")}${p.category ? " • " + escapeHtml(p.category) : ""}</div>
+            <p class="post-card__excerpt">${escapeHtml(p.excerpt || "")}</p>
+          </div>
+          <div class="post-card__actions">
+            <button class="btn ghost" data-action="view">Xem</button>
+            <button class="btn ghost" data-action="edit">Sửa</button>
+            <button class="btn danger" data-action="delete">Xoá</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // chống XSS khi render nội dung từ localStorage
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // ===== Actions (event delegation) =====
+    listBox.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+
+      const card = e.target.closest(".post-card");
+      const id = Number(card?.dataset?.id);
+      if (!id) return;
+
+      const posts = getPosts();
+      const post = posts.find(p => Number(p.id) === id);
+      if (!post) return;
+
+      const action = btn.dataset.action;
+
+      if (action === "view") {
+        viewBody.innerHTML = `
+          <div style="display:grid;gap:10px;">
+            <img src="${escapeHtml(post.image || "Assets/images/sample.png")}"
+                 alt="" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;border:1px solid #eee;">
+            <div style="font-weight:900;font-size:18px;">${escapeHtml(post.title || "")}</div>
+            <div style="color:#666;font-size:12px;">
+              ${escapeHtml(post.date || "")}${post.category ? " • " + escapeHtml(post.category) : ""}${post.author ? " • " + escapeHtml(post.author) : ""}
+            </div>
+            <div style="color:#444;line-height:1.6;white-space:pre-wrap;">${escapeHtml(post.content || "")}</div>
+          </div>
+        `;
+        openModal(viewModal);
+      }
+
+      if (action === "edit") {
+        // fill form
+        $("#editId").value = post.id;
+        $("#editTitle").value = post.title || "";
+        $("#editDate").value = post.date || "";
+        $("#editCategory").value = post.category || "";
+        $("#editImage").value = post.image || "";
+        $("#editAuthor").value = post.author || "";
+        $("#editExcerpt").value = post.excerpt || "";
+        $("#editContent").value = post.content || "";
+
+        $("#editError").style.display = "none";
+        $("#editOk").style.display = "none";
+
+        openModal(editModal);
+      }
+
+      if (action === "delete") {
+        const ok = confirm("Bạn chắc chắn muốn xoá bài viết này?");
+        if (!ok) return;
+
+        const next = posts.filter(p => Number(p.id) !== id);
+        savePosts(next);
+        render(next, filterInput.value);
+      }
+    });
+
+    // ===== Save edit =====
+    $("#editForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const err = $("#editError");
+      const ok = $("#editOk");
+      const showErr = (m) => { ok.style.display="none"; err.textContent=m; err.style.display="block"; };
+      const showOk = (m) => { err.style.display="none"; ok.textContent=m; ok.style.display="block"; };
+
+      const id = Number($("#editId").value);
+      const title = $("#editTitle").value.trim();
+      const date = $("#editDate").value.trim();
+      const category = $("#editCategory").value;
+      const image = $("#editImage").value.trim() || "Assets/images/sample.png";
+      const author = $("#editAuthor").value.trim() || "Ban biên tập";
+      const excerpt = $("#editExcerpt").value.trim();
+      const content = $("#editContent").value.trim();
+
+      if (!title || title.length < 5) return showErr("Tiêu đề phải có tối thiểu 5 ký tự.");
+      if (!date) return showErr("Vui lòng nhập ngày đăng (DD/MM/YYYY).");
+      if (!category) return showErr("Vui lòng chọn danh mục.");
+      if (!content || content.length < 20) return showErr("Nội dung phải có tối thiểu 20 ký tự.");
+
+      const posts = getPosts();
+      const idx = posts.findIndex(p => Number(p.id) === id);
+      if (idx === -1) return showErr("Không tìm thấy bài để cập nhật.");
+
+      posts[idx] = { ...posts[idx], title, date, category, image, author, excerpt, content };
+      savePosts(posts);
+
+      showOk("Đã lưu thay đổi.");
+      render(posts, filterInput.value);
+
+      // đóng sau 400ms cho mượt
+      setTimeout(() => closeModal(editModal), 400);
+    });
+
+    // ===== Filter typing =====
+    filterInput.addEventListener("input", () => {
+      render(getPosts(), filterInput.value);
+    });
+
+    // ===== Init =====
+    document.addEventListener("DOMContentLoaded", () => {
+      render(getPosts(), "");
+    });
+  </script>
+</body>
+</html>
