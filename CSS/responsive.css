@@ -271,6 +271,10 @@
     width: 100%;
     order: 2;
   }
+  
+  .header-banner{
+    height: clamp(110px, 28vw, 180px);
+  }
 }
 
 
