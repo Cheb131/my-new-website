@@ -519,6 +519,9 @@
     });
   }
 
+
+
+
   // =========================================================
   // Init
   // =========================================================
@@ -530,3 +533,28 @@
     await initSearch();
   });
 })();
+
+  // =========================================================
+  // Node
+  // =========================================================
+const API_BASE = "http://localhost:3000";
+
+async function apiGetArticles() {
+  const res = await fetch(`${API_BASE}/api/items`);
+  return res.json();
+}
+
+async function apiGetArticle(id) {
+  const res = await fetch(`${API_BASE}/api/items/${id}`);
+  return res.json();
+}
+
+async function apiCreateArticle(data) {
+  const res = await fetch(`${API_BASE}/api/items`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
