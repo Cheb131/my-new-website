@@ -1,3 +1,4 @@
+
 (() => {
   // =========================================================
   // Helpers
@@ -8,6 +9,83 @@
   const LS_POSTS_KEY = "posts";
   let ARTICLES_CACHE = null;
 
+  // =========================================================
+// API + AUTH (frontend đang serve chung từ backend => API_BASE = "")
+// =========================================================
+const API_BASE = ""; // để rỗng khi deploy chung domain; local cũng OK
+
+function setToken(token) {
+  localStorage.setItem("token", token);
+}
+function getToken() {
+  return localStorage.getItem("token");
+}
+function clearToken() {
+  localStorage.removeItem("token");
+}
+
+// GET list bài viết từ backend
+async function apiGetArticles() {
+  const res = await fetch(`${API_BASE}/api/items`);
+  const data = await res.json().catch(() => []);
+  if (!res.ok) throw new Error(data?.message || "Không lấy được danh sách bài viết");
+  return data;
+}
+
+// POST tạo bài (cần token)
+async function apiCreateArticle(payload) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}/api/items`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || "Tạo bài thất bại");
+  return data;
+}
+
+// LOGIN: nhận token + user
+async function apiLogin(username, password) {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || "Login failed");
+
+  setToken(data.token);
+  localStorage.setItem("user", JSON.stringify(data.user));
+  return data;
+}
+
+// (tuỳ chọn) dùng token cho request cần quyền
+async function apiDeleteItem(id) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE}/api/items/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.message || "Delete failed");
+  return data;
+}
+
+// expose để page-list.js / page-post.js dùng
+window.API = window.API || {};
+window.API.apiGetArticles = apiGetArticles;
+window.API.apiCreateArticle = apiCreateArticle;
+window.API.apiLogin = apiLogin;
+window.API.apiDeleteItem = apiDeleteItem;
+window.API.getToken = getToken;
+window.API.clearToken = clearToken;
+
+  
   function parseVNDateToTime(s) {
     // hỗ trợ "DD/MM/YYYY" hoặc ISO "YYYY-MM-DD"
     if (!s) return 0;
@@ -64,15 +142,30 @@
   async function loadArticles(force = false) {
     if (!force && ARTICLES_CACHE) return ARTICLES_CACHE;
 
-    const res = await fetch(DATA_URL);
-    if (!res.ok) throw new Error("Không tải được articles.json: " + res.status);
+    // 1) lấy từ backend
+    const raw = await apiGetArticles();
 
-    const remote = normalizeRemoteArticles(await res.json());
+    // chuẩn hoá shape để code cũ render không bị vỡ
+    const remote = (raw || []).map((item) => ({
+      id: String(item.id),
+      title: item.title || "",
+      content: item.content || "",
+      excerpt: item.excerpt || item.content?.slice?.(0, 140) || "",
+      image: item.image || "Assets/images/sample.png",
+      date: item.date || "",
+      category: item.category || "Tin mới",
+      author: item.author || "",
+      __source: "api",
+      __time: parseVNDateToTime(item.date),
+    }));
+
+    // 2) nếu bạn vẫn muốn trộn thêm bài localStorage (tuỳ bạn)
     const local = loadLocalPosts();
 
     ARTICLES_CACHE = mergeAndSort(remote, local);
     return ARTICLES_CACHE;
   }
+
 
   // expose cho page-list.js / page-article.js dùng
   window.Core = window.Core || {};
@@ -393,19 +486,24 @@
           window.location.href = "register.html";
         });
       } else {
-        userDropdown.innerHTML = `
-          <li><a href="post.html">Đăng bài viết</a></li>
-          <li><a href="my-posts.html">Quản lý bài viết</a></li>
-          <li><a href="#" id="logoutAction">Đăng xuất</a></li>
-        `;
+          const role = user.role || "user";
+          const isAdmin = role === "admin";
+          const isManager = role === "manager";
 
-        document.getElementById("logoutAction")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          clearUser();
-          navUserBox.classList.remove("open");
-          renderDropdown();
-        });
-      }
+          userDropdown.innerHTML = `
+            ${(isAdmin || isManager) ? `<li><a href="post.html">Đăng bài viết</a></li>` : ""}
+            ${isAdmin ? `<li><a href="my-posts.html">Quản lý bài viết</a></li>` : ""}
+            <li><a href="#" id="logoutAction">Đăng xuất</a></li>
+          `;
+
+          document.getElementById("logoutAction")?.addEventListener("click", (e) => {
+            e.preventDefault();
+            clearUser();
+            localStorage.removeItem("token");
+            navUserBox.classList.remove("open");
+            renderDropdown();
+          });
+        }
     }
 
     userToggleBtn.addEventListener("click", (e) => {
@@ -425,58 +523,50 @@
       }
     });
 
-    loginForm?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      clearLoginError();
+    loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    clearLoginError();
 
-      const username =
-        document.getElementById("loginUsername")?.value.trim() ||
-        document.getElementById("loginUser")?.value.trim() ||
-        "";
+    const username =
+      document.getElementById("loginUsername")?.value.trim() ||
+      document.getElementById("loginUser")?.value.trim() ||
+      "";
 
-      const password =
-        document.getElementById("loginPassword")?.value ||
-        document.getElementById("loginPass")?.value ||
-        "";
+    const password =
+      document.getElementById("loginPassword")?.value ||
+      document.getElementById("loginPass")?.value ||
+      "";
 
-      if (!username || !password) {
-        return showLoginError("Vui lòng nhập tên đăng nhập và mật khẩu.");
-      }
+    if (!username || !password) {
+      return showLoginError("Vui lòng nhập tên đăng nhập và mật khẩu.");
+    }
 
-      const users = getUsers();
+    try {
+      const data = await apiLogin(username, password);
 
-      // tìm user theo username (không phân biệt hoa thường)
-      const found = users.find(
-        (u) => String(u.username || "").toLowerCase() === username.toLowerCase()
-      );
-
-      if (!found) {
-        return showLoginError("Tài khoản không tồn tại. Vui lòng đăng ký.");
-      }
-
-      // ✅ check password (demo: register.html đang lưu plaintext)
-      if (String(found.password || "") !== String(password)) {
-        return showLoginError("Mật khẩu không đúng.");
-      }
-
-      // login OK: lưu user đang đăng nhập
+      // lưu user để dropdown hiển thị
       setUser({
-        username: found.username,
-        email: found.email || "",
-        phone: found.phone || "",
+        username: data.user?.username || username,
+        email: data.user?.email || "",
+        phone: data.user?.phone || "",
+        role: data.user?.role || "user",
       });
 
       closeModal();
       renderDropdown();
+    } catch (err) {
+      showLoginError(err?.message || "Đăng nhập thất bại");
+    }
     });
 
 
-    loginClose?.addEventListener("click", closeModal);
-    loginModal?.addEventListener("click", (e) => {
-      if (e.target === loginModal) closeModal();
-    });
 
-    renderDropdown();
+      loginClose?.addEventListener("click", closeModal);
+      loginModal?.addEventListener("click", (e) => {
+        if (e.target === loginModal) closeModal();
+      });
+
+      renderDropdown();
   }
 
   // =========================================================
@@ -534,27 +624,7 @@
   });
 })();
 
-  // =========================================================
-  // Node
-  // =========================================================
-const API_BASE = "http://localhost:3000";
 
-async function apiGetArticles() {
-  const res = await fetch(`${API_BASE}/api/items`);
-  return res.json();
-}
 
-async function apiGetArticle(id) {
-  const res = await fetch(`${API_BASE}/api/items/${id}`);
-  return res.json();
-}
 
-async function apiCreateArticle(data) {
-  const res = await fetch(`${API_BASE}/api/items`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  return res.json();
-}
 
