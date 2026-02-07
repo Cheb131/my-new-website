@@ -6,29 +6,34 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 const apiRoute = require("./routes/api.route");
+const authRoute = require("./routes/auth.route"); 
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
 
 const app = express();
 
+// ===== MIDDLEWARE =====
 app.use(cors({
   origin: process.env.CORS_ORIGIN || "*",
 }));
 app.use(express.json());
 app.use(morgan("dev"));
 
-// health
-app.get("/health", (req, res) => res.json({ ok: true }));
+// ===== HEALTH CHECK =====
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
 
-// serve frontend
+// ===== SERVE FRONTEND =====
 app.use(express.static(path.join(__dirname, "..", "public")));
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
-// api
+// ===== API =====
 app.use("/api", apiRoute);
-
-// errors
+app.use("/api/auth", authRoute); 
+// ===== ERROR HANDLER =====
 app.use(notFound);
 app.use(errorHandler);
 
