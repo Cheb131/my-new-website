@@ -16,7 +16,6 @@
   <meta property="og:url" content="https://your-domain.vn" />
 
   <link rel="stylesheet" href="CSS/style.css" />
-
 </head>
 
 <body>
@@ -25,10 +24,11 @@
     <div class="login-box">
       <h3>Đăng nhập</h3>
       <div id="loginError" style="display:none;color:#b91c1c;font-size:13px;margin:6px 0 10px;"></div>
+
       <form id="loginForm">
         <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
         <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
-        <button type="submit">Đăng nhập</button>        
+        <button type="submit">Đăng nhập</button>
       </form>
 
       <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
@@ -43,21 +43,15 @@
 
         <div class="banner-inner container">
           <div class="logo-group left">
-
             <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
               <img src="Assets/icons/menu.png" alt="">
             </button>
-          </div>
-
-          <div class="logo-group right">
-            <img src="Assets/images/sample.png" alt="Logo đơn vị" />
-            <img src="Assets/images/sample.png" alt="Logo đơn vị" />
           </div>
         </div>
       </div>
     </header>
 
-    <!-- ===== NAV ===== -->
+    <!-- ===== NAV (NẰM NGAY DƯỚI BANNER) ===== -->
     <nav class="main-nav" aria-label="Điều hướng chính">
       <div class="container">
         <ul class="nav-list">
@@ -73,18 +67,29 @@
           </li>
 
           <li class="has-dropdown">
-            <a href="#">Văn bản</a>
+            <a href="#">Kế hoạch học tập</a>
             <ul class="dropdown">
-              <li><a href="#">Văn bản chỉ đạo điều hành</a></li>
+              <li><a href="#">2025</a></li>
+              <li><a href="#">2026</a></li>
+              <li><a href="#">2027</a></li>
             </ul>
           </li>
 
-          <li><a href="#">Hoạt động</a></li>
           <li class="has-dropdown">
-            <a href="#">Tủ sách</a>
+            <a href="#">Không gian văn hóa Hồ Chí Minh</a>
+            <ul class="dropdown">
+              <li><a href="#">Không gian Chuyên đề</a></li>
+              <li><a href="#">Không gian làm theo lời Bác</a></li>
+              <li><a href="#">Không gian "Tiến bước dưới cờ sao"</a></li>
+              <li><a href="#">Không gian sinh hoạt</a></li>
+            </ul>
+          </li>
+
+          <li class="has-dropdown">
+            <a href="#">Không gian học tập</a>
             <ul class="dropdown">
               <li><a href="https://stbook.vn/">Tủ sách điện tử</a></li>
-              <li><a href="#">Sách hay</a></li>
+              <li><a href="#">Tài nguyên học tập</a></li>
             </ul>
           </li>
 
@@ -103,7 +108,15 @@
           <!-- SEARCH -->
           <li class="nav-search">
             <form class="search" action="list.html" method="get" role="search">
-              <input type="search" name="q" class="search__input" placeholder="Tìm kiếm..." aria-label="Tìm kiếm" required maxlength="80" />
+              <input
+                type="search"
+                name="q"
+                class="search__input"
+                placeholder="Tìm kiếm."
+                aria-label="Tìm kiếm"
+                required
+                maxlength="80"
+              />
               <button class="search__btn" type="submit" aria-label="Tìm">
                 <img src="Assets/icons/search.png" alt="">
               </button>
@@ -115,7 +128,6 @@
 
     <!-- ===== MAIN ===== -->
     <main class="main-content">
-
       <section class="hero hero--slider">
         <div class="hero-slides">
           <div class="hero-slide is-active" style="background-image:url('Assets/images/sample.png')"></div>
@@ -145,22 +157,20 @@
           </div>
         </div>
       </section>
-
     </main>
 
-  </div>
-
-  <!-- ===== FOOTER ===== -->
-  <footer class="site-footer">
-    <div class="container footer-top">
-      <div class="footer-info">
-        <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
-        <p>Địa chỉ: 178 Lê Văn Sỹ, Phường 10, Quận Phú Nhuận, TP Hồ Chí Minh</p>
-        <p>Điện thoại: </p>
-        <p>Email: ttbdctpn@gmail.com</p>
+    <!-- ===== FOOTER ===== -->
+    <footer class="site-footer">
+      <div class="container footer-top">
+        <div class="footer-info">
+          <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
+          <p>Địa chỉ: 178 Lê Văn Sỹ, Phường Phú Nhuận, TP Hồ Chí Minh</p>
+          <p>Điện thoại: </p>
+          <p>Email: ttbdctpn@gmail.com</p>
+        </div>
       </div>
-    </div>
-  </footer>
+    </footer>
+  </div>
 
   <!-- JS -->
   <script src="JS/menu.js"></script>

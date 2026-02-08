@@ -1,7 +1,7 @@
 /* =========================================================
    HERO SLIDER
 ========================================================= */
-.hero.hero--slider{
+.hero.hero--slider {
   position: relative;
   min-height: 320px;
   overflow: hidden;
@@ -11,12 +11,12 @@
   text-align: center;
 }
 
-.hero-slides{
+.hero-slides {
   position: absolute;
   inset: 0;
 }
 
-.hero-slide{
+.hero-slide {
   position: absolute;
   inset: 0;
   background-position: center;
@@ -26,23 +26,23 @@
 }
 
 /* overlay tối */
-.hero-slide::after{
-  content:"";
-  position:absolute;
-  inset:0;
+.hero-slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   background: rgba(0,0,0,.35);
 }
 
-.hero-slide.is-active{
+.hero-slide.is-active {
   opacity: 1;
 }
 
-.hero-content{
+.hero-content {
   position: relative;
   z-index: 2;
 }
 
-.hero-dots{
+.hero-dots {
   position: absolute;
   left: 50%;
   bottom: 14px;
@@ -52,7 +52,7 @@
   z-index: 3;
 }
 
-.hero-dots .dot{
+.hero-dots .dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -61,18 +61,18 @@
   cursor: pointer;
 }
 
-.hero-dots .dot.is-active{
+.hero-dots .dot.is-active {
   background: #fff;
 }
 
 /* =========================================================
    FEATURED
 ========================================================= */
-.featured{
+.featured {
   padding: 2.5rem 0;
 }
 
-.featured-content{
+.featured-content {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 24px;
@@ -82,7 +82,7 @@
 /* ===== Card wrapper chung (2 cột + list) ===== */
 .featured-main,
 .news-list,
-.article-list{
+.article-list {
   background: #fff;
   height: 100%;
   border: 1px solid rgba(15,23,42,0.12);
@@ -92,25 +92,25 @@
 
 /* padding riêng cho list bên phải / list bài viết */
 .news-list,
-.article-list{
+.article-list {
   padding: 12px;
 }
 
 /* ===== LEFT: bài nổi bật ===== */
-.featured-main{
+.featured-main {
   position: relative;
   border-top: 4px solid var(--primary);
   padding-top: 14px;
 }
 
-.featured-main__thumb img{
+.featured-main__thumb img {
   width: 100%;
   height: 320px;
   object-fit: cover;
   display: block;
 }
 
-.featured-main::before{
+.featured-main::before {
   content: "Tin nổi bật";
   position: absolute;
   top: -14px;
@@ -125,23 +125,23 @@
   z-index: 5;
 }
 
-.featured-main__body{ padding: 14px; }
+.featured-main__body { padding: 14px; }
 
-.featured-main__title a{
+.featured-main__title a {
   color: var(--primary);
   font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.3;
 }
-.featured-main__title a:hover{ text-decoration: underline; }
+.featured-main__title a:hover { text-decoration: underline; }
 
-.featured-main__desc{
+.featured-main__desc {
   margin-top: 8px;
   color: var(--text-muted);
 }
 
 /* Meta (ngày + chuyên mục) */
-.meta{
+.meta {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -149,17 +149,17 @@
   color: var(--text-muted);
   font-size: .9rem;
 }
-.meta__dot{ opacity: .7; }
-.meta--small{ font-size: .82rem; }
+.meta__dot { opacity: .7; }
+.meta--small { font-size: .82rem; }
 
 /* ===== RIGHT: news list ===== */
-.news-list{
+.news-list {
   position: relative;
   padding-top: 16px;
   border-top: 4px solid var(--primary);
 }
 
-.news-list::before{
+.news-list::before {
   content: "Tin mới";
   position: absolute;
   top: -14px;
@@ -173,26 +173,26 @@
   color: var(--primary);
 }
 
-.news-item{
+.news-item {
   display: flex;
   gap: 12px;
   padding: 12px;
   border-radius: 8px;
 }
 
-.news-item + .news-item{
+.news-item + .news-item {
   border-top: 1px solid rgba(15,23,42,0.10);
 }
 
-.news-item:hover{
+.news-item:hover {
   background: rgba(139,30,30,0.06);
 }
 
-.news-item__thumb{
+.news-item__thumb {
   flex: 0 0 96px;
 }
 
-.news-item__thumb img{
+.news-item__thumb img {
   width: 96px;
   height: 72px;
   object-fit: cover;
@@ -200,19 +200,19 @@
   display: block;
 }
 
-.news-item__body{
+.news-item__body {
   flex: 1;
   min-width: 0; /* chống tràn chữ */
 }
 
-.news-item__title a{
+.news-item__title a {
   color: var(--text-dark);
   font-weight: 800;
   font-size: .95rem;
   line-height: 1.35;
 }
 
-.news-item__desc{
+.news-item__desc {
   margin-top: 6px;
   font-size: .85rem;
   color: var(--text-muted);
@@ -225,23 +225,23 @@
 }
 
 /* =========================================================
-   ARTICLES 
+   ARTICLES
 ========================================================= */
-.featured-article{
+.featured-article {
   background: #fff;
   border: 1px solid var(--border-light);
   border-radius: 8px;
   padding: 12px;
 }
 
-.featured-article h3{
+.featured-article h3 {
   margin-top: 1rem;
   font-size: 1.25rem;
   color: var(--primary);
 }
 
 /* item trong article-list */
-.article-list > .article-item{
+.article-list > .article-item {
   display: flex;
   gap: 12px;
   padding: 12px;
@@ -253,27 +253,27 @@
   box-shadow: none;
 }
 
-.article-list > .article-item + .article-item{
+.article-list > .article-item + .article-item {
   border-top: 1px solid rgba(15,23,42,0.10);
 }
 
-.article-list > .article-item:hover{
+.article-list > .article-item:hover {
   background: rgba(139,30,30,0.06);
 }
 
-.article-list > .article-item img{
+.article-list > .article-item img {
   width: 96px;
   height: 64px;
   object-fit: cover;
   border-radius: 4px;
 }
 
-.article-list .article-info h4{
+.article-list .article-info h4 {
   font-size: .95rem;
   color: var(--text-dark);
 }
 
-.article-list .article-info p{
+.article-list .article-info p {
   font-size: .85rem;
   color: var(--text-muted);
 }
@@ -281,36 +281,36 @@
 /* =========================================================
    POST + SIDEBAR (article detail)
 ========================================================= */
-.post{
-  background:#fff;
-  border:1px solid rgba(15,23,42,0.10);
-  border-radius:12px;
-  box-shadow:0 10px 20px rgba(15,23,42,0.08);
-  overflow:hidden;
+.post {
+  background: #fff;
+  border: 1px solid rgba(15,23,42,0.10);
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(15,23,42,0.08);
+  overflow: hidden;
 }
 
-.post__head{
+.post__head {
   padding: 16px 18px 10px;
   border-top: 3px solid var(--primary);
 }
 
-.post__title{
+.post__title {
   font-size: 1.35rem;
   font-weight: 900;
   line-height: 1.25;
   color: #111827;
 }
 
-.post__meta{
+.post__meta {
   margin-top: 8px;
   color: var(--text-muted);
   font-size: .9rem;
 }
 
-.post__body{ padding: 0 18px 18px; }
+.post__body { padding: 0 18px 18px; }
 
-.post__body p{ margin: 10px 0; color: #111827; }
-.post__body img{
+.post__body p { margin: 10px 0; color: #111827; }
+.post__body img {
   width: 100%;
   height: auto;
   display: block;
@@ -318,15 +318,15 @@
   margin: 14px 0;
 }
 
-.sidebar-box{
-  background:#fff;
-  border:1px solid rgba(15,23,42,0.10);
-  border-radius:12px;
-  box-shadow:0 10px 20px rgba(15,23,42,0.08);
-  overflow:hidden;
+.sidebar-box {
+  background: #fff;
+  border: 1px solid rgba(15,23,42,0.10);
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(15,23,42,0.08);
+  overflow: hidden;
 }
 
-.sidebar-title{
+.sidebar-title {
   padding: 12px 14px;
   font-size: 1rem;
   font-weight: 900;
@@ -343,37 +343,37 @@
   margin-bottom: 8px;
 }
 
-.sidebar-item{
-  display:flex;
+.sidebar-item {
+  display: flex;
   gap: 12px;
   padding: 12px 14px;
   text-decoration: none;
   color: inherit;
 }
 
-.sidebar-item + .sidebar-item{
+.sidebar-item + .sidebar-item {
   border-top: 1px solid rgba(15,23,42,0.08);
 }
 
-.sidebar-item:hover{
+.sidebar-item:hover {
   background: rgba(139,30,30,0.06);
 }
 
-.sidebar-thumb{
+.sidebar-thumb {
   flex: 0 0 72px;
 }
 
-.sidebar-thumb img{
+.sidebar-thumb img {
   width: 72px;
   height: 54px;
   object-fit: cover;
   border-radius: 6px;
-  display:block;
+  display: block;
 }
 
-.sidebar-body{ min-width: 0; }
+.sidebar-body { min-width: 0; }
 
-.sidebar-item-title{
+.sidebar-item-title {
   font-weight: 800;
   font-size: .92rem;
   line-height: 1.3;
@@ -386,7 +386,7 @@
   overflow: hidden;
 }
 
-.sidebar-item-meta{
+.sidebar-item-meta {
   margin-top: 6px;
   font-size: .82rem;
   color: var(--text-muted);
@@ -395,24 +395,24 @@
 /* =========================================================
    FOOTER
 ========================================================= */
-.site-footer{
+.site-footer {
   background: linear-gradient(180deg, #c11212, #7a0c0c);
   margin-top: 2.5rem;
   color: #ffffff;
   font-size: 0.9rem;
 }
 
-.site-footer .container{
+.site-footer .container {
   padding: 2.5rem 1rem;
 }
 
 .site-footer p,
-.site-footer a{
+.site-footer a {
   color: rgba(255,255,255,0.95);
   line-height: 1.6;
 }
 
-.site-footer p:first-child{
+.site-footer p:first-child {
   font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -421,7 +421,7 @@
 /* =========================================================
    LOGIN MODAL
 ========================================================= */
-.login-modal{
+.login-modal {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.55);
@@ -430,7 +430,7 @@
   justify-content: center;
   z-index: 2000;
 }
-.login-modal[hidden]{
+.login-modal[hidden] {
   display: none;
 }
 

@@ -11,8 +11,6 @@
   --bg-light: #f8fafc;
   --border-light: #e5e7eb;
 
-  /* Nền 2 bên */
-  --side-bg: linear-gradient(180deg, #facc15, #b45309);
 }
 
 /* =========================================================
@@ -25,23 +23,21 @@
 }
 
 html, body {
-  width: 100%;
-  overflow-x: hidden; 
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-body{
+body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
   color: var(--text-dark);
 
-  background-image: url("../Assets/images/background.png"); 
-  background-repeat: repeat; 
+  background-image: url("../Assets/images/background.png");
+  background-repeat: repeat;
   background-position: center top;
   background-size: 11%;
-
-  background-color: #f6c945;
+  padding-top: 0 !important;
 }
-
 
 img {
   display: block;
