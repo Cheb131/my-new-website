@@ -143,6 +143,7 @@
     <div class="card">
       <div class="card-head">
         <h1 class="title">Đăng ký</h1>
+        <p class="subtitle">Tài khoản sẽ được lưu trong database SQLite (backend).</p>
       </div>
 
       <form id="registerForm" novalidate>
@@ -176,7 +177,7 @@
         <div class="field">
           <label for="phone">Số điện thoại</label>
           <input id="phone" name="phone" type="tel" placeholder="vd: 0901234567" autocomplete="tel" required />
-          <div class="hint">Chỉ nhập số (10–11 số). Nếu có +84, bạn có thể nhập 0 ở đầu.</div>
+          <div class="hint">Chỉ nhập số (10–11 số).</div>
         </div>
 
         <div class="actions">
@@ -194,6 +195,10 @@
     const errBox = $("#formError");
     const okBox = $("#formSuccess");
 
+    // Nếu bạn mở front bằng Live Server (5500) thì đổi API_BASE sang backend port.
+    // Mặc định: khi serve chung từ backend thì để "".
+    const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
+
     function showError(msg){
       okBox.style.display = "none";
       okBox.textContent = "";
@@ -209,16 +214,14 @@
     }
 
     function isValidUsername(u){
-      // 4-20, chữ số underscore
       return /^[a-zA-Z0-9_]{4,20}$/.test(u);
     }
 
     function isValidPhone(p){
-      // chỉ số, 10-11
       return /^[0-9]{10,11}$/.test(p);
     }
 
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const username = $("#username").value.trim();
@@ -228,7 +231,7 @@
       const phone = $("#phone").value.trim();
 
       if (!isValidUsername(username)) {
-        return showError("Tên đăng nhập không hợp lệ. Vui lòng dùng 4–20 ký tự (chữ/số/_).");
+        return showError("Tên đăng nhập không hợp lệ. Dùng 4–20 ký tự (chữ/số/_).");
       }
       if (!password || password.length < 6) {
         return showError("Mật khẩu phải có tối thiểu 6 ký tự.");
@@ -236,7 +239,6 @@
       if (password !== password2) {
         return showError("Mật khẩu nhập lại không khớp.");
       }
-      // Email: rely on browser + simple check
       if (!email || !email.includes("@")) {
         return showError("Gmail không hợp lệ.");
       }
@@ -244,26 +246,25 @@
         return showError("Số điện thoại không hợp lệ. Vui lòng nhập 10–11 chữ số.");
       }
 
-      // Demo lưu localStorage (để test). Sau này thay bằng API.
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const exists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
-      if (exists) {
-        return showError("Tên đăng nhập đã tồn tại. Vui lòng chọn tên khác.");
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, email, phone }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          return showError(data?.message || "Đăng ký thất bại");
+        }
+
+        showSuccess("Đăng ký thành công! Bạn có thể quay lại và đăng nhập.");
+        form.reset();
+        $("#username").focus();
+      } catch (err) {
+        console.error(err);
+        showError("Không kết nối được tới server.");
       }
-
-      users.push({
-        username,
-        password, // ⚠️ demo thôi. Thực tế KHÔNG lưu plaintext ở client.
-        email,
-        phone,
-        createdAt: new Date().toISOString()
-      });
-      localStorage.setItem("users", JSON.stringify(users));
-
-      showSuccess("Đăng ký thành công! Bạn có thể quay lại và đăng nhập.");
-
-      form.reset();
-      $("#username").focus();
     });
   </script>
 </body>

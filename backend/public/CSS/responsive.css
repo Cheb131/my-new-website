@@ -467,4 +467,17 @@
     max-width: none !important;
     min-width: 0 !important;
   }
+
+  /* ===== HOME (MOBILE)===== */
+  .featured-content {
+    display: grid;
+    grid-template-columns: 1fr; /* 1 cột => tự xuống dưới theo đúng thứ tự HTML */
+    gap: 12px;
+  }
+
+  .featured-main,
+  .news-list {
+    width: 100%;
+  }
+
 }
