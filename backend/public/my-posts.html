@@ -419,205 +419,272 @@
   <script src="JS/menu.js"></script>
   <script src="JS/core.js"></script>
 
-  <script>
-    const $ = (sel) => document.querySelector(sel);
+<script>
+/* =========================================================
+   HELPERS
+========================================================= */
+const $ = (sel) => document.querySelector(sel);
 
-    // ===== LocalStorage helpers =====
-    function getPosts() {
-      return JSON.parse(localStorage.getItem("posts") || "[]");
-    }
-    function savePosts(posts) {
-      localStorage.setItem("posts", JSON.stringify(posts));
-    }
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 
-    // ===== UI helpers =====
-    const listBox = $("#postListBox");
-    const countText = $("#countText");
-    const filterInput = $("#filterInput");
+/* =========================================================
+   AUTH GUARD: chỉ manager + admin
+========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem("user") || "null");
+  } catch {}
 
-    const viewModal = $("#viewModal");
-    const viewBody = $("#viewBody");
-    const editModal = $("#editModal");
+  if (!user || !["admin", "manager"].includes(user.role)) {
+    alert("Chỉ admin hoặc manager mới được truy cập trang này.");
+    window.location.href = "index.html";
+  }
+});
 
-    function openModal(modal) {
-      modal.classList.add("open");
-      modal.setAttribute("aria-hidden", "false");
-      // khóa scroll nếu cần
-      document.body.style.overflow = "hidden";
-    }
-    function closeModal(modal) {
-      modal.classList.remove("open");
-      modal.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-    }
+/* =========================================================
+   UI ELEMENTS
+========================================================= */
+const listBox = $("#postListBox");
+const countText = $("#countText");
+const filterInput = $("#filterInput");
 
-    // close modal by [data-close] / click outside / ESC
-    document.addEventListener("click", (e) => {
-      if (e.target.matches("[data-close]")) {
-        const modal = e.target.closest(".modal");
-        if (modal) closeModal(modal);
-      }
-      if (e.target.classList.contains("modal")) closeModal(e.target);
-    });
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        [viewModal, editModal].forEach(m => m.classList.contains("open") && closeModal(m));
-      }
-    });
+const viewModal = $("#viewModal");
+const viewBody = $("#viewBody");
+const editModal = $("#editModal");
 
-    function render(posts, keyword) {
-      const kw = (keyword || "").trim().toLowerCase();
+/* =========================================================
+   MODAL
+========================================================= */
+function openModal(modal) {
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+function closeModal(modal) {
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
 
-      let filtered = posts;
-      if (kw) {
-        filtered = posts.filter(p =>
-          `${p.title || ""} ${p.category || ""}`.toLowerCase().includes(kw)
-        );
-      }
+document.addEventListener("click", (e) => {
+  if (e.target.matches("[data-close]")) {
+    const modal = e.target.closest(".modal");
+    if (modal) closeModal(modal);
+  }
+  if (e.target.classList.contains("modal")) closeModal(e.target);
+});
 
-      countText.textContent = `${filtered.length} bài`;
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    [viewModal, editModal].forEach(m => m?.classList.contains("open") && closeModal(m));
+  }
+});
 
-      if (filtered.length === 0) {
-        listBox.innerHTML = `
-          <div class="empty">
-            ${posts.length === 0
-              ? `Chưa có bài viết nào. Bấm <b>Đăng bài mới</b> để tạo bài.`
-              : `Không có bài phù hợp với từ khoá lọc.`}
-          </div>
-        `;
-        return;
-      }
+/* =========================================================
+   DATA (DB CACHE)
+========================================================= */
+let POSTS = [];
 
-      listBox.innerHTML = filtered.map(p => `
-        <div class="post-card" data-id="${p.id}">
-          <img src="${p.image || "Assets/images/sample.png"}" alt="">
-          <div class="post-card__body">
-            <h3 class="post-card__title">${escapeHtml(p.title || "")}</h3>
-            <div class="post-card__meta">${escapeHtml(p.date || "")}${p.category ? " • " + escapeHtml(p.category) : ""}</div>
-            <p class="post-card__excerpt">${escapeHtml(p.excerpt || "")}</p>
-          </div>
-          <div class="post-card__actions">
-            <button class="btn ghost" data-action="view">Xem</button>
-            <button class="btn ghost" data-action="edit">Sửa</button>
-            <button class="btn danger" data-action="delete">Xoá</button>
-          </div>
+async function fetchPostsFromDB() {
+  const res = await fetch("/api/items");
+  if (!res.ok) throw new Error("Không tải được bài viết");
+  return await res.json();
+}
+
+/* =========================================================
+   RENDER
+========================================================= */
+function render(posts, keyword = "") {
+  const kw = keyword.trim().toLowerCase();
+  const filtered = kw
+    ? posts.filter(p =>
+        `${p.title || ""} ${p.category || ""}`.toLowerCase().includes(kw)
+      )
+    : posts;
+
+  countText.textContent = `${filtered.length} bài`;
+
+  if (filtered.length === 0) {
+    listBox.innerHTML = `
+      <div class="empty">
+        ${posts.length === 0
+          ? "Chưa có bài viết nào."
+          : "Không có bài phù hợp với từ khoá lọc."}
+      </div>
+    `;
+    return;
+  }
+
+  listBox.innerHTML = filtered.map(p => `
+    <div class="post-card" data-id="${p.id}">
+      <img src="${escapeHtml(p.image || "Assets/images/sample.png")}" alt="">
+      <div class="post-card__body">
+        <h3 class="post-card__title">${escapeHtml(p.title || "")}</h3>
+        <div class="post-card__meta">
+          ${escapeHtml(p.date || "")}
+          ${p.category ? " • " + escapeHtml(p.category) : ""}
         </div>
-      `).join("");
+        <p class="post-card__excerpt">
+          ${escapeHtml(p.excerpt || p.content?.slice(0,120) || "")}
+        </p>
+      </div>
+      <div class="post-card__actions">
+        <button class="btn ghost" data-action="view">Xem</button>
+        <button class="btn ghost" data-action="edit">Sửa</button>
+        <button class="btn danger" data-action="delete">Xoá</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+/* =========================================================
+   ACTIONS (VIEW / EDIT / DELETE)
+========================================================= */
+listBox.addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-action]");
+  if (!btn) return;
+
+  const card = e.target.closest(".post-card");
+  const id = Number(card?.dataset?.id);
+  if (!id) return;
+
+  const post = POSTS.find(p => Number(p.id) === id);
+  if (!post) return;
+
+  const action = btn.dataset.action;
+
+  /* ===== VIEW ===== */
+  if (action === "view") {
+    viewBody.innerHTML = `
+      <div style="display:grid;gap:10px;">
+        <img src="${escapeHtml(post.image || "Assets/images/sample.png")}"
+             style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;">
+        <div style="font-weight:900;font-size:18px;">
+          ${escapeHtml(post.title || "")}
+        </div>
+        <div style="color:#666;font-size:12px;">
+          ${escapeHtml(post.date || "")}
+          ${post.category ? " • " + escapeHtml(post.category) : ""}
+          ${post.author ? " • " + escapeHtml(post.author) : ""}
+        </div>
+        <div style="white-space:pre-wrap;line-height:1.6;">
+          ${escapeHtml(post.content || "")}
+        </div>
+      </div>
+    `;
+    openModal(viewModal);
+  }
+
+  /* ===== EDIT (ADMIN) ===== */
+  if (action === "edit") {
+    $("#editId").value = post.id;
+    $("#editTitle").value = post.title || "";
+    $("#editDate").value = post.date || "";
+    $("#editCategory").value = post.category || "";
+    $("#editImage").value = post.image || "";
+    $("#editAuthor").value = post.author || "";
+    $("#editExcerpt").value = post.excerpt || "";
+    $("#editContent").value = post.content || "";
+
+    $("#editError").style.display = "none";
+    $("#editOk").style.display = "none";
+
+    openModal(editModal);
+  }
+
+  /* ===== DELETE (ADMIN) ===== */
+  if (action === "delete") {
+    if (!confirm("Bạn chắc chắn muốn xoá bài viết này?")) return;
+
+    const token = localStorage.getItem("token");
+    const res = await fetch(`/api/items/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) {
+      alert("Bạn không có quyền xoá bài viết");
+      return;
     }
 
-    // chống XSS khi render nội dung từ localStorage
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+    POSTS = POSTS.filter(p => Number(p.id) !== id);
+    render(POSTS, filterInput.value);
+  }
+});
 
-    // ===== Actions (event delegation) =====
-    listBox.addEventListener("click", (e) => {
-      const btn = e.target.closest("[data-action]");
-      if (!btn) return;
+/* =========================================================
+   SAVE EDIT (ADMIN)
+========================================================= */
+$("#editForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-      const card = e.target.closest(".post-card");
-      const id = Number(card?.dataset?.id);
-      if (!id) return;
+  const err = $("#editError");
+  const ok = $("#editOk");
+  const showErr = (m) => { ok.style.display="none"; err.textContent=m; err.style.display="block"; };
+  const showOk = (m) => { err.style.display="none"; ok.textContent=m; ok.style.display="block"; };
 
-      const posts = getPosts();
-      const post = posts.find(p => Number(p.id) === id);
-      if (!post) return;
+  const id = Number($("#editId").value);
+  const title = $("#editTitle").value.trim();
+  const date = $("#editDate").value.trim();
+  const category = $("#editCategory").value;
+  const image = $("#editImage").value.trim();
+  const author = $("#editAuthor").value.trim();
+  const excerpt = $("#editExcerpt").value.trim();
+  const content = $("#editContent").value.trim();
 
-      const action = btn.dataset.action;
+  if (!title || title.length < 5) return showErr("Tiêu đề tối thiểu 5 ký tự.");
+  if (!content || content.length < 20) return showErr("Nội dung tối thiểu 20 ký tự.");
 
-      if (action === "view") {
-        viewBody.innerHTML = `
-          <div style="display:grid;gap:10px;">
-            <img src="${escapeHtml(post.image || "Assets/images/sample.png")}"
-                 alt="" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;border:1px solid #eee;">
-            <div style="font-weight:900;font-size:18px;">${escapeHtml(post.title || "")}</div>
-            <div style="color:#666;font-size:12px;">
-              ${escapeHtml(post.date || "")}${post.category ? " • " + escapeHtml(post.category) : ""}${post.author ? " • " + escapeHtml(post.author) : ""}
-            </div>
-            <div style="color:#444;line-height:1.6;white-space:pre-wrap;">${escapeHtml(post.content || "")}</div>
-          </div>
-        `;
-        openModal(viewModal);
-      }
+  const token = localStorage.getItem("token");
+  const res = await fetch(`/api/items/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ title, date, category, image, author, excerpt, content })
+  });
 
-      if (action === "edit") {
-        // fill form
-        $("#editId").value = post.id;
-        $("#editTitle").value = post.title || "";
-        $("#editDate").value = post.date || "";
-        $("#editCategory").value = post.category || "";
-        $("#editImage").value = post.image || "";
-        $("#editAuthor").value = post.author || "";
-        $("#editExcerpt").value = post.excerpt || "";
-        $("#editContent").value = post.content || "";
+  if (!res.ok) return showErr("Bạn không có quyền sửa bài");
 
-        $("#editError").style.display = "none";
-        $("#editOk").style.display = "none";
+  const updated = await res.json();
+  const idx = POSTS.findIndex(p => Number(p.id) === updated.id);
+  POSTS[idx] = updated;
 
-        openModal(editModal);
-      }
+  render(POSTS, filterInput.value);
+  showOk("Đã lưu thay đổi");
 
-      if (action === "delete") {
-        const ok = confirm("Bạn chắc chắn muốn xoá bài viết này?");
-        if (!ok) return;
+  setTimeout(() => closeModal(editModal), 400);
+});
 
-        const next = posts.filter(p => Number(p.id) !== id);
-        savePosts(next);
-        render(next, filterInput.value);
-      }
-    });
+/* =========================================================
+   FILTER
+========================================================= */
+filterInput?.addEventListener("input", () => {
+  render(POSTS, filterInput.value);
+});
 
-    // ===== Save edit =====
-    $("#editForm").addEventListener("submit", (e) => {
-      e.preventDefault();
+/* =========================================================
+   INIT
+========================================================= */
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    POSTS = await fetchPostsFromDB();
+    render(POSTS, "");
+  } catch (e) {
+    console.error(e);
+    listBox.innerHTML = "<div class='empty'>Lỗi tải bài viết</div>";
+  }
+});
+</script>
 
-      const err = $("#editError");
-      const ok = $("#editOk");
-      const showErr = (m) => { ok.style.display="none"; err.textContent=m; err.style.display="block"; };
-      const showOk = (m) => { err.style.display="none"; ok.textContent=m; ok.style.display="block"; };
-
-      const id = Number($("#editId").value);
-      const title = $("#editTitle").value.trim();
-      const date = $("#editDate").value.trim();
-      const category = $("#editCategory").value;
-      const image = $("#editImage").value.trim() || "Assets/images/sample.png";
-      const author = $("#editAuthor").value.trim() || "Ban biên tập";
-      const excerpt = $("#editExcerpt").value.trim();
-      const content = $("#editContent").value.trim();
-
-      if (!title || title.length < 5) return showErr("Tiêu đề phải có tối thiểu 5 ký tự.");
-      if (!date) return showErr("Vui lòng nhập ngày đăng (DD/MM/YYYY).");
-      if (!category) return showErr("Vui lòng chọn danh mục.");
-      if (!content || content.length < 20) return showErr("Nội dung phải có tối thiểu 20 ký tự.");
-
-      const posts = getPosts();
-      const idx = posts.findIndex(p => Number(p.id) === id);
-      if (idx === -1) return showErr("Không tìm thấy bài để cập nhật.");
-
-      posts[idx] = { ...posts[idx], title, date, category, image, author, excerpt, content };
-      savePosts(posts);
-
-      showOk("Đã lưu thay đổi.");
-      render(posts, filterInput.value);
-
-      // đóng sau 400ms cho mượt
-      setTimeout(() => closeModal(editModal), 400);
-    });
-
-    // ===== Filter typing =====
-    filterInput.addEventListener("input", () => {
-      render(getPosts(), filterInput.value);
-    });
-
-    // ===== Init =====
-    document.addEventListener("DOMContentLoaded", () => {
-      render(getPosts(), "");
-    });
-  </script>
 </body>
 </html>

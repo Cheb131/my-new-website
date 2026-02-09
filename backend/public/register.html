@@ -188,84 +188,100 @@
     </div>
   </div>
 
-  <script>
-    const $ = (sel) => document.querySelector(sel);
+<script>
+  const $ = (sel) => document.querySelector(sel);
+  const form = $("#postForm");
+  const errBox = $("#formError");
+  const okBox = $("#formSuccess");
 
-    const form = $("#registerForm");
-    const errBox = $("#formError");
-    const okBox = $("#formSuccess");
+  // default date = today
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  $("#date").value = `${yyyy}-${mm}-${dd}`;
 
-    // Nếu bạn mở front bằng Live Server (5500) thì đổi API_BASE sang backend port.
-    // Mặc định: khi serve chung từ backend thì để "".
-    const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
+  function showError(msg) {
+    okBox.style.display = "none";
+    okBox.textContent = "";
+    errBox.textContent = msg;
+    errBox.style.display = "block";
+  }
+  function showSuccess(msg) {
+    errBox.style.display = "none";
+    errBox.textContent = "";
+    okBox.textContent = msg;
+    okBox.style.display = "block";
+  }
 
-    function showError(msg){
-      okBox.style.display = "none";
-      okBox.textContent = "";
-      errBox.textContent = msg;
-      errBox.style.display = "block";
+  function formatDateISOToVN(iso) {
+    if (!iso) return "";
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function buildPreview() {
+    const title = $("#title").value.trim();
+    const dateIso = $("#date").value;
+    const category = $("#category").value;
+    const excerpt = $("#excerpt").value.trim();
+    const image = $("#image").value.trim() || "Assets/images/sample.png";
+
+    $("#previewImg").src = image;
+    $("#previewTitle").textContent = title || "(Chưa có tiêu đề)";
+    $("#previewMeta").textContent =
+      `${formatDateISOToVN(dateIso)}${category ? " • " + category : ""}`;
+    $("#previewExcerpt").textContent = excerpt || "—";
+    $("#previewBox").style.display = "flex";
+  }
+
+  $("#previewBtn").addEventListener("click", buildPreview);
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const token = window.API?.getToken?.();
+    if (!token) return showError("Bạn cần đăng nhập (admin/manager) để đăng bài.");
+
+    const title = $("#title").value.trim();
+    const dateIso = $("#date").value;
+    const category = $("#category").value;
+    const image = $("#image").value.trim() || "Assets/images/sample.png";
+    const author = $("#author").value.trim() || "Ban biên tập";
+    const excerpt = $("#excerpt").value.trim();
+    const content = $("#content").value.trim();
+
+    if (!title || title.length < 5) return showError("Tiêu đề tối thiểu 5 ký tự.");
+    if (!dateIso) return showError("Vui lòng chọn ngày đăng.");
+    if (!category) return showError("Vui lòng chọn danh mục.");
+    if (!content || content.length < 20) return showError("Nội dung tối thiểu 20 ký tự.");
+
+    try {
+      const payload = {
+        title,
+        content,
+        excerpt,
+        image,
+        category,
+        author,
+        date: formatDateISOToVN(dateIso),
+      };
+
+      const created = await window.API.apiCreateArticle(payload);
+
+      showSuccess("Đăng bài thành công! Đang mở bài viết…");
+      buildPreview();
+
+      setTimeout(() => {
+        window.location.href = `article.html?id=${encodeURIComponent(created.id)}`;
+      }, 500);
+    } catch (err) {
+      console.error(err);
+      showError(err?.message || "Đăng bài thất bại.");
     }
+  });
+</script>
 
-    function showSuccess(msg){
-      errBox.style.display = "none";
-      errBox.textContent = "";
-      okBox.textContent = msg;
-      okBox.style.display = "block";
-    }
 
-    function isValidUsername(u){
-      return /^[a-zA-Z0-9_]{4,20}$/.test(u);
-    }
-
-    function isValidPhone(p){
-      return /^[0-9]{10,11}$/.test(p);
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const username = $("#username").value.trim();
-      const password = $("#password").value;
-      const password2 = $("#password2").value;
-      const email = $("#email").value.trim();
-      const phone = $("#phone").value.trim();
-
-      if (!isValidUsername(username)) {
-        return showError("Tên đăng nhập không hợp lệ. Dùng 4–20 ký tự (chữ/số/_).");
-      }
-      if (!password || password.length < 6) {
-        return showError("Mật khẩu phải có tối thiểu 6 ký tự.");
-      }
-      if (password !== password2) {
-        return showError("Mật khẩu nhập lại không khớp.");
-      }
-      if (!email || !email.includes("@")) {
-        return showError("Gmail không hợp lệ.");
-      }
-      if (!isValidPhone(phone)) {
-        return showError("Số điện thoại không hợp lệ. Vui lòng nhập 10–11 chữ số.");
-      }
-
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, email, phone }),
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          return showError(data?.message || "Đăng ký thất bại");
-        }
-
-        showSuccess("Đăng ký thành công! Bạn có thể quay lại và đăng nhập.");
-        form.reset();
-        $("#username").focus();
-      } catch (err) {
-        console.error(err);
-        showError("Không kết nối được tới server.");
-      }
-    });
-  </script>
 </body>
 </html>

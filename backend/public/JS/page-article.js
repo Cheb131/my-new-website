@@ -1,26 +1,19 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(location.search);
   const id = params.get("id");
 
   const postEl = document.getElementById("postDetail");
-  if (!id || !postEl) return;
+  if (!postEl || !id) return;
 
   try {
-    // Lấy danh sách bài (đã merge backend + localStorage trong core.js)
-    const items = await (window.Core?.loadArticles?.() || Promise.resolve([]));
-
-    const a = (items || []).find((x) => String(x.id) === String(id));
+    const items = await (window.Core?.loadArticles?.() || []);
+    const a = items.find((x) => String(x.id) === String(id));
     if (!a) throw new Error("Not found");
 
     const title = a.title || "(Không có tiêu đề)";
-    const content = a.content || "(Không có nội dung)";
-    const date =
-      a.date ||
-      (a.created_at
-        ? new Date(a.created_at).toLocaleString("vi-VN")
-        : new Date().toLocaleString("vi-VN"));
-
+    const date = a.date || (a.created_at ? new Date(a.created_at).toLocaleDateString("vi-VN") : "");
     const category = a.category || "Tin mới";
+    const content = a.content || "(Không có nội dung)";
 
     document.title = title;
 
@@ -31,19 +24,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         <span class="meta__dot">•</span>
         <span class="meta__cat">${escapeHtml(category)}</span>
       </div>
-      <div class="post__content">
-        ${escapeHtml(content).replace(/\n/g, "<br>")}
-      </div>
+      <div class="post__content">${escapeHtml(content).replace(/\n/g, "<br>")}</div>
     `;
 
     renderOtherArticles(items, id);
   } catch (err) {
     console.error(err);
-    postEl.innerHTML = `
-      <div style="padding:12px;color:#b91c1c">
-        Không tải được bài viết.
-      </div>
-    `;
+    postEl.innerHTML = `<div style="padding:12px;color:#b91c1c">Không tải được bài viết.</div>`;
   }
 });
 
