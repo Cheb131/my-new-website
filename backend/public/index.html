@@ -12,10 +12,10 @@
   <meta property="og:title" content="Trung tâm Chính trị phường Phú Nhuận" />
   <meta property="og:description" content="Trung tâm Chính trị phường Phú Nhuận" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="Assets/images/og-image.jpg" />
+  <meta property="og:image" content="/Assets/images/og-image.jpg" />
   <meta property="og:url" content="https://your-domain.vn" />
 
-  <link rel="stylesheet" href="CSS/style.css" />
+    <link rel="stylesheet" href="/CSS/style.css">
 </head>
 
 <body>
@@ -39,7 +39,7 @@
     <!-- ===== HEADER ===== -->
     <header class="site-header">
       <div class="header-banner">
-        <img src="Assets/images/banner.png" alt="Banner" class="banner-bg" />
+        <img src="/Assets/images/banner.png" alt="Banner" class="banner-bg" />
 
         <div class="banner-inner container">
           <div class="logo-group left">
@@ -117,11 +117,16 @@
                 required
                 maxlength="80"
               />
+
+              
+              <div class="search-results" hidden></div>
+
               <button class="search__btn" type="submit" aria-label="Tìm">
                 <img src="Assets/icons/search.png" alt="">
               </button>
             </form>
           </li>
+
         </ul>
       </div>
     </nav>
@@ -130,9 +135,9 @@
     <main class="main-content">
       <section class="hero hero--slider">
         <div class="hero-slides">
-          <div class="hero-slide is-active" style="background-image:url('Assets/images/sample.png')"></div>
-          <div class="hero-slide" style="background-image:url('Assets/images/sample.png')"></div>
-          <div class="hero-slide" style="background-image:url('Assets/images/sample.png')"></div>
+          <div class="hero-slide is-active" style="background-image:url('/Assets/images/sample.png')"></div>
+          <div class="hero-slide" style="background-image:url('/Assets/images/sample.png')"></div>
+          <div class="hero-slide" style="background-image:url('/Assets/images/sample.png')"></div>
         </div>
 
         <div class="container hero-content">
@@ -173,8 +178,8 @@
   </div>
 
   <!-- JS -->
-  <script src="JS/menu.js"></script>
-  <script src="JS/core.js"></script>
-  <script src="JS/page-home.js"></script>
+  <script src="/JS/menu.js"></script>
+  <script src="/JS/core.js"></script>
+  <script src="/JS/page-home.js"></script>
 </body>
 </html>

@@ -46,18 +46,36 @@
 /* =========================================================
    FIX: Banner chạm sát mép trên trình duyệt
 ========================================================= */
-html,
-body {
-  margin: 0 !important;
-  padding: 0 !important;
+/* =========================================================
+   STICKY FOOTER – SAFE (KHÔNG FLEX)
+========================================================= */
+
+html, body {
+  height: 100%;
 }
 
-/* bỏ bo góc phía trên của page-wrap */
+/* page-wrap giữ layout cũ nhưng đủ cao */
 .page-wrap {
-  margin-top: 0 !important;
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 240px; /* chiều cao footer desktop */
 }
+
+/* footer luôn nằm đáy page-wrap */
+.site-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* mobile: footer cao hơn */
+@media (max-width: 768px) {
+  .page-wrap {
+    padding-bottom: 300px;
+  }
+}
+
 
 /* đảm bảo banner không tự sinh khoảng hở */
 .header-banner {

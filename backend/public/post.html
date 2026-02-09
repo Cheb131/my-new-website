@@ -1,3 +1,21 @@
+<script>
+  (function () {
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem("user") || "null");
+    } catch {}
+
+    const role = user?.role;
+    const allowed = role === "admin" || role === "manager";
+
+    if (!allowed) {
+      alert("Bạn không có quyền truy cập trang này.");
+      window.location.href = "index.html";
+    }
+  })();
+</script>
+
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -16,7 +34,7 @@
   <meta property="og:image" content="Assets/images/og-image.jpg" />
   <meta property="og:url" content="https://your-domain.vn" />
 
-  <link rel="stylesheet" href="CSS/style.css" />
+  <link rel="stylesheet" href="/CSS/style.css" />
 
   <style>
     .post-editor { padding: 18px 0 32px; }
@@ -219,7 +237,7 @@
               </div>
             </div>
 
-            <form id="postForm" method="post" novalidate>
+            <form id="postForm" novalidate>
               <div class="msg error" id="formError"></div>
               <div class="msg ok" id="formSuccess"></div>
 
@@ -305,8 +323,9 @@
   </div>
 
   <!-- JS -->
-  <script src="JS/menu.js"></script>
-  <script src="JS/core.js"></script>
+  <script src="/JS/menu.js"></script>
+  <script src="/JS/core.js"></script>
+  <script src="/JS/page-post.js"></script>
 
 </body>
 </html>

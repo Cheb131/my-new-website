@@ -124,6 +124,10 @@
   body.mnav-open {
     overflow: hidden;
   }
+
+  .page-wrap {
+    padding-bottom: 280px;
+  }
 }
 
 /* =========================================================

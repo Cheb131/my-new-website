@@ -330,6 +330,16 @@
   background: rgba(0, 0, 0, 0.28);
 }
 
+.search-keyword {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.search-keyword b {
+  color: #111827;
+}
+
 /* =========================================================
    TOPBAR WHEN SCROLL (đã có JS trong core.js)
 ========================================================= */

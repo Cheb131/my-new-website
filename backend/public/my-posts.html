@@ -1,3 +1,18 @@
+<script>
+  (function () {
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem("user") || "null");
+    } catch {}
+
+    if (user?.role !== "admin") {
+      alert("Trang này chỉ dành cho admin.");
+      window.location.href = "index.html";
+    }
+  })();
+</script>
+
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -5,8 +20,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Quản lý bài viết</title>
 
-  <link rel="stylesheet" href="CSS/style.css" />
-  <link rel="stylesheet" href="CSS/responsive.css" />
+  <link rel="stylesheet" href="/CSS/style.css" />
+  <link rel="stylesheet" href="/CSS/responsive.css" />
 
   <style>
     .myposts { padding: 18px 0 32px; }
@@ -416,8 +431,8 @@
     </div>
   </div>
 
-  <script src="JS/menu.js"></script>
-  <script src="JS/core.js"></script>
+  <script src="/JS/menu.js"></script>
+  <script src="/JS/core.js"></script>
 
 <script>
 /* =========================================================

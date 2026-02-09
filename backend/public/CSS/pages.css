@@ -89,3 +89,118 @@
   font-size: .85rem;
   color: var(--text-muted);
 }
+
+/* =========================================================
+   LIST PAGE – CARD BÀI VIẾT GỌN GÀNG
+========================================================= */
+
+.list-page .post-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+/* mỗi bài viết */
+.list-page .news-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  align-items: flex-start;
+}
+
+/* link bọc ảnh + title */
+.list-page .news-item > a {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ===== ẢNH THU NHỎ ===== */
+.list-page .news-item img {
+  width: 96px;          /* 👈 chỉnh nhỏ ở đây */
+  height: 96px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: #f3f4f6;
+}
+
+/* ===== TEXT ===== */
+.list-page .news-item h3 {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0 0 6px;
+  color: #111827;
+}
+
+.list-page .news-item .meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.list-page .news-item p {
+  font-size: 13px;
+  color: #374151;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* hover nhẹ */
+.list-page .news-item:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+}
+
+/* ================= LIST ITEM TEXT ALIGN ================= */
+
+.news-item {
+  display: flex;
+}
+
+.news-link {
+  display: flex;
+  gap: 14px;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+}
+
+.news-item img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.news-content {
+  display: flex;
+  flex-direction: column; 
+  gap: 6px;
+}
+
+.news-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+  color: #111827;
+}
+
+.news-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.news-excerpt {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.5;
+  margin: 0;
+}

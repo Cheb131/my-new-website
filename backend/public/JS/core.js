@@ -263,124 +263,133 @@ window.API.clearToken = clearToken;
     }
   }
 
-  // =========================================================
-  // Search dropdown + submit (delegation để mobile clone chạy)
-  // =========================================================
-  function hideDropdown(resultsEl) {
-    if (!resultsEl) return;
-    resultsEl.hidden = true;
-    resultsEl.innerHTML = "";
-  }
+  /* =====================================================
+    SEARCH DROPDOWN – GỢI Ý BÀI VIẾT THEO TIÊU ĐỀ
+  ===================================================== */
+  document.addEventListener("DOMContentLoaded", () => {
+    let cacheItems = null;
+    let fetchPromise = null;
 
-  function showDropdown(resultsEl, items) {
-    if (!resultsEl) return;
-
-    if (!items || !items.length) {
-      resultsEl.innerHTML = `<a href="javascript:void(0)">Không tìm thấy bài viết</a>`;
-      resultsEl.hidden = false;
-      return;
+    // load bài viết 1 lần
+    async function loadItems() {
+      if (cacheItems) return cacheItems;
+      if (!fetchPromise) {
+        fetchPromise = fetch("/api/items")
+          .then(res => res.json())
+          .then(data => (cacheItems = data))
+          .catch(err => {
+            console.error("Search load error:", err);
+            cacheItems = [];
+            return [];
+          });
+      }
+      return fetchPromise;
     }
 
-    const top = items.slice(0, 6);
-    resultsEl.innerHTML = top
-      .map(
-        (item) => `
-      <a href="article.html?id=${encodeURIComponent(item.id)}">
-        ${item.title || ""}
-        <span class="muted">${item.date || ""} • ${item.category || ""}</span>
-      </a>
-    `
-      )
-      .join("");
-
-    resultsEl.hidden = false;
-  }
-
-  async function initSearch() {
-    let articles = [];
-    try {
-      articles = await loadArticles();
-    } catch (err) {
-      console.error(err);
-      return;
+    function hideResults(el) {
+      if (!el) return;
+      el.hidden = true;
+      el.innerHTML = "";
     }
 
-    // Typing: dropdown cho đúng form đang gõ
-    document.addEventListener("input", (e) => {
-      const inputEl = e.target.closest(".search__input");
-      if (!inputEl) return;
+    function showResults(el, items) {
+      if (!el) return;
 
-      const formEl = inputEl.closest("form.search");
-      if (!formEl) return;
+      if (!items.length) {
+        el.innerHTML = `<a href="javascript:void(0)">Không tìm thấy bài viết</a>`;
+        el.hidden = false;
+        return;
+      }
 
-      const resultsEl = formEl.querySelector(".search-results");
-      if (!resultsEl) return;
+      el.innerHTML = items
+        .slice(0, 6)
+        .map(
+          item => `
+          <a href="/article.html?id=${item.id}">
+            ${item.title}
+            <span class="muted">${item.date || ""}</span>
+          </a>
+        `
+        )
+        .join("");
 
-      const q = normalize(inputEl.value);
-      if (!q) return hideDropdown(resultsEl);
+      el.hidden = false;
+    }
 
-      const filtered = articles.filter((a) => normalize(a.title).includes(q));
-      showDropdown(resultsEl, filtered);
+    // gõ tìm kiếm
+    document.addEventListener("input", async e => {
+      const input = e.target.closest(".search__input");
+      if (!input) return;
+
+      const form = input.closest("form.search");
+      if (!form) return;
+
+      const results = form.querySelector(".search-results");
+      if (!results) return;
+
+      const q = input.value.trim().toLowerCase();
+      if (!q) return hideResults(results);
+
+      const items = await loadItems();
+
+      const matched = items.filter(item =>
+        (item.title || "").toLowerCase().includes(q)
+      );
+
+      showResults(results, matched);
     });
 
-    document.addEventListener("focusin", (e) => {
-      const inputEl = e.target.closest(".search__input");
-      if (!inputEl) return;
+    // focus lại thì hiện kết quả
+    document.addEventListener("focusin", async e => {
+      const input = e.target.closest(".search__input");
+      if (!input) return;
 
-      const formEl = inputEl.closest("form.search");
-      if (!formEl) return;
+      const form = input.closest("form.search");
+      const results = form?.querySelector(".search-results");
+      if (!results) return;
 
-      const resultsEl = formEl.querySelector(".search-results");
-      if (!resultsEl) return;
-
-      const q = normalize(inputEl.value);
+      const q = input.value.trim().toLowerCase();
       if (!q) return;
 
-      const filtered = articles.filter((a) => normalize(a.title).includes(q));
-      showDropdown(resultsEl, filtered);
+      const items = await loadItems();
+      const matched = items.filter(item =>
+        (item.title || "").toLowerCase().includes(q)
+      );
+
+      showResults(results, matched);
     });
 
-    // Submit: chuyển sang list.html?q=...
-    document.addEventListener("submit", (e) => {
-      const formEl = e.target.closest("form.search");
-      if (!formEl) return;
+    // submit → sang list.html
+    document.addEventListener("submit", e => {
+      const form = e.target.closest("form.search");
+      if (!form) return;
 
       e.preventDefault();
 
-      const inputEl = formEl.querySelector(".search__input") || formEl.querySelector('input[name="q"]');
-      const resultsEl = formEl.querySelector(".search-results");
-      const q = (inputEl?.value || "").trim();
+      const input = form.querySelector('input[name="q"]');
+      const q = input?.value.trim();
       if (!q) return;
 
-      hideDropdown(resultsEl);
-      window.location.href = `list.html?q=${encodeURIComponent(q)}`;
+      hideResults(form.querySelector(".search-results"));
+      window.location.href = `/list.html?q=${encodeURIComponent(q)}`;
     });
 
-    // Click outside: ẩn dropdown của tất cả form search
-    document.addEventListener("click", (e) => {
-      document.querySelectorAll("form.search").forEach((formEl) => {
-        const resultsEl = formEl.querySelector(".search-results");
-        if (!resultsEl) return;
-        if (!formEl.contains(e.target)) hideDropdown(resultsEl);
+    // click ra ngoài → ẩn
+    document.addEventListener("click", e => {
+      document.querySelectorAll(".search-results").forEach(el => {
+        if (!el.closest("form.search")?.contains(e.target)) {
+          hideResults(el);
+        }
       });
     });
 
-    document.addEventListener("keydown", (e) => {
+    // ESC → ẩn
+    document.addEventListener("keydown", e => {
       if (e.key !== "Escape") return;
-      document.querySelectorAll("form.search .search-results").forEach(hideDropdown);
+      document.querySelectorAll(".search-results").forEach(hideResults);
     });
+  });
 
-    // Nếu bạn muốn list.html dùng rightList filter trong articleList (optional)
-    if (isPage("list.html")) {
-      const params = new URLSearchParams(window.location.search);
-      const qParam = normalize(params.get("q"));
-      const listEl = document.getElementById("articleList");
-      if (listEl && qParam) {
-        const filtered = articles.filter((a) => normalize(a.title).includes(qParam));
-        renderRightList(listEl, filtered);
-      }
-    }
-  }
 
   // =========================================================
   // Login
