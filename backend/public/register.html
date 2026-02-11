@@ -1,287 +1,544 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đăng ký</title>
-
-  <!-- Nếu dự án bạn đang dùng style.css thì bật 2 dòng này -->
-  <!-- <link rel="stylesheet" href="CSS/style.css" /> -->
-  <!-- <link rel="stylesheet" href="CSS/responsive.css" /> -->
-
-  <style>
-    :root { --primary: #b30000; }
-
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:#f6f6f6;
-      color:#111;
-    }
-    .wrap{
-      max-width: 520px;
-      margin: 40px auto;
-      padding: 0 16px;
-    }
-    .card{
-      background:#fff;
-      border-radius: 14px;
-      box-shadow: 0 6px 24px rgba(0,0,0,.08);
-      overflow:hidden;
-    }
-    .card-head{
-      padding: 16px 18px;
-      border-top: 4px solid var(--primary);
-      border-bottom: 1px solid #eee;
-    }
-    .title{
-      margin:0;
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: .4px;
-    }
-    .subtitle{
-      margin: 6px 0 0;
-      font-size: 13px;
-      color:#666;
-    }
-    form{
-      padding: 18px;
-      display: grid;
-      gap: 12px;
-    }
-    label{
-      font-size: 13px;
-      font-weight: 700;
-      color:#333;
-      display:block;
-      margin-bottom: 6px;
-    }
-    .field input{
-      width:100%;
-      height: 42px;
-      padding: 0 12px;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      outline: none;
-      font-size: 14px;
-    }
-    .field input:focus{
-      border-color: rgba(179,0,0,.55);
-      box-shadow: 0 0 0 4px rgba(179,0,0,.08);
-    }
-    .hint{
-      font-size: 12px;
-      color:#777;
-      margin-top: 6px;
-      line-height: 1.35;
-    }
-    .error{
-      display:none;
-      background:#fff1f1;
-      border: 1px solid #ffd2d2;
-      color:#b42318;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .success{
-      display:none;
-      background:#ecfdf3;
-      border: 1px solid #abefc6;
-      color:#067647;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .actions{
-      display:flex;
-      gap:10px;
-      margin-top: 4px;
-    }
-    .btn{
-      height: 42px;
-      border-radius: 10px;
-      border: 0;
-      padding: 0 14px;
-      font-weight: 800;
-      cursor:pointer;
-      font-size: 14px;
-    }
-    .btn-primary{
-      background: var(--primary);
-      color:#fff;
-      flex: 1;
-    }
-    .btn-secondary{
-      background:#f0f0f0;
-      color:#111;
-      text-decoration: none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      flex: 1;
-    }
-    .row{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    @media (max-width: 520px){
-      .wrap{ margin: 18px auto; }
-      .row{ grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="card-head">
-        <h1 class="title">Đăng ký</h1>
-        <p class="subtitle">Tài khoản sẽ được lưu trong database SQLite (backend).</p>
-      </div>
-
-      <form id="registerForm" novalidate>
-        <div class="error" id="formError"></div>
-        <div class="success" id="formSuccess"></div>
-
-        <div class="field">
-          <label for="username">Tên đăng nhập</label>
-          <input id="username" name="username" type="text" placeholder="vd: nguyenvanA" autocomplete="username" required />
-          <div class="hint">Từ 4–20 ký tự. Chỉ nên dùng chữ, số, dấu gạch dưới (_).</div>
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="password">Mật khẩu</label>
-            <input id="password" name="password" type="password" placeholder="••••••••" autocomplete="new-password" required />
-            <div class="hint">Tối thiểu 6 ký tự.</div>
-          </div>
-
-          <div class="field">
-            <label for="password2">Nhập lại mật khẩu</label>
-            <input id="password2" name="password2" type="password" placeholder="••••••••" autocomplete="new-password" required />
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="email">Gmail</label>
-          <input id="email" name="email" type="email" placeholder="vd: abc@gmail.com" autocomplete="email" required />
-        </div>
-
-        <div class="field">
-          <label for="phone">Số điện thoại</label>
-          <input id="phone" name="phone" type="tel" placeholder="vd: 0901234567" autocomplete="tel" required />
-          <div class="hint">Chỉ nhập số (10–11 số).</div>
-        </div>
-
-        <div class="actions">
-          <button class="btn btn-primary" type="submit">Tạo tài khoản</button>
-          <a class="btn btn-secondary" href="index.html">Về trang chủ</a>
-        </div>
-      </form>
-    </div>
-  </div>
-
-<script>
-  const $ = (sel) => document.querySelector(sel);
-  const form = $("#postForm");
-  const errBox = $("#formError");
-  const okBox = $("#formSuccess");
-
-  // default date = today
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
-  $("#date").value = `${yyyy}-${mm}-${dd}`;
-
-  function showError(msg) {
-    okBox.style.display = "none";
-    okBox.textContent = "";
-    errBox.textContent = msg;
-    errBox.style.display = "block";
-  }
-  function showSuccess(msg) {
-    errBox.style.display = "none";
-    errBox.textContent = "";
-    okBox.textContent = msg;
-    okBox.style.display = "block";
-  }
-
-  function formatDateISOToVN(iso) {
-    if (!iso) return "";
-    const [y, m, d] = iso.split("-");
-    return `${d}/${m}/${y}`;
-  }
-
-  function buildPreview() {
-    const title = $("#title").value.trim();
-    const dateIso = $("#date").value;
-    const category = $("#category").value;
-    const excerpt = $("#excerpt").value.trim();
-    const image = $("#image").value.trim() || "Assets/images/sample.png";
-
-    $("#previewImg").src = image;
-    $("#previewTitle").textContent = title || "(Chưa có tiêu đề)";
-    $("#previewMeta").textContent =
-      `${formatDateISOToVN(dateIso)}${category ? " • " + category : ""}`;
-    $("#previewExcerpt").textContent = excerpt || "—";
-    $("#previewBox").style.display = "flex";
-  }
-
-  $("#previewBtn").addEventListener("click", buildPreview);
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const token = window.API?.getToken?.();
-    if (!token) return showError("Bạn cần đăng nhập (admin/manager) để đăng bài.");
-
-    const title = $("#title").value.trim();
-    const dateIso = $("#date").value;
-    const category = $("#category").value;
-    const image = $("#image").value.trim() || "Assets/images/sample.png";
-    const author = $("#author").value.trim() || "Ban biên tập";
-    const excerpt = $("#excerpt").value.trim();
-    const content = $("#content").value.trim();
-
-    if (!title || title.length < 5) return showError("Tiêu đề tối thiểu 5 ký tự.");
-    if (!dateIso) return showError("Vui lòng chọn ngày đăng.");
-    if (!category) return showError("Vui lòng chọn danh mục.");
-    if (!content || content.length < 20) return showError("Nội dung tối thiểu 20 ký tự.");
-
-    try {
-      const payload = {
-        title,
-        content,
-        excerpt,
-        image,
-        category,
-        author,
-        date: formatDateISOToVN(dateIso),
-      };
-
-      const created = await window.API.apiCreateArticle(payload);
-
-      showSuccess("Đăng bài thành công! Đang mở bài viết…");
-      buildPreview();
-
-      setTimeout(() => {
-        window.location.href = `article.html?id=${encodeURIComponent(created.id)}`;
-      }, 500);
-    } catch (err) {
-      console.error(err);
-      showError(err?.message || "Đăng bài thất bại.");
-    }
-  });
-</script>
-
-
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/backend/public/register.html b/backend/public/register.html
+index 2b9de4399cd67fd5a54b2a52b4225edb7ff200de..b223ae8110b7b8b89724c675963a5b537cdade9b 100644
+--- a/backend/public/register.html
++++ b/backend/public/register.html
+@@ -1,287 +1,313 @@
+ <!DOCTYPE html>
+ <html lang="vi">
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-  <title>Đăng ký</title>
+-
+-  <!-- Nếu dự án bạn đang dùng style.css thì bật 2 dòng này -->
+-  <!-- <link rel="stylesheet" href="CSS/style.css" /> -->
+-  <!-- <link rel="stylesheet" href="CSS/responsive.css" /> -->
+-
++  <title>Gia nhập Hội Quán Mạo Hiểm</title>
+   <style>
+-    :root { --primary: #b30000; }
+-
+-    body{
+-      margin:0;
+-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+-      background:#f6f6f6;
+-      color:#111;
++    :root {
++      --bg-night: #1a1426;
++      --bg-night-2: #241734;
++      --parchment: #f3e6c8;
++      --parchment-deep: #dbc392;
++      --ink: #2d1f12;
++      --accent-gold: #d7b56d;
++      --accent-crimson: #7a1f2b;
++      --success: #1f7a51;
++      --danger: #8b2435;
+     }
+-    .wrap{
+-      max-width: 520px;
+-      margin: 40px auto;
+-      padding: 0 16px;
++
++    * { box-sizing: border-box; }
++
++    body {
++      margin: 0;
++      min-height: 100vh;
++      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
++      background:
++        radial-gradient(circle at 10% 20%, rgba(215, 181, 109, 0.16), transparent 40%),
++        radial-gradient(circle at 85% 0%, rgba(122, 31, 43, 0.22), transparent 35%),
++        linear-gradient(160deg, var(--bg-night) 0%, var(--bg-night-2) 100%);
++      color: var(--ink);
++      display: flex;
++      align-items: center;
++      justify-content: center;
++      padding: 28px 16px;
+     }
+-    .card{
+-      background:#fff;
+-      border-radius: 14px;
+-      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+-      overflow:hidden;
++
++    .wrap {
++      width: min(560px, 100%);
++      background: linear-gradient(170deg, #f8edd2, var(--parchment));
++      border: 2px solid rgba(215, 181, 109, 0.8);
++      border-radius: 16px;
++      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
++      overflow: hidden;
+     }
+-    .card-head{
+-      padding: 16px 18px;
+-      border-top: 4px solid var(--primary);
+-      border-bottom: 1px solid #eee;
++
++    .card-head {
++      padding: 18px 20px;
++      background: linear-gradient(145deg, #3f284f, #2b1a38);
++      color: #f5e8c6;
++      border-bottom: 2px solid rgba(215, 181, 109, 0.5);
+     }
+-    .title{
+-      margin:0;
+-      font-size: 18px;
+-      font-weight: 800;
+-      color: var(--primary);
++
++    .title {
++      margin: 0;
++      font-size: 20px;
+       text-transform: uppercase;
+-      letter-spacing: .4px;
++      letter-spacing: 0.6px;
++      font-family: Georgia, "Times New Roman", serif;
+     }
+-    .subtitle{
+-      margin: 6px 0 0;
++
++    .subtitle {
++      margin: 8px 0 0;
+       font-size: 13px;
+-      color:#666;
++      opacity: 0.95;
+     }
+-    form{
++
++    form {
+       padding: 18px;
+       display: grid;
+       gap: 12px;
+     }
+-    label{
++
++    label {
+       font-size: 13px;
+       font-weight: 700;
+-      color:#333;
+-      display:block;
++      display: block;
+       margin-bottom: 6px;
++      color: #523823;
+     }
+-    .field input{
+-      width:100%;
++
++    .field input {
++      width: 100%;
+       height: 42px;
+-      padding: 0 12px;
+       border-radius: 10px;
+-      border: 1px solid #ddd;
++      border: 1px solid #b99a62;
++      background: #fff7e6;
++      padding: 0 12px;
++      color: var(--ink);
+       outline: none;
+-      font-size: 14px;
+     }
+-    .field input:focus{
+-      border-color: rgba(179,0,0,.55);
+-      box-shadow: 0 0 0 4px rgba(179,0,0,.08);
++
++    .field input:focus {
++      border-color: var(--accent-crimson);
++      box-shadow: 0 0 0 3px rgba(122, 31, 43, 0.15);
+     }
+-    .hint{
+-      font-size: 12px;
+-      color:#777;
++
++    .hint {
+       margin-top: 6px;
++      font-size: 12px;
++      color: #76512f;
+       line-height: 1.35;
+     }
+-    .error{
+-      display:none;
+-      background:#fff1f1;
+-      border: 1px solid #ffd2d2;
+-      color:#b42318;
+-      padding: 10px 12px;
+-      border-radius: 10px;
+-      font-size: 13px;
+-      line-height: 1.35;
++
++    .row {
++      display: grid;
++      grid-template-columns: 1fr 1fr;
++      gap: 12px;
+     }
+-    .success{
+-      display:none;
+-      background:#ecfdf3;
+-      border: 1px solid #abefc6;
+-      color:#067647;
+-      padding: 10px 12px;
++
++    .error, .success {
++      display: none;
+       border-radius: 10px;
++      padding: 10px 12px;
+       font-size: 13px;
+       line-height: 1.35;
+     }
+-    .actions{
+-      display:flex;
+-      gap:10px;
+-      margin-top: 4px;
++
++    .error {
++      background: #fde7ea;
++      border: 1px solid #efbac2;
++      color: var(--danger);
++    }
++
++    .success {
++      background: #e6f8ef;
++      border: 1px solid #9fd7bb;
++      color: var(--success);
++    }
++
++    .actions {
++      display: flex;
++      gap: 10px;
++      margin-top: 2px;
+     }
+-    .btn{
++
++    .btn {
+       height: 42px;
+       border-radius: 10px;
+-      border: 0;
+-      padding: 0 14px;
++      border: 1px solid transparent;
+       font-weight: 800;
+-      cursor:pointer;
+-      font-size: 14px;
+-    }
+-    .btn-primary{
+-      background: var(--primary);
+-      color:#fff;
+-      flex: 1;
+-    }
+-    .btn-secondary{
+-      background:#f0f0f0;
+-      color:#111;
++      cursor: pointer;
+       text-decoration: none;
+-      display:inline-flex;
+-      align-items:center;
+-      justify-content:center;
++      display: inline-flex;
++      align-items: center;
++      justify-content: center;
+       flex: 1;
+     }
+-    .row{
+-      display:grid;
+-      grid-template-columns: 1fr 1fr;
+-      gap: 12px;
++
++    .btn-primary {
++      background: linear-gradient(140deg, var(--accent-crimson), #5e1822);
++      color: #fff8eb;
++      border-color: rgba(0, 0, 0, 0.2);
++    }
++
++    .btn-secondary {
++      background: #f7edd7;
++      color: #3d2a1a;
++      border-color: #d9bf8a;
+     }
+-    @media (max-width: 520px){
+-      .wrap{ margin: 18px auto; }
+-      .row{ grid-template-columns: 1fr; }
++
++    @media (max-width: 560px) {
++      .row { grid-template-columns: 1fr; }
+     }
+   </style>
+ </head>
+ 
+ <body>
+   <div class="wrap">
+-    <div class="card">
+-      <div class="card-head">
+-        <h1 class="title">Đăng ký</h1>
+-        <p class="subtitle">Tài khoản sẽ được lưu trong database SQLite (backend).</p>
+-      </div>
++    <div class="card-head">
++      <h1 class="title">Gia nhập Hội Quán Mạo Hiểm</h1>
++      <p class="subtitle">Tạo hồ sơ tân binh để bắt đầu chiến dịch tại DnD Guild Chronicle.</p>
++    </div>
+ 
+-      <form id="registerForm" novalidate>
+-        <div class="error" id="formError"></div>
+-        <div class="success" id="formSuccess"></div>
++    <form id="registerForm" novalidate>
++      <div class="error" id="formError"></div>
++      <div class="success" id="formSuccess"></div>
+ 
+-        <div class="field">
+-          <label for="username">Tên đăng nhập</label>
+-          <input id="username" name="username" type="text" placeholder="vd: nguyenvanA" autocomplete="username" required />
+-          <div class="hint">Từ 4–20 ký tự. Chỉ nên dùng chữ, số, dấu gạch dưới (_).</div>
+-        </div>
+-
+-        <div class="row">
+-          <div class="field">
+-            <label for="password">Mật khẩu</label>
+-            <input id="password" name="password" type="password" placeholder="••••••••" autocomplete="new-password" required />
+-            <div class="hint">Tối thiểu 6 ký tự.</div>
+-          </div>
+-
+-          <div class="field">
+-            <label for="password2">Nhập lại mật khẩu</label>
+-            <input id="password2" name="password2" type="password" placeholder="••••••••" autocomplete="new-password" required />
+-          </div>
+-        </div>
++      <div class="field">
++        <label for="username">Bí danh mạo hiểm</label>
++        <input id="username" name="username" type="text" placeholder="vd: ranger_viet" autocomplete="username" required />
++        <div class="hint">4–20 ký tự, chỉ dùng chữ/số/dấu gạch dưới (_).</div>
++      </div>
+ 
++      <div class="row">
+         <div class="field">
+-          <label for="email">Gmail</label>
+-          <input id="email" name="email" type="email" placeholder="vd: abc@gmail.com" autocomplete="email" required />
++          <label for="password">Mật ngữ</label>
++          <input id="password" name="password" type="password" placeholder="••••••••" autocomplete="new-password" required />
++          <div class="hint">Tối thiểu 6 ký tự.</div>
+         </div>
+ 
+         <div class="field">
+-          <label for="phone">Số điện thoại</label>
+-          <input id="phone" name="phone" type="tel" placeholder="vd: 0901234567" autocomplete="tel" required />
+-          <div class="hint">Chỉ nhập số (10–11 số).</div>
++          <label for="password2">Xác nhận mật ngữ</label>
++          <input id="password2" name="password2" type="password" placeholder="••••••••" autocomplete="new-password" required />
+         </div>
++      </div>
+ 
+-        <div class="actions">
+-          <button class="btn btn-primary" type="submit">Tạo tài khoản</button>
+-          <a class="btn btn-secondary" href="index.html">Về trang chủ</a>
+-        </div>
+-      </form>
+-    </div>
++      <div class="field">
++        <label for="email">Thư ma pháp (Email)</label>
++        <input id="email" name="email" type="email" placeholder="vd: hero@gmail.com" autocomplete="email" required />
++      </div>
++
++      <div class="field">
++        <label for="phone">Liên lạc hội nhóm</label>
++        <input id="phone" name="phone" type="tel" placeholder="vd: 0901234567" autocomplete="tel" required />
++        <div class="hint">Chỉ nhập số, 10–11 ký tự.</div>
++      </div>
++
++      <div class="actions">
++        <button class="btn btn-primary" type="submit">Tạo hồ sơ tân binh</button>
++        <a class="btn btn-secondary" href="index.html">Về đại sảnh</a>
++      </div>
++    </form>
+   </div>
+ 
+-<script>
+-  const $ = (sel) => document.querySelector(sel);
+-  const form = $("#postForm");
+-  const errBox = $("#formError");
+-  const okBox = $("#formSuccess");
+-
+-  // default date = today
+-  const today = new Date();
+-  const yyyy = today.getFullYear();
+-  const mm = String(today.getMonth() + 1).padStart(2, "0");
+-  const dd = String(today.getDate()).padStart(2, "0");
+-  $("#date").value = `${yyyy}-${mm}-${dd}`;
+-
+-  function showError(msg) {
+-    okBox.style.display = "none";
+-    okBox.textContent = "";
+-    errBox.textContent = msg;
+-    errBox.style.display = "block";
+-  }
+-  function showSuccess(msg) {
+-    errBox.style.display = "none";
+-    errBox.textContent = "";
+-    okBox.textContent = msg;
+-    okBox.style.display = "block";
+-  }
+-
+-  function formatDateISOToVN(iso) {
+-    if (!iso) return "";
+-    const [y, m, d] = iso.split("-");
+-    return `${d}/${m}/${y}`;
+-  }
+-
+-  function buildPreview() {
+-    const title = $("#title").value.trim();
+-    const dateIso = $("#date").value;
+-    const category = $("#category").value;
+-    const excerpt = $("#excerpt").value.trim();
+-    const image = $("#image").value.trim() || "Assets/images/sample.png";
+-
+-    $("#previewImg").src = image;
+-    $("#previewTitle").textContent = title || "(Chưa có tiêu đề)";
+-    $("#previewMeta").textContent =
+-      `${formatDateISOToVN(dateIso)}${category ? " • " + category : ""}`;
+-    $("#previewExcerpt").textContent = excerpt || "—";
+-    $("#previewBox").style.display = "flex";
+-  }
+-
+-  $("#previewBtn").addEventListener("click", buildPreview);
+-
+-  form.addEventListener("submit", async (e) => {
+-    e.preventDefault();
+-
+-    const token = window.API?.getToken?.();
+-    if (!token) return showError("Bạn cần đăng nhập (admin/manager) để đăng bài.");
+-
+-    const title = $("#title").value.trim();
+-    const dateIso = $("#date").value;
+-    const category = $("#category").value;
+-    const image = $("#image").value.trim() || "Assets/images/sample.png";
+-    const author = $("#author").value.trim() || "Ban biên tập";
+-    const excerpt = $("#excerpt").value.trim();
+-    const content = $("#content").value.trim();
+-
+-    if (!title || title.length < 5) return showError("Tiêu đề tối thiểu 5 ký tự.");
+-    if (!dateIso) return showError("Vui lòng chọn ngày đăng.");
+-    if (!category) return showError("Vui lòng chọn danh mục.");
+-    if (!content || content.length < 20) return showError("Nội dung tối thiểu 20 ký tự.");
+-
+-    try {
+-      const payload = {
+-        title,
+-        content,
+-        excerpt,
+-        image,
+-        category,
+-        author,
+-        date: formatDateISOToVN(dateIso),
+-      };
+-
+-      const created = await window.API.apiCreateArticle(payload);
+-
+-      showSuccess("Đăng bài thành công! Đang mở bài viết…");
+-      buildPreview();
+-
+-      setTimeout(() => {
+-        window.location.href = `article.html?id=${encodeURIComponent(created.id)}`;
+-      }, 500);
+-    } catch (err) {
+-      console.error(err);
+-      showError(err?.message || "Đăng bài thất bại.");
++  <script>
++    const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
++
++    const form = document.getElementById("registerForm");
++    const errBox = document.getElementById("formError");
++    const okBox = document.getElementById("formSuccess");
++
++    function showError(msg) {
++      okBox.style.display = "none";
++      okBox.textContent = "";
++      errBox.textContent = msg;
++      errBox.style.display = "block";
++    }
++
++    function showSuccess(msg) {
++      errBox.style.display = "none";
++      errBox.textContent = "";
++      okBox.textContent = msg;
++      okBox.style.display = "block";
+     }
+-  });
+-</script>
+ 
++    function normalizeError(data) {
++      if (!data) return "Đăng ký thất bại.";
++      if (data.message) return data.message;
++
++      const fieldErrors = data?.errors?.fieldErrors;
++      if (fieldErrors && typeof fieldErrors === "object") {
++        const first = Object.values(fieldErrors).find((arr) => Array.isArray(arr) && arr.length);
++        if (first?.length) return first[0];
++      }
++      return "Dữ liệu không hợp lệ.";
++    }
++
++    form.addEventListener("submit", async (e) => {
++      e.preventDefault();
++
++      const username = document.getElementById("username").value.trim();
++      const password = document.getElementById("password").value;
++      const password2 = document.getElementById("password2").value;
++      const email = document.getElementById("email").value.trim();
++      const phone = document.getElementById("phone").value.trim();
++
++      if (username.length < 4 || username.length > 20) {
++        showError("Bí danh phải từ 4 đến 20 ký tự.");
++        return;
++      }
++
++      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
++        showError("Bí danh chỉ được dùng chữ/số/dấu gạch dưới (_).");
++        return;
++      }
++
++      if (password.length < 6) {
++        showError("Mật ngữ tối thiểu 6 ký tự.");
++        return;
++      }
++
++      if (password !== password2) {
++        showError("Mật ngữ xác nhận chưa khớp.");
++        return;
++      }
++
++      if (!/^\S+@\S+\.\S+$/.test(email)) {
++        showError("Email chưa đúng định dạng.");
++        return;
++      }
++
++      if (!/^[0-9]{10,11}$/.test(phone)) {
++        showError("Liên lạc hội nhóm phải gồm 10–11 chữ số.");
++        return;
++      }
++
++      try {
++        const res = await fetch(`${API_BASE}/api/auth/register`, {
++          method: "POST",
++          headers: { "Content-Type": "application/json" },
++          body: JSON.stringify({ username, password, email, phone }),
++        });
++
++        const data = await res.json().catch(() => ({}));
++        if (!res.ok) {
++          showError(normalizeError(data));
++          return;
++        }
++
++        showSuccess("Gia nhập hội quán thành công! Đang chuyển bạn đến đại sảnh...");
++        form.reset();
+ 
++        setTimeout(() => {
++          window.location.href = "index.html";
++        }, 1200);
++      } catch (err) {
++        console.error(err);
++        showError("Không kết nối được tới cổng đăng ký.");
++      }
++    });
++  </script>
+ </body>
+ </html>
+ 
+EOF
+)
