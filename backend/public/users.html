@@ -1,250 +1,424 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Danh sách tài khoản</title>
-  <style>
-    :root { --primary: #b30000; }
-    body{
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: #f6f6f6;
-      color: #111;
-    }
-    .wrap{ max-width: 980px; margin: 24px auto; padding: 0 16px; }
-    .card{
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 6px 24px rgba(0,0,0,.08);
-      overflow: hidden;
-    }
-    .head{
-      padding: 14px 16px;
-      border-top: 4px solid var(--primary);
-      border-bottom: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .title{ margin:0; font-size: 16px; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: .4px; }
-    .btn{
-      height: 38px;
-      padding: 0 12px;
-      border: 0;
-      border-radius: 10px;
-      background: var(--primary);
-      color: #fff;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .body{ padding: 14px 16px 18px; }
-    .hint{ font-size: 13px; color:#666; margin: 0 0 12px; }
-    .error{ display:none; background:#fff1f1; border:1px solid #ffd2d2; color:#b42318; padding:10px 12px; border-radius: 10px; font-size: 13px; }
-    table{ width: 100%; border-collapse: collapse; }
-    th, td{ text-align: left; padding: 10px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-    th{ font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color:#555; }
-    .tag{ display:inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; background:#f0f0f0; }
-    .tag.admin{ background: rgba(179,0,0,.12); color: #b30000; }
-    .tag.manager{ background: rgba(11,63,169,.12); color:#0b3fa9; }
-
-    .actions{ display:flex; gap:8px; align-items:center; }
-    .select{
-      height: 34px;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-      padding: 0 10px;
-      font-weight: 800;
-      background: #fff;
-    }
-    .btn-sm{
-      height: 34px;
-      padding: 0 10px;
-      border-radius: 10px;
-      border: 1px solid #e5e7eb;
-      background:#fff;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .btn-sm.primary{ background: var(--primary); color:#fff; border-color: rgba(0,0,0,.08); }
-    .btn-sm.danger{ background: #fff1f1; border-color: #ffd2d2; color:#b42318; }
-    .muted{ color:#6b7280; font-size: 12px; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <div class="head">
-        <h1 class="title">Danh sách tài khoản</h1>
-        <button class="btn" id="refreshBtn" type="button">Tải lại</button>
-      </div>
-
-      <div class="body">
-        <p class="hint">Trang này chỉ dành cho <b>admin</b>. Hãy đăng nhập bằng <b>admin / 123456</b> trước.</p>
-        <div class="error" id="err"></div>
-
-        <div style="overflow:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Role</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Created</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
-
-    function getToken(){
-      return localStorage.getItem("token");
-    }
-
-    function showError(msg){
-      const el = document.getElementById("err");
-      el.textContent = msg;
-      el.style.display = "block";
-    }
-
-    function clearError(){
-      const el = document.getElementById("err");
-      el.textContent = "";
-      el.style.display = "none";
-    }
-
-    function roleTag(role){
-      const r = String(role || "").toLowerCase();
-      const cls = r === "admin" ? "admin" : (r === "manager" ? "manager" : "");
-      return `<span class="tag ${cls}">${role || ""}</span>`;
-    }
-
-    function roleSelect(id, role){
-      const r = String(role || "user").toLowerCase();
-      return `
-        <select class="select role" data-id="${id}" aria-label="Role">
-          <option value="user" ${r === "user" ? "selected" : ""}>user</option>
-          <option value="manager" ${r === "manager" ? "selected" : ""}>manager</option>
-          <option value="admin" ${r === "admin" ? "selected" : ""}>admin</option>
-        </select>
-      `;
-    }
-
-    async function api(url, opts = {}){
-      const token = getToken();
-      const headers = Object.assign(
-        { "Content-Type": "application/json" },
-        opts.headers || {},
-        token ? { Authorization: `Bearer ${token}` } : {}
-      );
-      const res = await fetch(url, { ...opts, headers });
-      const data = await res.json().catch(() => ({}));
-      return { res, data };
-    }
-
-    async function loadUsers(){
-      clearError();
-      const token = getToken();
-      if (!token) {
-        showError("Chưa có token. Hãy đăng nhập (admin) trước.");
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_BASE}/api/auth/users`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          showError(data?.message || "Không tải được danh sách user");
-          return;
-        }
-
-        const tbody = document.getElementById("rows");
-        tbody.innerHTML = (data || []).map(u => `
-          <tr>
-            <td>${u.id}</td>
-            <td><b>${u.username}</b></td>
-            <td>
-              <div>${roleTag(u.role)}</div>
-              <div class="muted">Đổi role:</div>
-              ${roleSelect(u.id, u.role)}
-            </td>
-            <td>${u.email || ""}</td>
-            <td>${u.phone || ""}</td>
-            <td>${u.created_at || ""}</td>
-            <td>
-              <div class="actions">
-                <button class="btn-sm primary save-role" data-id="${u.id}" type="button">Lưu</button>
-                <button class="btn-sm danger del" data-id="${u.id}" type="button">Xóa</button>
-              </div>
-            </td>
-          </tr>
-        `).join("");
-
-        // Bind actions
-        document.querySelectorAll(".save-role").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            clearError();
-            const id = btn.getAttribute("data-id");
-            const sel = document.querySelector(`select.role[data-id="${id}"]`);
-            const role = sel ? sel.value : "user";
-
-            const ok = confirm(`Đổi role user #${id} thành "${role}"?`);
-            if (!ok) return;
-
-            const { res, data } = await api(`${API_BASE}/api/auth/users/${id}/role`, {
-              method: "PATCH",
-              body: JSON.stringify({ role })
-            });
-
-            if (!res.ok) {
-              showError(data?.message || "Cập nhật role thất bại");
-              return;
-            }
-
-            await loadUsers();
-          });
-        });
-
-        document.querySelectorAll(".del").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            clearError();
-            const id = btn.getAttribute("data-id");
-            const ok = confirm(`Xóa user #${id}? Hành động không thể hoàn tác.`);
-            if (!ok) return;
-
-            const { res, data } = await api(`${API_BASE}/api/auth/users/${id}`, {
-              method: "DELETE"
-            });
-
-            if (!res.ok) {
-              showError(data?.message || "Xóa user thất bại");
-              return;
-            }
-
-            await loadUsers();
-          });
-        });
-      } catch (err) {
-        console.error(err);
-        showError("Không kết nối được tới server.");
-      }
-    }
-
-    document.getElementById("refreshBtn").addEventListener("click", loadUsers);
-    loadUsers();
-  </script>
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/backend/public/users.html b/backend/public/users.html
+index e30ab83cbc7a14ef2e6135189bc059e883faf649..bd268f770d574c9736c84532338e66db46478a00 100644
+--- a/backend/public/users.html
++++ b/backend/public/users.html
+@@ -1,250 +1,349 @@
+ <!DOCTYPE html>
+ <html lang="vi">
+ <head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-  <title>Danh sách tài khoản</title>
++  <title>Danh bạ thành viên Guild</title>
+   <style>
+-    :root { --primary: #b30000; }
+-    body{
++    :root {
++      --bg-night: #1a1426;
++      --bg-night-2: #2a1936;
++      --parchment: #f3e5c3;
++      --ink: #352413;
++      --gold: #d9b978;
++      --purple: #3f2851;
++      --crimson: #7a1f2b;
++      --line: #ceb07a;
++    }
++
++    * { box-sizing: border-box; }
++
++    body {
+       margin: 0;
+-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+-      background: #f6f6f6;
+-      color: #111;
+-    }
+-    .wrap{ max-width: 980px; margin: 24px auto; padding: 0 16px; }
+-    .card{
+-      background: #fff;
+-      border-radius: 14px;
+-      box-shadow: 0 6px 24px rgba(0,0,0,.08);
++      min-height: 100vh;
++      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
++      background:
++        radial-gradient(circle at 85% 20%, rgba(217, 185, 120, 0.14), transparent 35%),
++        radial-gradient(circle at 0% 100%, rgba(122, 31, 43, 0.2), transparent 42%),
++        linear-gradient(140deg, var(--bg-night) 0%, var(--bg-night-2) 100%);
++      color: #f7ebcf;
++      padding: 22px 14px;
++    }
++
++    .wrap { max-width: 1080px; margin: 0 auto; }
++
++    .card {
++      background: linear-gradient(180deg, #f9efd7, var(--parchment));
++      border: 2px solid rgba(217, 185, 120, 0.8);
++      border-radius: 16px;
+       overflow: hidden;
++      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
++      color: var(--ink);
+     }
+-    .head{
+-      padding: 14px 16px;
+-      border-top: 4px solid var(--primary);
+-      border-bottom: 1px solid #eee;
++
++    .head {
++      padding: 16px;
++      background: linear-gradient(140deg, #43285a, #2d1a3a);
++      border-bottom: 2px solid rgba(217, 185, 120, 0.55);
+       display: flex;
+       align-items: center;
+       justify-content: space-between;
+       gap: 12px;
++      color: #f5e7c0;
+     }
+-    .title{ margin:0; font-size: 16px; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: .4px; }
+-    .btn{
++
++    .title {
++      margin: 0;
++      font-size: 18px;
++      font-family: Georgia, "Times New Roman", serif;
++      letter-spacing: 0.5px;
++      text-transform: uppercase;
++    }
++
++    .btn {
+       height: 38px;
+       padding: 0 12px;
+-      border: 0;
++      border: 1px solid rgba(0, 0, 0, 0.18);
+       border-radius: 10px;
+-      background: var(--primary);
+-      color: #fff;
++      background: linear-gradient(135deg, var(--crimson), #5f1922);
++      color: #fff5e2;
+       font-weight: 800;
+       cursor: pointer;
+     }
+-    .body{ padding: 14px 16px 18px; }
+-    .hint{ font-size: 13px; color:#666; margin: 0 0 12px; }
+-    .error{ display:none; background:#fff1f1; border:1px solid #ffd2d2; color:#b42318; padding:10px 12px; border-radius: 10px; font-size: 13px; }
+-    table{ width: 100%; border-collapse: collapse; }
+-    th, td{ text-align: left; padding: 10px 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+-    th{ font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color:#555; }
+-    .tag{ display:inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; background:#f0f0f0; }
+-    .tag.admin{ background: rgba(179,0,0,.12); color: #b30000; }
+-    .tag.manager{ background: rgba(11,63,169,.12); color:#0b3fa9; }
+-
+-    .actions{ display:flex; gap:8px; align-items:center; }
+-    .select{
+-      height: 34px;
++
++    .body { padding: 14px 16px 18px; }
++
++    .hint {
++      margin: 0 0 12px;
++      font-size: 13px;
++      color: #6a4c2d;
++      line-height: 1.4;
++    }
++
++    .error {
++      display: none;
++      margin-bottom: 12px;
++      background: #fde3e7;
++      border: 1px solid #f0b5bf;
++      color: #8f2234;
++      padding: 10px 12px;
+       border-radius: 10px;
+-      border: 1px solid #e5e7eb;
+-      padding: 0 10px;
++      font-size: 13px;
++    }
++
++    .table-wrap {
++      overflow: auto;
++      border: 1px solid rgba(87, 58, 29, 0.16);
++      border-radius: 12px;
++      background: #fff7e6;
++    }
++
++    table {
++      width: 100%;
++      border-collapse: collapse;
++      min-width: 860px;
++    }
++
++    th, td {
++      text-align: left;
++      padding: 10px;
++      border-bottom: 1px solid rgba(95, 63, 35, 0.18);
++      font-size: 14px;
++      vertical-align: top;
++    }
++
++    th {
++      font-size: 12px;
++      text-transform: uppercase;
++      letter-spacing: .4px;
++      color: #6b4a27;
++      background: rgba(217, 185, 120, 0.18);
++      position: sticky;
++      top: 0;
++      z-index: 1;
++    }
++
++    .tag {
++      display: inline-flex;
++      padding: 4px 8px;
++      border-radius: 999px;
++      font-size: 12px;
+       font-weight: 800;
+-      background: #fff;
++      background: #efe3c8;
++      color: #5e4325;
++      border: 1px solid #d5bb8a;
++      text-transform: capitalize;
+     }
+-    .btn-sm{
++
++    .tag.admin { background: rgba(122, 31, 43, 0.16); color: #7a1f2b; border-color: rgba(122, 31, 43, 0.35); }
++    .tag.manager { background: rgba(63, 40, 81, 0.16); color: #43285a; border-color: rgba(63, 40, 81, 0.35); }
++
++    .muted { color: #7a5734; font-size: 12px; margin-top: 6px; }
++
++    .actions { display: flex; gap: 8px; align-items: center; }
++
++    .select,
++    .btn-sm {
+       height: 34px;
+-      padding: 0 10px;
+       border-radius: 10px;
+-      border: 1px solid #e5e7eb;
+-      background:#fff;
+-      font-weight: 800;
++      border: 1px solid var(--line);
++      font-weight: 700;
++      background: #fff7e6;
++      color: #3d2a18;
++    }
++
++    .select { padding: 0 10px; min-width: 110px; }
++
++    .btn-sm {
++      padding: 0 10px;
+       cursor: pointer;
+     }
+-    .btn-sm.primary{ background: var(--primary); color:#fff; border-color: rgba(0,0,0,.08); }
+-    .btn-sm.danger{ background: #fff1f1; border-color: #ffd2d2; color:#b42318; }
+-    .muted{ color:#6b7280; font-size: 12px; }
++
++    .btn-sm.primary {
++      background: linear-gradient(140deg, var(--purple), #2f1d3f);
++      color: #f7edd0;
++      border-color: rgba(47, 29, 63, 0.65);
++    }
++
++    .btn-sm.danger {
++      background: #fce8eb;
++      color: #8f2234;
++      border-color: #efb9c1;
++    }
+   </style>
+ </head>
+ <body>
+   <div class="wrap">
+     <div class="card">
+       <div class="head">
+-        <h1 class="title">Danh sách tài khoản</h1>
+-        <button class="btn" id="refreshBtn" type="button">Tải lại</button>
++        <h1 class="title">Danh bạ thành viên Guild</h1>
++        <button class="btn" id="refreshBtn" type="button">Làm mới biên niên</button>
+       </div>
+ 
+       <div class="body">
+-        <p class="hint">Trang này chỉ dành cho <b>admin</b>. Hãy đăng nhập bằng <b>admin / 123456</b> trước.</p>
++        <p class="hint">Trang này chỉ dành cho <b>Guild Master (admin)</b>. Hãy đăng nhập bằng tài khoản quản trị để điều phối vai trò trong hội.</p>
+         <div class="error" id="err"></div>
+ 
+-        <div style="overflow:auto">
++        <div class="table-wrap">
+           <table>
+             <thead>
+               <tr>
+                 <th>ID</th>
+-                <th>Username</th>
+-                <th>Role</th>
++                <th>Adventurer</th>
++                <th>Vai trò</th>
+                 <th>Email</th>
+-                <th>Phone</th>
+-                <th>Created</th>
+-                <th>Thao tác</th>
++                <th>Liên lạc</th>
++                <th>Ngày gia nhập</th>
++                <th>Nghi thức quản trị</th>
+               </tr>
+             </thead>
+             <tbody id="rows"></tbody>
+           </table>
+         </div>
+       </div>
+     </div>
+   </div>
+ 
+   <script>
+     const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
+ 
+     function getToken(){
+       return localStorage.getItem("token");
+     }
+ 
+     function showError(msg){
+       const el = document.getElementById("err");
+       el.textContent = msg;
+       el.style.display = "block";
+     }
+ 
+     function clearError(){
+       const el = document.getElementById("err");
+       el.textContent = "";
+       el.style.display = "none";
+     }
+ 
+     function roleTag(role){
+       const r = String(role || "").toLowerCase();
+       const cls = r === "admin" ? "admin" : (r === "manager" ? "manager" : "");
+-      return `<span class="tag ${cls}">${role || ""}</span>`;
++      return `<span class="tag ${cls}">${role || "user"}</span>`;
+     }
+ 
+     function roleSelect(id, role){
+       const r = String(role || "user").toLowerCase();
+       return `
+         <select class="select role" data-id="${id}" aria-label="Role">
+           <option value="user" ${r === "user" ? "selected" : ""}>user</option>
+           <option value="manager" ${r === "manager" ? "selected" : ""}>manager</option>
+           <option value="admin" ${r === "admin" ? "selected" : ""}>admin</option>
+         </select>
+       `;
+     }
+ 
+     async function api(url, opts = {}){
+       const token = getToken();
+       const headers = Object.assign(
+         { "Content-Type": "application/json" },
+         opts.headers || {},
+         token ? { Authorization: `Bearer ${token}` } : {}
+       );
+       const res = await fetch(url, { ...opts, headers });
+       const data = await res.json().catch(() => ({}));
+       return { res, data };
+     }
+ 
+     async function loadUsers(){
+       clearError();
+       const token = getToken();
+       if (!token) {
+-        showError("Chưa có token. Hãy đăng nhập (admin) trước.");
++        showError("Chưa có token. Hãy đăng nhập bằng Guild Master trước.");
+         return;
+       }
+ 
+       try {
+         const res = await fetch(`${API_BASE}/api/auth/users`, {
+           headers: { Authorization: `Bearer ${token}` }
+         });
+ 
+         const data = await res.json().catch(() => ({}));
+         if (!res.ok) {
+-          showError(data?.message || "Không tải được danh sách user");
++          showError(data?.message || "Không tải được danh bạ thành viên");
+           return;
+         }
+ 
+         const tbody = document.getElementById("rows");
+         tbody.innerHTML = (data || []).map(u => `
+           <tr>
+             <td>${u.id}</td>
+             <td><b>${u.username}</b></td>
+             <td>
+               <div>${roleTag(u.role)}</div>
+-              <div class="muted">Đổi role:</div>
++              <div class="muted">Phong chức:</div>
+               ${roleSelect(u.id, u.role)}
+             </td>
+             <td>${u.email || ""}</td>
+             <td>${u.phone || ""}</td>
+             <td>${u.created_at || ""}</td>
+             <td>
+               <div class="actions">
+-                <button class="btn-sm primary save-role" data-id="${u.id}" type="button">Lưu</button>
+-                <button class="btn-sm danger del" data-id="${u.id}" type="button">Xóa</button>
++                <button class="btn-sm primary save-role" data-id="${u.id}" type="button">Phong chức</button>
++                <button class="btn-sm danger del" data-id="${u.id}" type="button">Khai trừ</button>
+               </div>
+             </td>
+           </tr>
+         `).join("");
+ 
+-        // Bind actions
+         document.querySelectorAll(".save-role").forEach(btn => {
+           btn.addEventListener("click", async () => {
+             clearError();
+             const id = btn.getAttribute("data-id");
+             const sel = document.querySelector(`select.role[data-id="${id}"]`);
+             const role = sel ? sel.value : "user";
+ 
+-            const ok = confirm(`Đổi role user #${id} thành "${role}"?`);
++            const ok = confirm(`Đổi vai trò thành viên #${id} thành "${role}"?`);
+             if (!ok) return;
+ 
+             const { res, data } = await api(`${API_BASE}/api/auth/users/${id}/role`, {
+               method: "PATCH",
+               body: JSON.stringify({ role })
+             });
+ 
+             if (!res.ok) {
+-              showError(data?.message || "Cập nhật role thất bại");
++              showError(data?.message || "Phong chức thất bại");
+               return;
+             }
+ 
+             await loadUsers();
+           });
+         });
+ 
+         document.querySelectorAll(".del").forEach(btn => {
+           btn.addEventListener("click", async () => {
+             clearError();
+             const id = btn.getAttribute("data-id");
+-            const ok = confirm(`Xóa user #${id}? Hành động không thể hoàn tác.`);
++            const ok = confirm(`Khai trừ thành viên #${id}? Hành động này không thể hoàn tác.`);
+             if (!ok) return;
+ 
+             const { res, data } = await api(`${API_BASE}/api/auth/users/${id}`, {
+               method: "DELETE"
+             });
+ 
+             if (!res.ok) {
+-              showError(data?.message || "Xóa user thất bại");
++              showError(data?.message || "Khai trừ thất bại");
+               return;
+             }
+ 
+             await loadUsers();
+           });
+         });
+       } catch (err) {
+         console.error(err);
+-        showError("Không kết nối được tới server.");
++        showError("Không kết nối được tới sảnh quản trị.");
+       }
+     }
+ 
+     document.getElementById("refreshBtn").addEventListener("click", loadUsers);
+     loadUsers();
+   </script>
+ </body>
+ </html>
+ 
+EOF
+)
