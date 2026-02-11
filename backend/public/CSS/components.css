@@ -111,7 +111,7 @@
 }
 
 .featured-main::before {
-  content: "Tin nổi bật";
+  content: "Phiêu lưu nổi bật";
   position: absolute;
   top: -14px;
   left: 16px;
@@ -160,7 +160,7 @@
 }
 
 .news-list::before {
-  content: "Tin mới";
+  content: "Bài viết mới";
   position: absolute;
   top: -14px;
   left: 16px;

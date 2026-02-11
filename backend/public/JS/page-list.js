@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ===== hiển thị "từ khóa bạn tìm là" =====
   const keywordBox = document.getElementById("searchKeyword");
   if (keywordBox && keywordRaw) {
-    keywordBox.innerHTML = `Từ khóa bạn tìm là: <b>${keywordRaw}</b>`;
+    keywordBox.innerHTML = `Từ khóa phiêu lưu của bạn: <b>${keywordRaw}</b>`;
     keywordBox.hidden = false;
   }
 
@@ -31,8 +31,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!items.length) {
       box.innerHTML = keyword
-        ? `Không tìm thấy bài viết nào với từ khóa "<b>${keywordRaw}</b>"`
-        : "Chưa có bài viết nào.";
+        ? `Không tìm thấy bài viết D&D nào với từ khóa "<b>${keywordRaw}</b>"`
+        : "Chưa có bài viết D&D nào.";
       return;
     }
 

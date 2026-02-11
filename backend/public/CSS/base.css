@@ -2,15 +2,14 @@
    ROOT VARIABLES
 ========================================================= */
 :root {
-  --primary: #8b1e1e;
-  --secondary: #003a8f;
+  --primary: #7a1127;
+  --secondary: #241a3a;
 
   --text-dark: #1f2937;
-  --text-muted: #6b7280;
+  --text-muted: #5b5566;
 
-  --bg-light: #f8fafc;
-  --border-light: #e5e7eb;
-
+  --bg-light: #1c1426;
+  --border-light: #5f4c72;
 }
 
 /* =========================================================
@@ -28,14 +27,16 @@ html, body {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: var(--text-dark);
 
-  background-image: url("../Assets/images/background.png");
+  background-image:
+    linear-gradient(rgba(20, 12, 32, 0.86), rgba(20, 12, 32, 0.86)),
+    url("../Assets/images/background.png");
   background-repeat: repeat;
   background-position: center top;
-  background-size: 11%;
+  background-size: 12%;
   padding-top: 0 !important;
 }
 
@@ -54,6 +55,7 @@ p {
 }
 
 h1, h2, h3, h4 {
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.35;
+  letter-spacing: 0.3px;
 }

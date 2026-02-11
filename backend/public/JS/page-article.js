@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const title = a.title || "(Không có tiêu đề)";
     const date = a.date || (a.created_at ? new Date(a.created_at).toLocaleDateString("vi-VN") : "");
-    const category = a.category || "Tin mới";
+    const category = a.category || "D&D News";
     const content = a.content || "(Không có nội dung)";
 
     document.title = title;
