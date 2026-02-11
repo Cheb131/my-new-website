@@ -1,331 +1,224 @@
-<script>
-  (function () {
-    let user = null;
-    try {
-      user = JSON.parse(localStorage.getItem("user") || "null");
-    } catch {}
-
-    const role = user?.role;
-    const allowed = role === "admin" || role === "manager";
-
-    if (!allowed) {
-      alert("Bạn không có quyền truy cập trang này.");
-      window.location.href = "index.html";
-    }
-  })();
-</script>
-
-
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Đăng bài viết</title>
-
-  <meta name="description" content="Đăng bài viết mới" />
-  <meta name="keywords" content="đăng bài, bài viết" />
-  <meta name="author" content="Trung tâm bồi dưỡng Chính trị phường Phú Nhuận" />
-  <meta name="robots" content="index, follow" />
-
-  <meta property="og:title" content="Đăng bài viết" />
-  <meta property="og:description" content="Đăng bài viết mới" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="Assets/images/og-image.jpg" />
-  <meta property="og:url" content="https://your-domain.vn" />
-
-  <link rel="stylesheet" href="/CSS/style.css" />
-
-  <style>
-    .post-editor { padding: 18px 0 32px; }
-    .post-editor .box {
-      background:#fff;
-      border-radius: 14px;
-      box-shadow: 0 6px 24px rgba(0,0,0,.08);
-      overflow:hidden;
-      border-top: 4px solid var(--primary, #b30000);
-    }
-    .post-editor .box-head{
-      padding: 14px 16px;
-      border-bottom: 1px solid #eee;
-      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
-      flex-wrap: wrap;
-    }
-    .post-editor .title{
-      margin:0;
-      font-size: 18px;
-      font-weight: 900;
-      color: var(--primary, #b30000);
-      text-transform: uppercase;
-      letter-spacing:.4px;
-    }
-    .post-editor .actions{ display:flex; gap:10px; flex-wrap:wrap; }
-    .post-editor .btn{
-      height: 38px;
-      border-radius: 10px;
-      border:0;
-      padding: 0 12px;
-      font-weight: 800;
-      cursor:pointer;
-      font-size: 14px;
-      text-decoration:none;
-      display:inline-flex; align-items:center; justify-content:center;
-    }
-    .post-editor .btn.primary{ background: var(--primary, #b30000); color:#fff; }
-    .post-editor .btn.ghost{ background:#f0f0f0; color:#111; }
-    .post-editor form{ padding: 16px; display:grid; gap: 12px; }
-    .post-editor label{ font-size: 13px; font-weight: 800; color:#333; display:block; margin-bottom: 6px; }
-    .post-editor input, .post-editor select, .post-editor textarea{
-      width:100%;
-      border-radius: 10px;
-      border: 1px solid #ddd;
-      outline:none;
-      font-size: 14px;
-      padding: 10px 12px;
-      box-sizing:border-box;
-      background:#fff;
-    }
-    .post-editor textarea{ min-height: 180px; resize: vertical; }
-    .post-editor .row{ display:grid; grid-template-columns: 2fr 1fr; gap:12px; }
-    .post-editor .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:12px; }
-    .post-editor .hint{ font-size: 12px; color:#777; margin-top: 6px; line-height: 1.35; }
-    .post-editor .msg{
-      display:none;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .post-editor .msg.error{ background:#fff1f1; border:1px solid #ffd2d2; color:#b42318; }
-    .post-editor .msg.ok{ background:#ecfdf3; border:1px solid #abefc6; color:#067647; }
-    .post-editor .preview{
-      display:none;
-      border: 1px dashed #ddd;
-      border-radius: 12px;
-      padding: 12px;
-      background:#fafafa;
-      gap: 12px;
-      align-items:flex-start;
-    }
-    .post-editor .preview img{
-      width: 140px; height: 100px; object-fit: cover;
-      border-radius: 10px;
-      border: 1px solid #e5e5e5;
-      background:#fff;
-    }
-    .post-editor .preview h3{ margin: 0 0 6px; font-size: 16px; }
-    .post-editor .meta{ font-size: 12px; color:#666; }
-
-    @media (max-width: 760px){
-      .post-editor .row, .post-editor .row3{ grid-template-columns: 1fr; }
-    }
-  </style>
-</head>
-
-<body>
-  <!-- ===== LOGIN MODAL ===== -->
-  <div class="login-modal" id="loginModal" hidden>
-    <div class="login-box">
-      <h3>Đăng nhập</h3>
-      <div id="loginError" style="display:none;color:#b91c1c;font-size:13px;margin:6px 0 10px;"></div>
-
-      <form id="loginForm">
-        <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
-        <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
-        <button type="submit">Đăng nhập</button>
-      </form>
-
-      <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
-    </div>
-  </div>
-
-  <div class="page-wrap">
-    <!-- ===== HEADER ===== -->
-    <header class="site-header">
-      <div class="header-banner">
-        <img src="Assets/images/banner.png" alt="Banner" class="banner-bg" />
-        <div class="banner-inner container">
-          <div class="logo-group left">
-            <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
-              <img src="Assets/icons/menu.png" alt="">
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- ===== NAV (GIỐNG INDEX) ===== -->
-    <nav class="main-nav" aria-label="Điều hướng chính">
-      <div class="container">
-        <ul class="nav-list">
-          <li><a href="index.html">Trang chủ</a></li>
-
-          <li class="has-dropdown">
-            <a href="list.html">Tin tức, sự kiện</a>
-            <ul class="dropdown">
-              <li><a href="#">Tin tức</a></li>
-              <li><a href="#">Sự kiện</a></li>
-              <li><a href="#">Thông báo</a></li>
-            </ul>
-          </li>
-
-          <li class="has-dropdown">
-            <a href="#">Kế hoạch học tập</a>
-            <ul class="dropdown">
-              <li><a href="#">2025</a></li>
-              <li><a href="#">2026</a></li>
-              <li><a href="#">2027</a></li>
-            </ul>
-          </li>
-
-          <li class="has-dropdown">
-            <a href="#">Không gian văn hóa Hồ Chí Minh</a>
-            <ul class="dropdown">
-              <li><a href="#">Không gian Chuyên đề</a></li>
-              <li><a href="#">Không gian làm theo lời Bác</a></li>
-              <li><a href="#">Không gian "Tiến bước dưới cờ sao"</a></li>
-              <li><a href="#">Không gian sinh hoạt</a></li>
-            </ul>
-          </li>
-
-          <li class="has-dropdown">
-            <a href="#">Không gian học tập</a>
-            <ul class="dropdown">
-              <li><a href="https://stbook.vn/">Tủ sách điện tử</a></li>
-              <li><a href="#">Tài nguyên học tập</a></li>
-            </ul>
-          </li>
-
-          <!-- USER -->
-          <li class="nav-user has-dropdown" id="navUserBox">
-            <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
-              <span class="nav-user-ico">
-                <img src="Assets/icons/account.png" alt="">
-              </span>
-              <span id="userName" class="nav-user-name" hidden></span>
-              <span class="nav-user-caret">▾</span>
-            </button>
-            <ul class="dropdown user-dropdown" id="userDropdown"></ul>
-          </li>
-
-          <!-- SEARCH -->
-          <li class="nav-search">
-            <form class="search" action="list.html" method="get" role="search">
-              <input type="search" name="q" class="search__input" placeholder="Tìm kiếm." aria-label="Tìm kiếm" required maxlength="80" />
-              <button class="search__btn" type="submit" aria-label="Tìm">
-                <img src="Assets/icons/search.png" alt="">
-              </button>
-            </form>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- ===== MAIN (GIỮ NGUYÊN) ===== -->
-    <main class="main-content">
-      <section class="post-editor">
-        <div class="container">
-          <div class="box">
-            <div class="box-head">
-              <div>
-                <h1 class="title">Đăng bài viết</h1>
-              </div>
-
-              <div class="actions">
-                <a class="btn ghost" href="index.html">Về trang chủ</a>
-                <a class="btn ghost" href="my-posts.html">Quản lý bài viết</a>
-              </div>
-            </div>
-
-            <form id="postForm" novalidate>
-              <div class="msg error" id="formError"></div>
-              <div class="msg ok" id="formSuccess"></div>
-
-              <div class="row">
-                <div>
-                  <label for="title">Tiêu đề</label>
-                  <input id="title" name="title" type="text" placeholder="Nhập tiêu đề bài viết..." required maxlength="140" />
-                  <div class="hint">Tối đa 140 ký tự.</div>
-                </div>
-
-                <div>
-                  <label for="date">Ngày đăng</label>
-                  <input id="date" name="date" type="date" required />
-                </div>
-              </div>
-
-              <div class="row3">
-                <div>
-                  <label for="category">Danh mục</label>
-                  <select id="category" name="category" required>
-                    <option value="">-- Chọn danh mục --</option>
-                    <option value="Tin tức">Tin tức</option>
-                    <option value="Sự kiện">Sự kiện</option>
-                    <option value="Thông báo">Thông báo</option>
-                    <option value="Hoạt động">Hoạt động</option>
-                    <option value="Tài liệu">Tài liệu</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label for="image">Ảnh (URL)</label>
-                  <input id="image" name="image" type="url" placeholder="vd: Assets/images/sample.png" />
-                  <div class="hint">Có thể để trống (dùng ảnh mặc định).</div>
-                </div>
-
-                <div>
-                  <label for="author">Tác giả</label>
-                  <input id="author" name="author" type="text" placeholder="vd: Ban biên tập" maxlength="60" />
-                </div>
-              </div>
-
-              <div>
-                <label for="excerpt">Mô tả ngắn</label>
-                <textarea id="excerpt" name="excerpt" placeholder="Nhập mô tả ngắn..." maxlength="240"></textarea>
-                <div class="hint">Tối đa 240 ký tự (tuỳ chọn).</div>
-              </div>
-
-              <div>
-                <label for="content">Nội dung</label>
-                <textarea id="content" name="content" placeholder="Nhập nội dung bài viết..." required></textarea>
-              </div>
-
-              <div class="preview" id="previewBox">
-                <img id="previewImg" alt="Preview" />
-                <div>
-                  <h3 id="previewTitle"></h3>
-                  <div class="meta" id="previewMeta"></div>
-                  <div class="hint" id="previewExcerpt"></div>
-                </div>
-              </div>
-
-              <div class="actions" style="justify-content:flex-end;">
-                <button class="btn ghost" type="button" id="previewBtn">Xem trước</button>
-                <button class="btn primary" type="submit">Đăng bài</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- ===== FOOTER ===== -->
-    <footer class="site-footer">
-      <div class="container footer-top">
-        <div class="footer-info">
-          <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
-          <p>Địa chỉ: 178 Lê Văn Sỹ, Phường Phú Nhuận, TP Hồ Chí Minh</p>
-          <p>Điện thoại: </p>
-          <p>Email: ttbdctpn@gmail.com</p>
-        </div>
-      </div>
-    </footer>
-  </div>
-
-  <!-- JS -->
-  <script src="/JS/menu.js"></script>
-  <script src="/JS/core.js"></script>
-  <script src="/JS/page-post.js"></script>
-
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/backend/public/post.html b/backend/public/post.html
+index a0c1109f75cca56e30515d3c08219e3188d5992e..1a2be708ad61c7a25832f21e6b84b766559a783a 100644
+--- a/backend/public/post.html
++++ b/backend/public/post.html
+@@ -139,151 +139,151 @@
+     </div>
+   </div>
+ 
+   <div class="page-wrap">
+     <!-- ===== HEADER ===== -->
+     <header class="site-header">
+       <div class="header-banner">
+         <img src="Assets/images/banner.png" alt="Banner" class="banner-bg" />
+         <div class="banner-inner container">
+           <div class="logo-group left">
+             <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
+               <img src="Assets/icons/menu.png" alt="">
+             </button>
+           </div>
+         </div>
+       </div>
+     </header>
+ 
+     <!-- ===== NAV (GIỐNG INDEX) ===== -->
+     <nav class="main-nav" aria-label="Điều hướng chính">
+       <div class="container">
+         <ul class="nav-list">
+           <li><a href="index.html">Trang chủ</a></li>
+ 
+           <li class="has-dropdown">
+-            <a href="list.html">Tin tức, sự kiện</a>
++            <a href="list.html">Nhiệm vụ & Sự kiện</a>
+             <ul class="dropdown">
+-              <li><a href="#">Tin tức</a></li>
+-              <li><a href="#">Sự kiện</a></li>
+-              <li><a href="#">Thông báo</a></li>
++              <li><a href="#">Nhiệm vụ mới</a></li>
++              <li><a href="#">Sự kiện guild</a></li>
++              <li><a href="#">Thông cáo từ hội quán</a></li>
+             </ul>
+           </li>
+ 
+           <li class="has-dropdown">
+-            <a href="#">Kế hoạch học tập</a>
++            <a href="#">Sổ tay huấn luyện</a>
+             <ul class="dropdown">
+-              <li><a href="#">2025</a></li>
++              <li><a href="character.html">Thông tin nhân vật</a></li>
+               <li><a href="#">2026</a></li>
+               <li><a href="#">2027</a></li>
+             </ul>
+           </li>
+ 
+           <li class="has-dropdown">
+-            <a href="#">Không gian văn hóa Hồ Chí Minh</a>
++            <a href="#">Kho tư liệu cổ thư</a>
+             <ul class="dropdown">
+-              <li><a href="#">Không gian Chuyên đề</a></li>
+-              <li><a href="#">Không gian làm theo lời Bác</a></li>
+-              <li><a href="#">Không gian "Tiến bước dưới cờ sao"</a></li>
+-              <li><a href="#">Không gian sinh hoạt</a></li>
++              <li><a href="#">Bách khoa quái vật</a></li>
++              <li><a href="#">Bản đồ lục địa</a></li>
++              <li><a href="#">Luật chơi tân thủ</a></li>
++              <li><a href="#">Hướng dẫn DM</a></li>
+             </ul>
+           </li>
+ 
+           <li class="has-dropdown">
+-            <a href="#">Không gian học tập</a>
++            <a href="#">Kho học cụ</a>
+             <ul class="dropdown">
+-              <li><a href="https://stbook.vn/">Tủ sách điện tử</a></li>
+-              <li><a href="#">Tài nguyên học tập</a></li>
++              <li><a href="https://stbook.vn/">Thư viện phép thuật</a></li>
++              <li><a href="#">Tài nguyên chiến dịch</a></li>
+             </ul>
+           </li>
+ 
+           <!-- USER -->
+           <li class="nav-user has-dropdown" id="navUserBox">
+             <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+               <span class="nav-user-ico">
+                 <img src="Assets/icons/account.png" alt="">
+               </span>
+               <span id="userName" class="nav-user-name" hidden></span>
+               <span class="nav-user-caret">▾</span>
+             </button>
+             <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+           </li>
+ 
+           <!-- SEARCH -->
+           <li class="nav-search">
+             <form class="search" action="list.html" method="get" role="search">
+-              <input type="search" name="q" class="search__input" placeholder="Tìm kiếm." aria-label="Tìm kiếm" required maxlength="80" />
++              <input type="search" name="q" class="search__input" placeholder="Tìm nhiệm vụ, quái vật, vật phẩm..." aria-label="Tìm kiếm" required maxlength="80" />
+               <button class="search__btn" type="submit" aria-label="Tìm">
+                 <img src="Assets/icons/search.png" alt="">
+               </button>
+             </form>
+           </li>
+         </ul>
+       </div>
+     </nav>
+ 
+     <!-- ===== MAIN (GIỮ NGUYÊN) ===== -->
+     <main class="main-content">
+       <section class="post-editor">
+         <div class="container">
+           <div class="box">
+             <div class="box-head">
+               <div>
+                 <h1 class="title">Đăng bài viết</h1>
+               </div>
+ 
+               <div class="actions">
+                 <a class="btn ghost" href="index.html">Về trang chủ</a>
+                 <a class="btn ghost" href="my-posts.html">Quản lý bài viết</a>
+               </div>
+             </div>
+ 
+             <form id="postForm" novalidate>
+               <div class="msg error" id="formError"></div>
+               <div class="msg ok" id="formSuccess"></div>
+ 
+               <div class="row">
+                 <div>
+                   <label for="title">Tiêu đề</label>
+                   <input id="title" name="title" type="text" placeholder="Nhập tiêu đề bài viết..." required maxlength="140" />
+                   <div class="hint">Tối đa 140 ký tự.</div>
+                 </div>
+ 
+                 <div>
+                   <label for="date">Ngày đăng</label>
+                   <input id="date" name="date" type="date" required />
+                 </div>
+               </div>
+ 
+               <div class="row3">
+                 <div>
+                   <label for="category">Danh mục</label>
+                   <select id="category" name="category" required>
+                     <option value="">-- Chọn danh mục --</option>
+-                    <option value="Tin tức">Tin tức</option>
+-                    <option value="Sự kiện">Sự kiện</option>
+-                    <option value="Thông báo">Thông báo</option>
++                    <option value="Nhiệm vụ mới">Nhiệm vụ mới</option>
++                    <option value="Sự kiện guild">Sự kiện guild</option>
++                    <option value="Thông cáo từ hội quán">Thông cáo từ hội quán</option>
+                     <option value="Hoạt động">Hoạt động</option>
+                     <option value="Tài liệu">Tài liệu</option>
+                   </select>
+                 </div>
+ 
+                 <div>
+                   <label for="image">Ảnh (URL)</label>
+                   <input id="image" name="image" type="url" placeholder="vd: Assets/images/sample.png" />
+                   <div class="hint">Có thể để trống (dùng ảnh mặc định).</div>
+                 </div>
+ 
+                 <div>
+                   <label for="author">Tác giả</label>
+                   <input id="author" name="author" type="text" placeholder="vd: Ban biên tập" maxlength="60" />
+                 </div>
+               </div>
+ 
+               <div>
+                 <label for="excerpt">Mô tả ngắn</label>
+                 <textarea id="excerpt" name="excerpt" placeholder="Nhập mô tả ngắn..." maxlength="240"></textarea>
+                 <div class="hint">Tối đa 240 ký tự (tuỳ chọn).</div>
+               </div>
+ 
+               <div>
+                 <label for="content">Nội dung</label>
+@@ -291,41 +291,41 @@
+               </div>
+ 
+               <div class="preview" id="previewBox">
+                 <img id="previewImg" alt="Preview" />
+                 <div>
+                   <h3 id="previewTitle"></h3>
+                   <div class="meta" id="previewMeta"></div>
+                   <div class="hint" id="previewExcerpt"></div>
+                 </div>
+               </div>
+ 
+               <div class="actions" style="justify-content:flex-end;">
+                 <button class="btn ghost" type="button" id="previewBtn">Xem trước</button>
+                 <button class="btn primary" type="submit">Đăng bài</button>
+               </div>
+             </form>
+           </div>
+         </div>
+       </section>
+     </main>
+ 
+     <!-- ===== FOOTER ===== -->
+     <footer class="site-footer">
+       <div class="container footer-top">
+         <div class="footer-info">
+-          <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
+-          <p>Địa chỉ: 178 Lê Văn Sỹ, Phường Phú Nhuận, TP Hồ Chí Minh</p>
+-          <p>Điện thoại: </p>
+-          <p>Email: ttbdctpn@gmail.com</p>
++          <p class="footer-title">© HỘI QUÁN DUNGEONS & DRAGONS VIỆT NAM</p>
++          <p>Địa chỉ: Phòng hội tầng hầm - Thành Greyhawk</p>
++          <p>Liên lạc: +84 999 20D20</p>
++          <p>Email: guildmaster@dnd-vietnam.vn</p>
+         </div>
+       </div>
+     </footer>
+   </div>
+ 
+   <!-- JS -->
+   <script src="/JS/menu.js"></script>
+   <script src="/JS/core.js"></script>
+   <script src="/JS/page-post.js"></script>
+ 
+ </body>
+ </html>
+ 
+EOF
+)
