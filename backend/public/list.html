@@ -1,156 +1,157 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Danh sách bài viết</title>
-
-  <meta name="description" content="Danh sách bài viết" />
-  <meta name="keywords" content="tin tức, sự kiện" />
-  <meta name="robots" content="index, follow" />
-
-  <link rel="stylesheet" href="/CSS/style.css" />
-</head>
-
-<body>
-  <!-- ===== LOGIN MODAL ===== -->
-  <div class="login-modal" id="loginModal" hidden>
-    <div class="login-box">
-      <h3>Đăng nhập</h3>
-      <div id="loginError" style="display:none;color:#b91c1c;font-size:13px;margin:6px 0 10px;"></div>
-
-      <form id="loginForm">
-        <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
-        <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
-        <button type="submit">Đăng nhập</button>
-      </form>
-
-      <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
-    </div>
-  </div>
-
-  <div class="page-wrap">
-    <!-- ===== HEADER ===== -->
-    <header class="site-header">
-      <div class="header-banner">
-        <img src="/Assets/images/banner.png" alt="Banner" class="banner-bg" />
-        <div class="banner-inner container">
-          <div class="logo-group left">
-            <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
-              <img src="/Assets/icons/menu.png" alt="">
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <!-- ===== NAV ===== -->
-    <nav class="main-nav" aria-label="Điều hướng chính">
-      <div class="container">
-        <ul class="nav-list">
-          <li><a href="/index.html">Trang chủ</a></li>
-
-          <li class="has-dropdown active">
-            <a href="/list.html">Tin tức, sự kiện</a>
-            <ul class="dropdown">
-              <li><a href="#">Tin tức</a></li>
-              <li><a href="#">Sự kiện</a></li>
-              <li><a href="#">Thông báo</a></li>
-            </ul>
-          </li>
-
-          <li class="has-dropdown">
-            <a href="#">Kế hoạch học tập</a>
-            <ul class="dropdown">
-              <li><a href="#">2025</a></li>
-              <li><a href="#">2026</a></li>
-              <li><a href="#">2027</a></li>
-            </ul>
-          </li>
-
-          <li class="has-dropdown">
-            <a href="#">Không gian văn hóa Hồ Chí Minh</a>
-            <ul class="dropdown">
-              <li><a href="#">Không gian Chuyên đề</a></li>
-              <li><a href="#">Không gian làm theo lời Bác</a></li>
-              <li><a href="#">Không gian "Tiến bước dưới cờ sao"</a></li>
-              <li><a href="#">Không gian sinh hoạt</a></li>
-            </ul>
-          </li>
-
-          <li class="has-dropdown">
-            <a href="#">Không gian học tập</a>
-            <ul class="dropdown">
-              <li><a href="https://stbook.vn/">Tủ sách điện tử</a></li>
-              <li><a href="#">Tài nguyên học tập</a></li>
-            </ul>
-          </li>
-
-          <!-- USER -->
-          <li class="nav-user has-dropdown" id="navUserBox">
-            <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
-              <span class="nav-user-ico">
-                <img src="/Assets/icons/account.png" alt="">
-              </span>
-              <span id="userName" class="nav-user-name" hidden></span>
-              <span class="nav-user-caret">▾</span>
-            </button>
-            <ul class="dropdown user-dropdown" id="userDropdown"></ul>
-          </li>
-
-          <!-- SEARCH -->
-          <li class="nav-search">
-            <form class="search" action="/list.html" method="get" role="search">
-              <input
-                type="search"
-                name="q"
-                class="search__input"
-                placeholder="Tìm kiếm."
-                aria-label="Tìm kiếm"
-                required
-                maxlength="80"
-              />
-              <button class="search__btn" type="submit" aria-label="Tìm">
-                <img src="/Assets/icons/search.png" alt="">
-              </button>
-            </form>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- ===== MAIN ===== -->
-    <main class="main-content">
-      <section class="list-page">
-        <div class="container">
-          <header class="list-page__header">
-            <h2 class="list-page__title">Tin tức</h2>
-              <p id="searchKeyword" class="search-keyword" hidden></p>
-          </header>
-
-          
-          <div class="post-list" id="newsList"></div>
-          <div class="list-page__pager" id="pager"></div>
-        </div>
-      </section>
-    </main>
-
-    <!-- ===== FOOTER ===== -->
-    <footer class="site-footer">
-      <div class="container footer-top">
-        <div class="footer-info">
-          <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
-          <p>Địa chỉ: 178 Lê Văn Sỹ, Phường Phú Nhuận, TP Hồ Chí Minh</p>
-          <p>Điện thoại: </p>
-          <p>Email: ttbdctpn@gmail.com</p>
-        </div>
-      </div>
-    </footer>
-  </div>
-
-  <!-- JS -->
-  <script src="/JS/menu.js"></script>
-  <script src="/JS/core.js"></script>
-  <script src="/JS/page-list.js"></script>
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/backend/public/list.html b/backend/public/list.html
+index ee4e8e8a17526f5dd0e5894e0f38b62d81e56f6a..0debcc6b32709112c1014dcd84588179d012d44e 100644
+--- a/backend/public/list.html
++++ b/backend/public/list.html
+@@ -29,128 +29,128 @@
+     </div>
+   </div>
+ 
+   <div class="page-wrap">
+     <!-- ===== HEADER ===== -->
+     <header class="site-header">
+       <div class="header-banner">
+         <img src="/Assets/images/banner.png" alt="Banner" class="banner-bg" />
+         <div class="banner-inner container">
+           <div class="logo-group left">
+             <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
+               <img src="/Assets/icons/menu.png" alt="">
+             </button>
+           </div>
+         </div>
+       </div>
+     </header>
+ 
+     <!-- ===== NAV ===== -->
+     <nav class="main-nav" aria-label="Điều hướng chính">
+       <div class="container">
+         <ul class="nav-list">
+           <li><a href="/index.html">Trang chủ</a></li>
+ 
+           <li class="has-dropdown active">
+-            <a href="/list.html">Tin tức, sự kiện</a>
++            <a href="/list.html">Nhiệm vụ & Sự kiện</a>
+             <ul class="dropdown">
+-              <li><a href="#">Tin tức</a></li>
+-              <li><a href="#">Sự kiện</a></li>
+-              <li><a href="#">Thông báo</a></li>
++              <li><a href="#">Nhiệm vụ mới</a></li>
++              <li><a href="#">Sự kiện guild</a></li>
++              <li><a href="#">Thông cáo từ hội quán</a></li>
+             </ul>
+           </li>
+ 
+           <li class="has-dropdown">
+-            <a href="#">Kế hoạch học tập</a>
++            <a href="#">Sổ tay huấn luyện</a>
+             <ul class="dropdown">
+-              <li><a href="#">2025</a></li>
++              <li><a href="character.html">Thông tin nhân vật</a></li>
+               <li><a href="#">2026</a></li>
+               <li><a href="#">2027</a></li>
+             </ul>
+           </li>
+ 
+           <li class="has-dropdown">
+-            <a href="#">Không gian văn hóa Hồ Chí Minh</a>
++            <a href="#">Kho tư liệu cổ thư</a>
+             <ul class="dropdown">
+-              <li><a href="#">Không gian Chuyên đề</a></li>
+-              <li><a href="#">Không gian làm theo lời Bác</a></li>
+-              <li><a href="#">Không gian "Tiến bước dưới cờ sao"</a></li>
+-              <li><a href="#">Không gian sinh hoạt</a></li>
++              <li><a href="#">Bách khoa quái vật</a></li>
++              <li><a href="#">Bản đồ lục địa</a></li>
++              <li><a href="#">Luật chơi tân thủ</a></li>
++              <li><a href="#">Hướng dẫn DM</a></li>
+             </ul>
+           </li>
+ 
+           <li class="has-dropdown">
+-            <a href="#">Không gian học tập</a>
++            <a href="#">Kho học cụ</a>
+             <ul class="dropdown">
+-              <li><a href="https://stbook.vn/">Tủ sách điện tử</a></li>
+-              <li><a href="#">Tài nguyên học tập</a></li>
++              <li><a href="https://stbook.vn/">Thư viện phép thuật</a></li>
++              <li><a href="#">Tài nguyên chiến dịch</a></li>
+             </ul>
+           </li>
+ 
+           <!-- USER -->
+           <li class="nav-user has-dropdown" id="navUserBox">
+             <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+               <span class="nav-user-ico">
+                 <img src="/Assets/icons/account.png" alt="">
+               </span>
+               <span id="userName" class="nav-user-name" hidden></span>
+               <span class="nav-user-caret">▾</span>
+             </button>
+             <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+           </li>
+ 
+           <!-- SEARCH -->
+           <li class="nav-search">
+             <form class="search" action="/list.html" method="get" role="search">
+               <input
+                 type="search"
+                 name="q"
+                 class="search__input"
+-                placeholder="Tìm kiếm."
++                placeholder="Tìm nhiệm vụ, quái vật, vật phẩm..."
+                 aria-label="Tìm kiếm"
+                 required
+                 maxlength="80"
+               />
+               <button class="search__btn" type="submit" aria-label="Tìm">
+                 <img src="/Assets/icons/search.png" alt="">
+               </button>
+             </form>
+           </li>
+         </ul>
+       </div>
+     </nav>
+ 
+     <!-- ===== MAIN ===== -->
+     <main class="main-content">
+       <section class="list-page">
+         <div class="container">
+           <header class="list-page__header">
+-            <h2 class="list-page__title">Tin tức</h2>
++            <h2 class="list-page__title">Nhiệm vụ mới</h2>
+               <p id="searchKeyword" class="search-keyword" hidden></p>
+           </header>
+ 
+           
+           <div class="post-list" id="newsList"></div>
+           <div class="list-page__pager" id="pager"></div>
+         </div>
+       </section>
+     </main>
+ 
+     <!-- ===== FOOTER ===== -->
+     <footer class="site-footer">
+       <div class="container footer-top">
+         <div class="footer-info">
+-          <p class="footer-title">© TRUNG TÂM CHÍNH TRỊ PHƯỜNG PHÚ NHUẬN</p>
+-          <p>Địa chỉ: 178 Lê Văn Sỹ, Phường Phú Nhuận, TP Hồ Chí Minh</p>
+-          <p>Điện thoại: </p>
+-          <p>Email: ttbdctpn@gmail.com</p>
++          <p class="footer-title">© HỘI QUÁN DUNGEONS & DRAGONS VIỆT NAM</p>
++          <p>Địa chỉ: Phòng hội tầng hầm - Thành Greyhawk</p>
++          <p>Liên lạc: +84 999 20D20</p>
++          <p>Email: guildmaster@dnd-vietnam.vn</p>
+         </div>
+       </div>
+     </footer>
+   </div>
+ 
+   <!-- JS -->
+   <script src="/JS/menu.js"></script>
+   <script src="/JS/core.js"></script>
+   <script src="/JS/page-list.js"></script>
+ </body>
+ </html>
+ 
+EOF
+)
