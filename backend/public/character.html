@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thông tin nhân vật | DnD Guild Chronicle</title>
+  <meta name="description" content="Trang hồ sơ nhân vật Dungeons & Dragons với chỉ số, kỹ năng, trang bị và nhật ký hành trình." />
+  <link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body>
+  <div class="login-modal" id="loginModal" hidden>
+    <div class="login-box">
+      <h3>Đăng nhập</h3>
+      <div id="loginError" style="display:none;color:#b91c1c;font-size:13px;margin:6px 0 10px;"></div>
+      <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
+        <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
+        <button type="submit">Đăng nhập</button>
+      </form>
+      <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <header class="site-header">
+      <div class="header-banner">
+        <img src="/Assets/images/banner.png" alt="Banner" class="banner-bg" />
+        <div class="banner-inner container">
+          <div class="logo-group left">
+            <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
+              <img src="Assets/icons/menu.png" alt="">
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="main-nav" aria-label="Điều hướng chính">
+      <div class="container">
+        <ul class="nav-list">
+          <li><a href="index.html">Trang chủ</a></li>
+
+          <li class="has-dropdown">
+            <a href="list.html">Nhiệm vụ & Sự kiện</a>
+            <ul class="dropdown">
+              <li><a href="#">Nhiệm vụ mới</a></li>
+              <li><a href="#">Sự kiện guild</a></li>
+              <li><a href="#">Thông cáo từ hội quán</a></li>
+            </ul>
+          </li>
+
+          <li class="has-dropdown active">
+            <a href="#">Sổ tay huấn luyện</a>
+            <ul class="dropdown">
+              <li><a href="character.html">Thông tin nhân vật</a></li>
+              <li><a href="#">2026</a></li>
+              <li><a href="#">2027</a></li>
+            </ul>
+          </li>
+
+          <li class="has-dropdown">
+            <a href="#">Kho tư liệu cổ thư</a>
+            <ul class="dropdown">
+              <li><a href="#">Bách khoa quái vật</a></li>
+              <li><a href="#">Bản đồ lục địa</a></li>
+              <li><a href="#">Luật chơi tân thủ</a></li>
+              <li><a href="#">Hướng dẫn DM</a></li>
+            </ul>
+          </li>
+
+          <li class="has-dropdown">
+            <a href="#">Kho học cụ</a>
+            <ul class="dropdown">
+              <li><a href="https://stbook.vn/">Thư viện phép thuật</a></li>
+              <li><a href="#">Tài nguyên chiến dịch</a></li>
+            </ul>
+          </li>
+
+          <li class="nav-user has-dropdown" id="navUserBox">
+            <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+              <span class="nav-user-ico"><img src="Assets/icons/account.png" alt=""></span>
+              <span id="userName" class="nav-user-name" hidden></span>
+              <span class="nav-user-caret">▾</span>
+            </button>
+            <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+          </li>
+
+          <li class="nav-search">
+            <form class="search" action="list.html" method="get" role="search">
+              <input type="search" name="q" class="search__input" placeholder="Tìm nhiệm vụ, quái vật, vật phẩm..." aria-label="Tìm kiếm" required maxlength="80" />
+              <div class="search-results" hidden></div>
+              <button class="search__btn" type="submit" aria-label="Tìm"><img src="Assets/icons/search.png" alt=""></button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <main class="main-content">
+      <section class="character-page">
+        <div class="container">
+          <header class="character-hero">
+            <p class="character-hero__badge">Nhân vật chiến dịch</p>
+            <h1>Arannis Nightbloom — Eladrin Ranger (Cấp 7)</h1>
+            <p>Thợ săn màn đêm thuộc hội Emerald Enclave, chuyên do thám hầm ngục và truy dấu quái vật cổ xưa.</p>
+          </header>
+
+          <section class="character-grid">
+            <article class="character-card character-card--profile">
+              <img src="/Assets/images/sample.png" alt="Chân dung Arannis Nightbloom" class="character-avatar" />
+              <div>
+                <h2>Thông tin cơ bản</h2>
+                <ul class="character-list">
+                  <li><strong>Chủng tộc:</strong> Eladrin</li>
+                  <li><strong>Lớp:</strong> Ranger (Gloom Stalker)</li>
+                  <li><strong>Xu hướng:</strong> Neutral Good</li>
+                  <li><strong>Bối cảnh:</strong> Outlander</li>
+                  <li><strong>Điểm kinh nghiệm:</strong> 25,100 XP</li>
+                </ul>
+              </div>
+            </article>
+
+            <article class="character-card">
+              <h2>Chỉ số thuộc tính</h2>
+              <div class="stat-grid">
+                <div><span>STR</span><b>12</b></div>
+                <div><span>DEX</span><b>18</b></div>
+                <div><span>CON</span><b>14</b></div>
+                <div><span>INT</span><b>11</b></div>
+                <div><span>WIS</span><b>16</b></div>
+                <div><span>CHA</span><b>10</b></div>
+              </div>
+            </article>
+
+            <article class="character-card">
+              <h2>Chỉ số chiến đấu</h2>
+              <ul class="character-list">
+                <li><strong>HP tối đa:</strong> 61</li>
+                <li><strong>Armor Class:</strong> 16</li>
+                <li><strong>Tốc độ:</strong> 35 ft</li>
+                <li><strong>Initiative:</strong> +4</li>
+                <li><strong>Passive Perception:</strong> 17</li>
+              </ul>
+            </article>
+
+            <article class="character-card">
+              <h2>Kỹ năng nổi bật</h2>
+              <div class="chip-group">
+                <span>Stealth +8</span>
+                <span>Survival +6</span>
+                <span>Perception +7</span>
+                <span>Athletics +4</span>
+                <span>Investigation +3</span>
+              </div>
+            </article>
+
+            <article class="character-card">
+              <h2>Trang bị mang theo</h2>
+              <ul class="character-list">
+                <li>Cung dài +1 (1d8 + 5 piercing)</li>
+                <li>2 đoản kiếm</li>
+                <li>Áo giáp da cứng khắc rune</li>
+                <li>Bùa hộ mệnh chống poison</li>
+                <li>2 bình Greater Healing Potion</li>
+              </ul>
+            </article>
+
+            <article class="character-card">
+              <h2>Nhật ký phiêu lưu gần nhất</h2>
+              <ol class="character-log">
+                <li>Tiêu diệt Beholder con tại tàn tích Black Spire.</li>
+                <li>Giải mã bản đồ cổ dẫn tới hầm ngục Whispering Vault.</li>
+                <li>Cứu nhóm tân binh khỏi bẫy rune ở tầng 3.</li>
+              </ol>
+            </article>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-top">
+        <div class="footer-info">
+          <p class="footer-title">© HỘI QUÁN DUNGEONS & DRAGONS VIỆT NAM</p>
+          <p>Địa chỉ: Phòng hội tầng hầm - Thành Greyhawk</p>
+          <p>Liên lạc: +84 999 20D20</p>
+          <p>Email: guildmaster@dnd-vietnam.vn</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/JS/menu.js"></script>
+  <script src="/JS/core.js"></script>
+</body>
+</html>
