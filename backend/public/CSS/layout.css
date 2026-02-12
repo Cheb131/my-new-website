@@ -4,9 +4,10 @@
 .page-wrap {
   max-width: 1200px;
   margin: 0 auto;
-  background: #fff;
+  background: linear-gradient(180deg, #fff9f1, #f8efe1);
   border-radius: 12px;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.15);
+  border: 1px solid rgba(212, 160, 23, 0.28);
+  box-shadow: 0 18px 44px rgba(2, 6, 23, 0.45);
   overflow: visible;
 }
 

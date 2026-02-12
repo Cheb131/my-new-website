@@ -156,6 +156,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const isAdmin = role === "admin";
     const isManager = role === "manager";
 
+    mnavList.appendChild(makeLi("Thông tin nhân vật", "character.html").li);
+
+    if (isAdmin) {
+      mnavList.appendChild(makeLi("Tạo nhân vật (Admin)", "character-create.html").li);
+    }
+
     if (isAdmin || isManager) {
       mnavList.appendChild(makeLi("Đăng bài viết", "post.html").li);
     }

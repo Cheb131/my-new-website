@@ -500,6 +500,8 @@ window.API.clearToken = clearToken;
           const isManager = role === "manager";
 
           userDropdown.innerHTML = `
+            <li><a href="character.html">Thông tin nhân vật</a></li>
+            ${isAdmin ? `<li><a href="character-create.html">Tạo nhân vật (Admin)</a></li>` : ""}
             ${(isAdmin || isManager) ? `<li><a href="post.html">Đăng bài viết</a></li>` : ""}
             ${isAdmin ? `<li><a href="my-posts.html">Quản lý bài viết</a></li>` : ""}
             <li><a href="#" id="logoutAction">Đăng xuất</a></li>

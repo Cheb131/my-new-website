@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tạo nhân vật (Admin) | DnD Guild Chronicle</title>
+  <meta name="description" content="Trang tạo nhân vật mới, chỉ dành cho tài khoản admin." />
+  <link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body>
+  <div class="page-wrap">
+    <main class="main-content">
+      <section class="character-create-page">
+        <div class="container">
+          <div class="character-create-card">
+            <h1>Tạo nhân vật mới (Admin)</h1>
+            <p class="create-note">Chỉ tài khoản <strong>admin</strong> có quyền tạo nhân vật. Nhân vật sau khi tạo sẽ hiển thị công khai ở trang Thông tin nhân vật.</p>
+
+            <div class="create-error" id="createError" hidden></div>
+            <div class="create-success" id="createSuccess" hidden></div>
+
+            <form id="characterCreateForm" class="character-form">
+              <div class="row-2">
+                <label>Tên nhân vật
+                  <input type="text" name="name" required />
+                </label>
+                <label>Ảnh đại diện (URL)
+                  <input type="text" name="avatar" placeholder="/Assets/images/sample.png" />
+                </label>
+              </div>
+
+              <div class="row-3">
+                <label>Chủng tộc
+                  <input type="text" name="race" required />
+                </label>
+                <label>Lớp
+                  <input type="text" name="class_name" required />
+                </label>
+                <label>Level
+                  <input type="number" min="1" max="20" name="level" value="1" required />
+                </label>
+              </div>
+
+              <div class="row-2">
+                <label>Xu hướng
+                  <input type="text" name="alignment" value="Neutral" required />
+                </label>
+                <label>Bối cảnh
+                  <input type="text" name="background" value="Adventurer" required />
+                </label>
+              </div>
+
+              <label>Mô tả ngắn
+                <textarea name="description" rows="3"></textarea>
+              </label>
+
+              <h3>Thuộc tính</h3>
+              <div class="row-6">
+                <label>STR<input type="number" name="str" min="1" max="30" value="10" required /></label>
+                <label>DEX<input type="number" name="dex" min="1" max="30" value="10" required /></label>
+                <label>CON<input type="number" name="con" min="1" max="30" value="10" required /></label>
+                <label>INT<input type="number" name="int" min="1" max="30" value="10" required /></label>
+                <label>WIS<input type="number" name="wis" min="1" max="30" value="10" required /></label>
+                <label>CHA<input type="number" name="cha" min="1" max="30" value="10" required /></label>
+              </div>
+
+              <div class="row-3">
+                <label>HP<input type="number" name="hp" min="1" value="10" required /></label>
+                <label>AC<input type="number" name="ac" min="1" max="30" value="10" required /></label>
+                <label>Speed<input type="text" name="speed" value="30 ft" required /></label>
+              </div>
+
+              <label>Kỹ năng (mỗi dòng một kỹ năng)
+                <textarea name="skills" rows="3" placeholder="Stealth +6"></textarea>
+              </label>
+
+              <label>Trang bị (mỗi dòng một món)
+                <textarea name="equipment" rows="3"></textarea>
+              </label>
+
+              <label>Nhật ký (mỗi dòng một ghi chú)
+                <textarea name="notes" rows="3"></textarea>
+              </label>
+
+              <div class="actions">
+                <button type="submit">Tạo nhân vật</button>
+                <a href="character.html" class="ghost-btn">Xem danh sách nhân vật</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/JS/core.js"></script>
+  <script src="/JS/page-character-create.js"></script>
+</body>
+</html>
