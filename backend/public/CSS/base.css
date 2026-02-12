@@ -1,29 +1,17 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/backend/public/CSS/base.css b/backend/public/CSS/base.css
-index 4df398d32d4b8eaaea76087fce3ab2ac35ebfe58..838d33ad4edef07217997e2c82886798957e06ec 100644
---- a/backend/public/CSS/base.css
-+++ b/backend/public/CSS/base.css
-@@ -1,59 +1,63 @@
- /* =========================================================
+/* =========================================================
     ROOT VARIABLES
- ========================================================= */
+========================================================= */
  :root {
--  --primary: #8b1e1e;
--  --secondary: #003a8f;
-+  --primary: #7c2d12;
-+  --secondary: #4c1d95;
-+  --accent: #d4a017;
-+  --bg-dark: #120f1c;
+  --primary: #7c2d12;
+  --secondary: #4c1d95;
+  --accent: #d4a017;
+  --bg-dark: #120f1c;
  
--  --text-dark: #1f2937;
--  --text-muted: #6b7280;
-+  --text-dark: #23170f;
-+  --text-muted: #5f4e43;
+  --text-dark: #23170f;
+  --text-muted: #5f4e43;
  
--  --bg-light: #f8fafc;
--  --border-light: #e5e7eb;
-+  --bg-light: #f8efe1;
-+  --border-light: #d8c9b6;
+  --bg-light: #f8efe1;
+  --border-light: #d8c9b6;
  
  }
  
@@ -42,19 +30,14 @@ index 4df398d32d4b8eaaea76087fce3ab2ac35ebfe58..838d33ad4edef07217997e2c82886798
  }
  
  body {
--  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
    line-height: 1.6;
    color: var(--text-dark);
  
--  background-image: url("../Assets/images/background.png");
--  background-repeat: repeat;
--  background-position: center top;
--  background-size: 11%;
-+  background:
-+    radial-gradient(circle at 20% 20%, rgba(122, 45, 18, 0.28), transparent 35%),
-+    radial-gradient(circle at 80% 15%, rgba(76, 29, 149, 0.25), transparent 32%),
-+    linear-gradient(180deg, #1f1533 0%, #0f0a1a 100%);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(122, 45, 18, 0.28), transparent 35%),
+    radial-gradient(circle at 80% 15%, rgba(76, 29, 149, 0.25), transparent 32%),
+    linear-gradient(180deg, #1f1533 0%, #0f0a1a 100%);
    padding-top: 0 !important;
  }
  
@@ -75,9 +58,8 @@ index 4df398d32d4b8eaaea76087fce3ab2ac35ebfe58..838d33ad4edef07217997e2c82886798
  h1, h2, h3, h4 {
    font-weight: 600;
    line-height: 1.35;
-+  font-family: Georgia, "Times New Roman", serif;
-+  letter-spacing: 0.2px;
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0.2px;
  }
  
-EOF
-)
+

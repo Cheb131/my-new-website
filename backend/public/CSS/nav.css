@@ -1,34 +1,22 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/backend/public/CSS/nav.css b/backend/public/CSS/nav.css
-index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441ba86939ed 100644
---- a/backend/public/CSS/nav.css
-+++ b/backend/public/CSS/nav.css
-@@ -1,269 +1,291 @@
  /* =========================================================
     BANNER + MENU 
  ========================================================= */
  
  /* ===== Theme ===== */
  :root {
--  --brand-red: #d40000;
--  --brand-red-dark: #a80000;
-+  --brand-red: #5b1a10;
-+  --brand-red-dark: #2f0c07;
+  --brand-red: #5b1a10;
+  --brand-red-dark: #2f0c07;
  
--  --beige: #f6e1bf;
--  --beige-2: #f1d6ab;
--  --pattern-line: rgba(190, 140, 70, 0.38);
-+  --beige: #261b34;
-+  --beige-2: #1d1429;
-+  --pattern-line: rgba(212, 160, 23, 0.2);
+  --beige: #261b34;
+  --beige-2: #1d1429;
+  --pattern-line: rgba(212, 160, 23, 0.2);
  
    --menu-h: 48px;
    --menu-radius: 10px;
    --menu-pad: 8px;
  
    --mobile-bar-h: 70px;
--  --mobile-bar-bg: #0b3fa9;
-+  --mobile-bar-bg: #1d1429;
+  --mobile-bar-bg: #1d1429;
  }
  
  /* =========================================================
@@ -55,11 +43,10 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    width: 100%;
    height: 200px; /* desktop giống mẫu */
    overflow: hidden;
--  background: #000; /* nếu ảnh lỗi load thì không lộ mảng đỏ */
-+  background:
-+    radial-gradient(circle at 15% 20%, rgba(212, 160, 23, 0.35), transparent 28%),
-+    radial-gradient(circle at 80% 10%, rgba(124, 45, 18, 0.55), transparent 30%),
-+    linear-gradient(120deg, #1a1228, #31192c 45%, #0f0d1f);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(212, 160, 23, 0.35), transparent 28%),
+    radial-gradient(circle at 80% 10%, rgba(124, 45, 18, 0.55), transparent 30%),
+    linear-gradient(120deg, #1a1228, #31192c 45%, #0f0d1f);
  }
  
  /* Ảnh banner */
@@ -72,24 +59,24 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
  
    object-fit: cover;
    object-position: center;
-+  mix-blend-mode: screen;
-+  opacity: 0.22;
-+  filter: sepia(1) hue-rotate(-20deg) saturate(1.4);
-+}
-+
-+.header-banner::after {
-+  content: "DUNGEONS & DRAGONS GUILD";
-+  position: absolute;
-+  left: 50%;
-+  top: 50%;
-+  transform: translate(-50%, -50%);
-+  color: #f8e6c4;
-+  font-family: Georgia, "Times New Roman", serif;
-+  font-size: clamp(1.3rem, 3vw, 2.3rem);
-+  letter-spacing: 2px;
-+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
-+  font-weight: 700;
-+  z-index: 2;
+  mix-blend-mode: screen;
+  opacity: 0.22;
+  filter: sepia(1) hue-rotate(-20deg) saturate(1.4);
+}
+
+.header-banner::after {
+  content: "DUNGEONS & DRAGONS GUILD";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #f8e6c4;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.3rem, 3vw, 2.3rem);
+  letter-spacing: 2px;
+  text-shadow: 0 0 18px rgba(0, 0, 0, 0.45);
+  font-weight: 700;
+  z-index: 2;
  }
  
  /* =========================================================
@@ -123,8 +110,7 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    background-color: var(--beige);
    background-image:
      radial-gradient(circle at 50% 100%, var(--pattern-line) 0 44px, transparent 45px),
--    radial-gradient(circle at 50% 100%, rgba(190, 140, 70, 0.22) 0 32px, transparent 33px);
-+    radial-gradient(circle at 50% 100%, rgba(255, 208, 94, 0.13) 0 32px, transparent 33px);
+    radial-gradient(circle at 50% 100%, rgba(255, 208, 94, 0.13) 0 32px, transparent 33px);
    background-size: 120px 60px;
    background-position: 0 0;
  }
@@ -134,10 +120,8 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    margin: 0 auto;
    padding: var(--menu-pad);
  
--  background: var(--brand-red);
--  border: 2px solid var(--brand-red-dark);
-+  background: linear-gradient(180deg, #7c2d12, #5b1a10);
-+  border: 2px solid #341109;
+  background: linear-gradient(180deg, #7c2d12, #5b1a10);
+  border: 2px solid #341109;
    border-radius: var(--menu-radius);
  }
  
@@ -174,8 +158,7 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    height: var(--menu-h);
    padding: 0 18px;
  
--  color: #fff;
-+  color: #f8e6c4;
+  color: #f8e6c4;
    font-size: 0.92rem;
    font-weight: 800;
    line-height: 1;
@@ -192,9 +175,8 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
  }
  
  .nav-list > li.active > a {
--  background: linear-gradient(180deg, #b56616 0%, #8b3e0a 100%);
-+  background: linear-gradient(180deg, #d4a017 0%, #8a6010 100%);
-+  color: #2f1307;
+  background: linear-gradient(180deg, #d4a017 0%, #8a6010 100%);
+  color: #2f1307;
    box-shadow:
      inset 0 1px 0 rgba(255, 255, 255, 0.22),
      inset 0 -1px 0 rgba(0, 0, 0, 0.18);
@@ -214,10 +196,8 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    padding: 6px;
    list-style: none;
  
--  background: #fff;
--  border: 1px solid rgba(15, 23, 42, 0.12);
-+  background: #fff7ea;
-+  border: 1px solid rgba(47, 19, 7, 0.2);
+  background: #fff7ea;
+  border: 1px solid rgba(47, 19, 7, 0.2);
    border-radius: 10px;
    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
  
@@ -240,18 +220,15 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    padding: 10px 12px;
    border-radius: 8px;
  
--  color: #0f172a;
-+  color: #2a1b14;
+  color: #2a1b14;
    font-size: 0.92rem;
    font-weight: 700;
    text-transform: none;
  }
  
  .nav-list > li.has-dropdown > ul.dropdown > li > a:hover {
--  color: #b31217;
--  background: rgba(216, 27, 36, 0.10);
-+  color: #7c2d12;
-+  background: rgba(124, 45, 18, 0.11);
+  color: #7c2d12;
+  background: rgba(124, 45, 18, 0.11);
  }
  
  /* =========================================================
@@ -279,16 +256,14 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    height: var(--menu-h);
    padding: 0 14px;
  
--  color: #fff;
-+  color: #f8e6c4;
+  color: #f8e6c4;
    font-weight: 800;
    letter-spacing: 0.2px;
    text-transform: uppercase;
    white-space: nowrap;
    line-height: 1;
  
--  background: rgba(255, 255, 255, 0.06);
-+  background: rgba(255, 230, 196, 0.09);
+  background: rgba(255, 230, 196, 0.09);
    border: 0;
    border-radius: 8px;
    cursor: pointer;
@@ -314,7 +289,7 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
  
  .nav-user-ico img {
    display: block;
-@@ -274,76 +296,76 @@
+  }
  
  /* =========================================================
     SEARCH
@@ -340,21 +315,17 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    height: 34px;
    padding: 0 10px;
  
--  color: #fff;
-+  color: #f8e6c4;
+  color: #f8e6c4;
    font-size: 0.9rem;
  
--  background: rgba(255, 255, 255, 0.08);
--  border: 1px solid rgba(255, 255, 255, 0.22);
-+  background: rgba(248, 230, 196, 0.08);
-+  border: 1px solid rgba(248, 230, 196, 0.3);
+  background: rgba(248, 230, 196, 0.08);
+  border: 1px solid rgba(248, 230, 196, 0.3);
    border-radius: 8px;
    outline: 0;
  }
  
  .search__input::placeholder {
--  color: rgba(255, 255, 255, 0.78);
-+  color: rgba(248, 230, 196, 0.74);
+  color: rgba(248, 230, 196, 0.74);
  }
  
  .search__btn {
@@ -365,14 +336,11 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    width: 34px;
    height: 34px;
  
--  color: #fff;
-+  color: #f8e6c4;
+  color: #f8e6c4;
    line-height: 1;
  
--  background: rgba(0, 0, 0, 0.18);
--  border: 1px solid rgba(255, 255, 255, 0.18);
-+  background: rgba(47, 19, 7, 0.45);
-+  border: 1px solid rgba(248, 230, 196, 0.22);
+  background: rgba(47, 19, 7, 0.45);
+  border: 1px solid rgba(248, 230, 196, 0.22);
    border-radius: 8px;
    cursor: pointer;
  }
@@ -398,6 +366,4 @@ index e826c3b446f1da7bdc1ddb75d674fa85c9147bac..4a673b027f1d04ab6c06fb70dad7441b
    position: fixed;
    top: 0;
    left: 0;
- 
-EOF
-)
+ }

@@ -1,9 +1,5 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/backend/public/JS/menu.js b/backend/public/JS/menu.js
-index 2d5d7798c570d4f3f821cfca28604ffa44ae87e1..63fc9d07ffc0af08b34505982a38fd125e2cf0c4 100644
---- a/backend/public/JS/menu.js
-+++ b/backend/public/JS/menu.js
-@@ -134,50 +134,52 @@ document.addEventListener("DOMContentLoaded", () => {
+
+document.addEventListener("DOMContentLoaded", () => {
      divider.style.margin = "8px 0";
      divider.style.opacity = "0.8";
  
@@ -29,8 +25,12 @@ index 2d5d7798c570d4f3f821cfca28604ffa44ae87e1..63fc9d07ffc0af08b34505982a38fd12
      const isAdmin = role === "admin";
      const isManager = role === "manager";
  
-+    mnavList.appendChild(makeLi("Thông tin nhân vật", "character.html").li);
-+
+    mnavList.appendChild(makeLi("Thông tin nhân vật", "character.html").li);
+
+    if (isAdmin) {
+      mnavList.appendChild(makeLi("Tạo nhân vật (Admin)", "character-create.html").li);
+    }
+
      if (isAdmin || isManager) {
        mnavList.appendChild(makeLi("Đăng bài viết", "post.html").li);
      }
@@ -50,12 +50,11 @@ index 2d5d7798c570d4f3f821cfca28604ffa44ae87e1..63fc9d07ffc0af08b34505982a38fd12
        window.location.reload();
      });
      mnavList.appendChild(liLogout);
-   }
+   });
  
    // ========== OPEN/CLOSE ==========
-   const openNav = () => {
+  const openNav = () => {
      syncAuthItems();
      document.body.classList.add("mnav-open");
- 
-EOF
-)
+   };
+  

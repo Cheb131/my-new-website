@@ -1,9 +1,3 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/backend/public/CSS/components.css b/backend/public/CSS/components.css
-index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4a8d1d2b5 100644
---- a/backend/public/CSS/components.css
-+++ b/backend/public/CSS/components.css
-@@ -1,525 +1,538 @@
  /* =========================================================
     HERO SLIDER
  ========================================================= */
@@ -11,24 +5,23 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    position: relative;
    min-height: 320px;
    overflow: hidden;
--  color: #fff;
-+  color: #fff7ea;
+  color: #fff7ea;
    display: flex;
    align-items: center;
    text-align: center;
  }
  
-+.hero.hero--slider::before {
-+  content: "";
-+  position: absolute;
-+  inset: 0;
-+  background:
-+    radial-gradient(circle at 50% 35%, rgba(212, 160, 23, 0.2), transparent 40%),
-+    linear-gradient(180deg, rgba(18, 15, 28, 0.35), rgba(18, 15, 28, 0.68));
-+  z-index: 1;
-+}
-+
-+
+.hero.hero--slider::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(212, 160, 23, 0.2), transparent 40%),
+    linear-gradient(180deg, rgba(18, 15, 28, 0.35), rgba(18, 15, 28, 0.68));
+  z-index: 1;
+}
+
+
  .hero-slides {
    position: absolute;
    inset: 0;
@@ -48,8 +41,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    content: "";
    position: absolute;
    inset: 0;
--  background: rgba(0,0,0,.35);
-+  background: rgba(14, 8, 4, .45);
+  background: rgba(14, 8, 4, .45);
  }
  
  .hero-slide.is-active {
@@ -58,8 +50,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  
  .hero-content {
    position: relative;
--  z-index: 2;
-+  z-index: 3;
+  z-index: 3;
  }
  
  .hero-dots {
@@ -77,14 +68,12 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    height: 10px;
    border-radius: 50%;
    border: 0;
--  background: rgba(255,255,255,.45);
-+  background: rgba(248, 230, 196, .45);
+  background: rgba(248, 230, 196, .45);
    cursor: pointer;
  }
  
  .hero-dots .dot.is-active {
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
  }
  
  /* =========================================================
@@ -92,7 +81,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  ========================================================= */
  .featured {
    padding: 2.5rem 0;
-+  background: linear-gradient(180deg, rgba(248, 230, 196, 0.28), rgba(124, 45, 18, 0.08));
+  background: linear-gradient(180deg, rgba(248, 230, 196, 0.28), rgba(124, 45, 18, 0.08));
  }
  
  .featured-content {
@@ -106,8 +95,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  .featured-main,
  .news-list,
  .article-list {
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
    height: 100%;
    border: 1px solid rgba(15,23,42,0.12);
    border-radius: 10px;
@@ -123,8 +111,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  /* ===== LEFT: bài nổi bật ===== */
  .featured-main {
    position: relative;
--  border-top: 4px solid var(--primary);
-+  border-top: 4px solid var(--accent);
+  border-top: 4px solid var(--accent);
    padding-top: 14px;
  }
  
@@ -141,22 +128,19 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    top: -14px;
    left: 16px;
  
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
    padding: 0 10px;
  
    font-weight: 700;
    font-size: 0.85rem;
--  color: var(--primary);
-+  color: #7c2d12;
+  color: #7c2d12;
    z-index: 5;
  }
  
  .featured-main__body { padding: 14px; }
  
  .featured-main__title a {
--  color: var(--primary);
-+  color: #7c2d12;
+  color: #7c2d12;
    font-size: 1.25rem;
    font-weight: 800;
    line-height: 1.3;
@@ -184,8 +168,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  .news-list {
    position: relative;
    padding-top: 16px;
--  border-top: 4px solid var(--primary);
-+  border-top: 4px solid var(--accent);
+  border-top: 4px solid var(--accent);
  }
  
  .news-list::before {
@@ -194,14 +177,12 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    top: -14px;
    left: 16px;
  
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
    padding: 0 10px;
  
    font-weight: 700;
    font-size: 0.85rem;
--  color: var(--primary);
-+  color: #7c2d12;
+  color: #7c2d12;
  }
  
  .news-item {
@@ -216,8 +197,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  }
  
  .news-item:hover {
--  background: rgba(139,30,30,0.06);
-+  background: rgba(124,45,18,0.08);
+  background: rgba(124,45,18,0.08);
  }
  
  .news-item__thumb {
@@ -260,8 +240,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
     ARTICLES
  ========================================================= */
  .featured-article {
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
    border: 1px solid var(--border-light);
    border-radius: 8px;
    padding: 12px;
@@ -270,8 +249,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  .featured-article h3 {
    margin-top: 1rem;
    font-size: 1.25rem;
--  color: var(--primary);
-+  color: #7c2d12;
+  color: #7c2d12;
  }
  
  /* item trong article-list */
@@ -292,8 +270,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  }
  
  .article-list > .article-item:hover {
--  background: rgba(139,30,30,0.06);
-+  background: rgba(124,45,18,0.08);
+  background: rgba(124,45,18,0.08);
  }
  
  .article-list > .article-item img {
@@ -317,8 +294,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
     POST + SIDEBAR (article detail)
  ========================================================= */
  .post {
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
    border: 1px solid rgba(15,23,42,0.10);
    border-radius: 12px;
    box-shadow: 0 10px 20px rgba(15,23,42,0.08);
@@ -334,8 +310,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    font-size: 1.35rem;
    font-weight: 900;
    line-height: 1.25;
--  color: #111827;
-+  color: #2a1b14;
+  color: #2a1b14;
  }
  
  .post__meta {
@@ -346,8 +321,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  
  .post__body { padding: 0 18px 18px; }
  
--.post__body p { margin: 10px 0; color: #111827; }
-+.post__body p { margin: 10px 0; color: #2a1b14; }
+.post__body p { margin: 10px 0; color: #2a1b14; }
  .post__body img {
    width: 100%;
    height: auto;
@@ -357,8 +331,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  }
  
  .sidebar-box {
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
    border: 1px solid rgba(15,23,42,0.10);
    border-radius: 12px;
    box-shadow: 0 10px 20px rgba(15,23,42,0.08);
@@ -369,16 +342,14 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    padding: 12px 14px;
    font-size: 1rem;
    font-weight: 900;
--  color: #111827;
-+  color: #2a1b14;
+  color: #2a1b14;
    border-bottom: 1px solid rgba(15,23,42,0.08);
  }
  
  .sidebar-title {
    font-size: 1rem;
    font-weight: 800;
--  color: var(--primary);
-+  color: #7c2d12;
+  color: #7c2d12;
    padding: 8px 12px;
    border-left: 4px solid var(--primary);
    margin-bottom: 8px;
@@ -397,8 +368,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  }
  
  .sidebar-item:hover {
--  background: rgba(139,30,30,0.06);
-+  background: rgba(124,45,18,0.08);
+  background: rgba(124,45,18,0.08);
  }
  
  .sidebar-thumb {
@@ -419,8 +389,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    font-weight: 800;
    font-size: .92rem;
    line-height: 1.3;
--  color: #111827;
-+  color: #2a1b14;
+  color: #2a1b14;
  
    display: -webkit-box;
    -webkit-line-clamp: 2;
@@ -439,9 +408,8 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
     FOOTER
  ========================================================= */
  .site-footer {
--  background: linear-gradient(180deg, #c11212, #7a0c0c);
-+  background: linear-gradient(180deg, #29182f, #150f24);
-+  border-top: 2px solid rgba(212,160,23,0.5);
+  background: linear-gradient(180deg, #29182f, #150f24);
+  border-top: 2px solid rgba(212,160,23,0.5);
    margin-top: 2.5rem;
    color: #ffffff;
    font-size: 0.9rem;
@@ -481,8 +449,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  }
  
  .login-box {
--  background: #ffffff;
-+  background: #fff8ec;
+  background: #fff8ec;
    width: 100%;
    max-width: 360px;
    padding: 24px;
@@ -494,8 +461,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
  .login-box h3 {
    text-align: center;
    margin-bottom: 16px;
--  color: var(--primary);
-+  color: #7c2d12;
+  color: #7c2d12;
  }
  
  .login-box input {
@@ -543,8 +509,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    top: 100%;
    left: 0;
    right: 0;
--  background: #fff;
-+  background: #f8e6c4;
+  background: #f8e6c4;
    border: 1px solid #e5e7eb;
    border-radius: 10px;
    margin-top: 6px;
@@ -557,8 +522,7 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    display: block;
    padding: 10px 12px;
    font-size: 14px;
--  color: #111827;
-+  color: #2a1b14;
+  color: #2a1b14;
    text-decoration: none;
  }
  
@@ -572,6 +536,3 @@ index c3381e0c15609bc32c33596f453b6b4f2e864b45..7728c1ab1a06c6dcf6c0ecbad71fded4
    color: #6b7280;
    margin-top: 2px;
  }
- 
-EOF
-)
