@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 });
 
 /* ================= API ================= */
-app.use("/api", apiRoute);
+app.use("/api", require("./routes/api.route"));
 app.use("/api/auth", authRoute);
 
 /* ================= ERROR ================= */

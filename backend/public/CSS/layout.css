@@ -4,34 +4,19 @@
  .page-wrap {
    max-width: 1200px;
    margin: 0 auto;
-  background: linear-gradient(180deg, #fff9f1, #f8efe1);
+   background: linear-gradient(180deg, #fff9f1, #f8efe1);
    border-radius: 12px;
-  border: 1px solid rgba(212, 160, 23, 0.28);
-  box-shadow: 0 18px 44px rgba(2, 6, 23, 0.45);
-   overflow: visible;
- }
- 
- /* kéo banner + nav tràn full viewport */
- .page-wrap .site-header,
- .page-wrap .main-nav {
-   width: 100vw;
-   margin-left: calc(50% - 50vw);
-   margin-right: calc(50% - 50vw);
-   border-radius: 0;
- }
- 
- /* kéo footer tràn full viewport */
- .page-wrap .site-footer {
-   width: 100vw;
-   margin-left: calc(50% - 50vw);
-   margin-right: calc(50% - 50vw);
-   border-radius: 0;
+   border: 1px solid rgba(212, 160, 23, 0.28);
+   box-shadow: 0 18px 44px rgba(2, 6, 23, 0.45);
+   overflow: hidden;
  }
  
  /* =========================================================
     LAYOUT
  ========================================================= */
- .container {
-   max-width: 1200px;
- 
- }
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;  
+  box-sizing: border-box;
+}

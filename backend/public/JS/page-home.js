@@ -1,3 +1,10 @@
+async function apiGetArticles() {
+  const res = await fetch("/api/items");
+  if (!res.ok) throw new Error("Fetch failed");
+  return await res.json();
+}
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     const data = await apiGetArticles();

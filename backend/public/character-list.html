@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Danh sách nhân vật — Hội Quán Dungeons & Dragons</title>
+
+  <meta name="description" content="Danh sách nhân vật được đăng lên web." />
+  <meta name="robots" content="index, follow" />
+
+  <link rel="stylesheet" href="/CSS/style.css">
+
+  <style>
+    .charlist-page { padding: 18px 0 28px; }
+    .charlist-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .charlist-head h2{ margin:0; font-size: 20px; }
+    .charlist-sub{ margin:6px 0 0; color:#6b7280; font-size: 14px; }
+    .charlist-tools{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+    .cc-btn{
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .cc-btn:hover{ background:#f9fafb; }
+
+    .char-grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    .char-card{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius: 16px;
+      overflow:hidden;
+      cursor:pointer;
+      transition: transform .08s ease, box-shadow .08s ease;
+    }
+    .char-card:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 8px 22px rgba(0,0,0,.06);
+    }
+    .char-card-top{
+      display:grid;
+      grid-template-columns: 88px 1fr;
+      gap: 12px;
+      padding: 12px;
+      align-items:center;
+    }
+    .char-avatar{
+      width: 88px;
+      height: 88px;
+      border-radius: 14px;
+      object-fit: cover;
+      border:1px solid #e5e7eb;
+      background:#f3f4f6;
+    }
+    .char-title{ margin:0 0 4px; font-size: 16px; line-height: 1.2; }
+    .char-meta{ margin:0; color:#6b7280; font-size: 13px; line-height: 1.35; }
+    .char-desc{
+      margin:0;
+      color:#374151;
+      font-size: 13px;
+      line-height: 1.45;
+      padding: 0 12px 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .char-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding: 0 12px 12px;
+    }
+    .char-tag{
+      display:inline-flex;
+      align-items:center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background:#f3f4f6;
+      border:1px solid #e5e7eb;
+      font-size: 12px;
+      color:#374151;
+    }
+
+    .empty-box{
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 16px;
+      color:#6b7280;
+    }
+
+    @media (max-width: 1100px){
+      .char-grid{ grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 700px){
+      .char-grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ===== LOGIN MODAL (giống index) ===== -->
+  <div class="login-modal" id="loginModal" hidden>
+    <div class="login-box">
+      <h3>Đăng nhập</h3>
+      <div id="loginError" style="display:none;color:#b91c1c;font-size:13px;margin:6px 0 10px;"></div>
+      <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
+        <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
+        <button type="submit">Đăng nhập</button>
+      </form>
+      <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
+    </div>
+  </div>
+
+  <!-- ===== HEADER (giống index) ===== -->
+  <header class="site-header">
+    <div class="header-banner">
+      <img src="/Assets/images/background.jpg" alt="Banner" class="banner-bg" />
+      <div class="banner-inner container">
+        <div class="logo-group left">
+          <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
+            <img src="Assets/icons/menu.png" alt="">
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== NAV (giống index) ===== -->
+  <nav class="main-nav" aria-label="Điều hướng chính">
+    <div class="container">
+      <ul class="nav-list">
+        <li><a href="index.html">Trang chủ</a></li>
+
+        <li class="has-dropdown">
+          <a href="list.html">Nhiệm vụ & Sự kiện</a>
+          <ul class="dropdown">
+            <li><a href="#">Nhiệm vụ mới</a></li>
+            <li><a href="#">Sự kiện guild</a></li>
+            <li><a href="#">Thông cáo từ hội quán</a></li>
+          </ul>
+        </li>
+
+        <li class="has-dropdown active">
+          <a href="character-list.html">Sổ tay huấn luyện</a>
+          <ul class="dropdown">
+            <li><a href="character-list.html">Danh sách nhân vật</a></li>
+            <li><a href="character.html">Trang nhân vật</a></li>
+          </ul>
+        </li>
+
+        <li class="has-dropdown">
+          <a href="#">Kho tư liệu cổ thư</a>
+          <ul class="dropdown">
+            <li><a href="#">Bách khoa quái vật</a></li>
+            <li><a href="#">Bản đồ lục địa</a></li>
+            <li><a href="#">Luật chơi tân thủ</a></li>
+            <li><a href="#">Hướng dẫn DM</a></li>
+          </ul>
+        </li>
+
+        <li class="has-dropdown">
+          <a href="#">Kho học cụ</a>
+          <ul class="dropdown">
+            <li><a href="https://stbook.vn/">Thư viện phép thuật</a></li>
+            <li><a href="#">Tài nguyên chiến dịch</a></li>
+          </ul>
+        </li>
+
+        <!-- USER (giống index) -->
+        <li class="nav-user has-dropdown" id="navUserBox">
+          <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+            <span class="nav-user-ico">
+              <img src="Assets/icons/account.png" alt="">
+            </span>
+            <span id="userName" class="nav-user-name" hidden></span>
+            <span class="nav-user-caret">▾</span>
+          </button>
+          <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+        </li>
+
+        <!-- ✅ CHỈ GIỮ SEARCH TRÊN NAV -->
+        <li class="nav-search">
+          <form class="search" action="character-list.html" method="get" role="search">
+            <input
+              type="search"
+              name="q"
+              id="navSearchInput"
+              class="search__input"
+              placeholder="Tìm nhân vật..."
+              aria-label="Tìm kiếm"
+              maxlength="80"
+            />
+            <div class="search-results" hidden></div>
+            <button class="search__btn" type="submit" aria-label="Tìm">
+              <img src="Assets/icons/search.png" alt="">
+            </button>
+          </form>
+        </li>
+
+      </ul>
+    </div>
+  </nav>
+
+  <div class="page-wrap">
+    <main class="main-content">
+      <section class="charlist-page">
+        <div class="container">
+          <div class="charlist-head">
+            <div>
+              <h2>Danh sách nhân vật</h2>
+              <p class="charlist-sub" id="charCount">Đang tải...</p>
+            </div>
+
+            <div class="charlist-tools">
+              <button class="cc-btn" type="button" id="reloadBtn">↻ Tải lại</button>
+              <button class="cc-btn" type="button" id="goCreateBtn"
+                onclick="window.location.href='character-create.html'">
+                + Tạo/Đăng nhân vật
+              </button>
+            </div>
+          </div>
+
+          <div id="listBox"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ===== FOOTER (giống index) ===== -->
+  <footer class="site-footer">
+    <div class="container footer-top">
+      <div class="footer-info">
+        <p class="footer-title">© HỘI QUÁN DUNGEONS & DRAGONS VIỆT NAM</p>
+        <p>Địa chỉ: Phòng hội tầng hầm - Thành Greyhawk</p>
+        <p>Liên lạc: +84 999 20D20</p>
+        <p>Email: guildmaster@dnd-vietnam.vn</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/JS/menu.js"></script>
+  <script src="/JS/core.js"></script>
+
+  <script>
+    (function () {
+      const listBox = document.getElementById("listBox");
+      const reloadBtn = document.getElementById("reloadBtn");
+      const countEl = document.getElementById("charCount");
+      const navSearchInput = document.getElementById("navSearchInput");
+
+      let all = [];
+
+      function esc(s){
+        return String(s ?? "").replace(/[&<>"']/g, (m) => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[m]));
+      }
+
+      function getQuery() {
+        const q = new URLSearchParams(location.search).get("q");
+        return (q || "").trim().toLowerCase();
+      }
+
+      function cardHtml(c) {
+        const id = Number(c.id);
+        const name = esc(c.name || "Unknown");
+        const race = esc(c.race || "—");
+        const cls  = esc(c.class_name || "—");
+        const lv   = Number(c.level || 1);
+        const desc = esc(c.description || "");
+        const avatar = (c.avatar && String(c.avatar).trim()) ? c.avatar : "/Assets/images/sample.png";
+
+        return `
+          <article class="char-card" role="button" tabindex="0" data-id="${id}">
+            <div class="char-card-top">
+              <img class="char-avatar" src="${esc(avatar)}" alt="${name}">
+              <div>
+                <h3 class="char-title">${name}</h3>
+                <p class="char-meta">${race} • ${cls} • Lv ${lv}</p>
+              </div>
+            </div>
+
+            <p class="char-desc">${desc || "—"}</p>
+
+            <div class="char-tags">
+              <span class="char-tag">HP: ${Number(c.hp ?? 10)}</span>
+              <span class="char-tag">AC: ${Number(c.ac ?? 10)}</span>
+              <span class="char-tag">Speed: ${esc(c.speed || "30 ft")}</span>
+            </div>
+          </article>
+        `;
+      }
+
+      function render(list, totalAll) {
+        if (!Array.isArray(list) || list.length === 0) {
+          listBox.innerHTML = `
+            <div class="empty-box">
+              Không có nhân vật phù hợp. Hãy thử tìm từ khoá khác hoặc tạo nhân vật mới.
+            </div>
+          `;
+          countEl.textContent = totalAll != null ? `0/${totalAll} nhân vật` : "0 nhân vật";
+          return;
+        }
+
+        listBox.innerHTML = `<div class="char-grid">${list.map(cardHtml).join("")}</div>`;
+
+        listBox.querySelectorAll(".char-card").forEach((card) => {
+          const go = () => {
+            const id = card.getAttribute("data-id");
+            window.location.href = `character.html?id=${encodeURIComponent(id)}`;
+          };
+          card.addEventListener("click", go);
+          card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") go();
+          });
+        });
+      }
+
+      function applyFilter() {
+        const q = getQuery();
+        if (navSearchInput) navSearchInput.value = q ? q : "";
+
+        if (!q) {
+          render(all, all.length);
+          countEl.textContent = `${all.length} nhân vật`;
+          return;
+        }
+
+        const filtered = all.filter((c) => {
+          const s = [
+            c.name, c.race, c.class_name, c.alignment, c.background, c.description
+          ].join(" ").toLowerCase();
+          return s.includes(q);
+        });
+
+        render(filtered, all.length);
+        countEl.textContent = `${filtered.length}/${all.length} nhân vật`;
+      }
+
+      async function load() {
+        listBox.innerHTML = `<div class="empty-box">Đang tải danh sách nhân vật...</div>`;
+        countEl.textContent = "Đang tải...";
+
+        try {
+          const res = await fetch("/api/characters/public");
+          const data = await res.json().catch(() => []);
+          if (!res.ok) {
+            listBox.innerHTML = `<div class="empty-box">Không tải được danh sách (server trả lỗi).</div>`;
+            countEl.textContent = "Lỗi tải";
+            return;
+          }
+
+          all = Array.isArray(data) ? data : [];
+          all.sort((a,b) => Number(b.id || 0) - Number(a.id || 0));
+
+          applyFilter();
+        } catch (e) {
+          listBox.innerHTML = `<div class="empty-box">Không kết nối được server.</div>`;
+          countEl.textContent = "Lỗi kết nối";
+        }
+      }
+
+      reloadBtn.addEventListener("click", load);
+
+      // Khi back/forward thay đổi ?q=, tự filter lại
+      window.addEventListener("popstate", applyFilter);
+
+      load();
+    })();
+  </script>
+</body>
+</html>

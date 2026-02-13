@@ -70,6 +70,9 @@ router.post("/login", (req, res) => {
     )
     .get(username);
 
+  // ✅ log đúng chỗ (sau khi có user)
+  console.log("LOGIN user from DB =", user ? { id: user.id, username: user.username, role: user.role } : null);
+
   if (!user) {
     return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
   }
@@ -85,7 +88,7 @@ router.post("/login", (req, res) => {
     { expiresIn: "2h" }
   );
 
-  res.json({
+  return res.json({
     token,
     user: {
       id: user.id,
@@ -97,6 +100,7 @@ router.post("/login", (req, res) => {
     },
   });
 });
+
 
 // =========================================================
 // POST /api/auth/register

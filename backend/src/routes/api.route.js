@@ -1,23 +1,10 @@
- const router = require("express").Router();
- 
- const itemController = require("../controllers/item.controller");
+const express = require("express");
+const router = express.Router();
+
 const characterController = require("../controllers/character.controller");
- const { requireAuth, requireAdmin, requireManagerOrAdmin } = require("../middlewares/auth.middleware");
- 
- router.get("/items", itemController.getAll);
- router.get("/items/:id", itemController.getById);
- 
- // manager + admin được đăng
- router.post("/items", requireAuth, requireManagerOrAdmin, itemController.create);
- 
- // admin toàn quyền chỉnh sửa
- router.put("/items/:id", requireAuth, requireAdmin, itemController.update);
- 
- // admin toàn quyền xoá
- router.delete("/items/:id", requireAuth, requireAdmin, itemController.remove);
- 
 
-router.get("/characters", characterController.getAll);
-router.post("/characters", requireAuth, requireAdmin, characterController.create);
+router.get("/characters/public", characterController.getPublic);
+router.get("/characters/public/:id", characterController.getPublicById);
+router.post("/characters", characterController.create);
 
- module.exports = router;
+module.exports = router;

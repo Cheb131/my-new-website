@@ -39,6 +39,10 @@
   .nav-list > li.has-dropdown.open > ul.dropdown{
     display: block;
   }
+
+  .featured-content {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* =========================================================

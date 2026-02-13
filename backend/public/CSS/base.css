@@ -1,7 +1,7 @@
 /* =========================================================
-    ROOT VARIABLES
+   ROOT VARIABLES
 ========================================================= */
- :root {
+  :root {
   --primary: #7c2d12;
   --secondary: #4c1d95;
   --accent: #d4a017;
@@ -12,8 +12,7 @@
  
   --bg-light: #f8efe1;
   --border-light: #d8c9b6;
- 
- }
+  }
  
  /* =========================================================
     RESET & BASE
@@ -30,7 +29,7 @@
  }
  
  body {
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
    line-height: 1.6;
    color: var(--text-dark);
  

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tạo nhân vật (Admin) | DnD Guild Chronicle</title>
+  <meta name="description" content="Trang tạo nhân vật Dungeons & Dragons dành cho admin." />
+  <link rel="stylesheet" href="/CSS/style.css">
+  <link rel="stylesheet" href="/CSS/character-create.css">
+
+</head>
+<body>
+  <!-- Login modal (core.js dùng) -->
+  <div class="login-modal" id="loginModal" hidden>
+    <div class="login-box">
+      <h3>Đăng nhập</h3>
+      <div id="loginError" style="display:none;color:#b91c1c;font-size:13px;margin:6px 0 10px;"></div>
+      <form id="loginForm">
+        <input type="text" id="loginUsername" placeholder="Tên đăng nhập" required />
+        <input type="password" id="loginPassword" placeholder="Mật khẩu" autocomplete="current-password" required />
+        <button type="submit">Đăng nhập</button>
+      </form>
+      <button class="login-close" id="loginClose" type="button" aria-label="Đóng">✕</button>
+    </div>
+  </div>
+
+  <!-- HEADER full width -->
+  <header class="site-header">
+    <div class="header-banner">
+      <img src="/Assets/images/banner.png" alt="Banner" class="banner-bg" />
+      <div class="banner-inner container">
+        <div class="logo-group left">
+          <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
+            <img src="/Assets/icons/menu.png" alt="">
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAV full width -->
+  <nav class="main-nav" aria-label="Điều hướng chính">
+    <div class="container">
+      <ul class="nav-list">
+        <li><a href="index.html">Trang chủ</a></li>
+
+        <li class="has-dropdown">
+          <a href="list.html">Nhiệm vụ & Sự kiện</a>
+          <ul class="dropdown">
+            <li><a href="#">Nhiệm vụ mới</a></li>
+            <li><a href="#">Sự kiện guild</a></li>
+            <li><a href="#">Thông cáo từ hội quán</a></li>
+          </ul>
+        </li>
+
+        <li class="has-dropdown active">
+          <a href="#">Sổ tay huấn luyện</a>
+          <ul class="dropdown">
+            <li><a href="character.html">Thông tin nhân vật</a></li>
+            <li><a href="character-create.html">Tạo nhân vật (Admin)</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-user has-dropdown" id="navUserBox">
+          <button id="userToggleBtn" type="button" class="nav-user-toggle" aria-label="Tài khoản">
+            <span class="nav-user-ico"><img src="/Assets/icons/account.png" alt=""></span>
+            <span id="userName" class="nav-user-name" hidden></span>
+            <span class="nav-user-caret">▾</span>
+          </button>
+          <ul class="dropdown user-dropdown" id="userDropdown"></ul>
+        </li>
+
+        <li class="nav-search">
+          <form class="search" action="list.html" method="get" role="search">
+            <input type="search" name="q" class="search__input" placeholder="Tìm..." aria-label="Tìm kiếm" maxlength="80" />
+            <div class="search-results" hidden></div>
+            <button class="search__btn" type="submit" aria-label="Tìm"><img src="/Assets/icons/search.png" alt=""></button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- page-wrap only main -->
+  <div class="page-wrap">
+    <main class="main-content"><section class="cc-wrap"><div class="container">
+          <div class="cc-hero">
+            <h1>Tạo nhân vật</h1>
+          </div>
+
+    <div class="cc-card">
+            <div class="cc-card__head">
+              <strong>Character Builder</strong>
+            </div>
+            <form class="cc-form" id="characterForm">
+
+              <!-- BASIC -->
+              <div class="cc-section">
+                <h2 class="cc-title">Thông tin cơ bản</h2>
+
+                <div class="cc-grid-6">
+                   <div class="cc-field">
+                    <label for="name">Tên nhân vật *</label>
+                    <input id="name" required placeholder="Ví dụ: Arannis Nightbloom" />
+                  </div>
+
+                  <div class="cc-field">
+                    <!-- Race -->
+                    <label for="race">Chủng tộc (Races)</label>
+                    <select id="race">
+                        <option value="Dragonborn">Dragonborn</option>
+                        <option value="Human">Human</option>
+                        <option value="Aasimar">Aasimar</option>
+                        <option value="Dwarf">Dwarf</option>
+                        <option value="Elf">Elf</option>
+                        <option value="Gnome">Gnome</option>
+                        <option value="Halfling">Halfling</option>
+                        <option value="Orc">Orc</option>
+                        <option value="Tiefling">Tiefling</option>
+                    </select>
+
+                  </div>
+                  <!-- Class -->
+                  <div class="cc-field">
+                    <label for="class_name">Lớp (Classes)</label>
+                    <select id="class">
+                        <option value="Barbarian">Barbarian</option>
+                        <option value="Bard">Bard</option>
+                        <option value="Cleric">Cleric</option>
+                        <option value="Druid">Druid</option>
+                        <option value="Druid">Dwarf</option>
+                        <option value="Fighter">Fighter</option>
+                        <option value="Monk">Monk</option>
+                        <option value="Paladin">Paladin</option>
+                        <option value="Ranger">Ranger</option>
+                        <option value="Rogue">Rogue</option>
+                        <option value="Sorcerer">Sorcerer</option>
+                        <option value="Warlock">Warlock</option>
+                        <option value="Wizard">Wizard</option>
+                    </select>
+                  </div>
+
+                  <!-- Level -->
+                  <div class="cc-field">
+                    <label for="level">Cấp độ</label>
+                    <input id="level" type="number" min="1" max="20" value="1" />
+                  </div>
+
+                  <!-- Alignment -->
+                  <div class="cc-field">
+                    <label for="alignment">Xu hướng</label>
+                    <select id="alignment">
+                      <option value="Lawful Good">Lawful Good</option>
+                      <option value="Neutral Good">Neutral Good</option>
+                      <option value="Chaotic Good">Chaotic Good</option>
+                      <option value="Lawful Neutral">Lawful Neutral</option>
+                      <option value="Neutral" selected>Neutral</option>
+                      <option value="Chaotic Neutral">Chaotic Neutral</option>
+                      <option value="Lawful Evil">Lawful Evil</option>
+                      <option value="Neutral Evil">Neutral Evil</option>
+                      <option value="Chaotic Evil">Chaotic Evil</option>
+                    </select>
+                  </div>
+
+                  <div class="cc-field">
+                    <label for="background">Background</label>
+                    <input id="background" value="Adventurer" />
+                  </div>
+
+                </div>
+              </div>
+              
+              <!-- Sense -->
+              <div class="cc-section">
+                <h2 class="cc-title">Sense</h2>
+
+                <div class="cc-grid-3">
+                  <div class="cc-field"><label for="initiative">Passive Perception  (Nhận thức thụ động)</label><input id="pa_perception" type="number" placeholder="0"></div>
+                  <div class="cc-field"><label for="ac">Passive Insight (Thấu cảm thụ động)</label><input id="pa_insight" type="number" value="0"></div>
+                  <div class="cc-field"><label for="speed">Passive Investigation (Điều tra thụ động)</label><input id="pa_investigation" type="number" value="0"></div>
+                </div>
+
+              </div>
+
+              <!-- ABILITY SCORES -->
+              <div class="cc-section">
+                <h2 class="cc-title">Ability Scores</h2>
+
+                <div class="cc-grid-6">
+                  <div class="cc-field cc-ability">
+                    <label for="str">STR (Sức mạnh)</label>
+                    <input id="str" type="number" min="1" max="30" value="10">
+                    <div class="cc-ability-mod">MOD: <b id="mod_str">+0</b></div>
+                  </div>
+
+                  <div class="cc-field cc-ability">
+                    <label for="dex">DEX (Nhanh nhẹn)</label>
+                    <input id="dex" type="number" min="1" max="30" value="10">
+                    <div class="cc-ability-mod">MOD: <b id="mod_dex">+0</b></div>
+                  </div>
+
+                  <div class="cc-field cc-ability">
+                    <label for="con">CON (Thể chất)</label>
+                    <input id="con" type="number" min="1" max="30" value="10">
+                    <div class="cc-ability-mod">MOD: <b id="mod_con">+0</b></div>
+                  </div>
+
+                  <div class="cc-field cc-ability">
+                    <label for="int">INT (Trí tuệ)</label>
+                    <input id="int" type="number" min="1" max="30" value="10">
+                    <div class="cc-ability-mod">MOD: <b id="mod_int">+0</b></div>
+                  </div>
+
+                  <div class="cc-field cc-ability">
+                    <label for="wis">WIS (Trí khôn)</label>
+                    <input id="wis" type="number" min="1" max="30" value="10">
+                    <div class="cc-ability-mod">MOD: <b id="mod_wis">+0</b></div>
+                  </div>
+
+                  <div class="cc-field cc-ability">
+                    <label for="cha">CHA (Sức hút)</label>
+                    <input id="cha" type="number" min="1" max="30" value="10">
+                    <div class="cc-ability-mod">MOD: <b id="mod_cha">+0</b></div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Saving throw -->
+              <div class="cc-section">
+                <h2 class="cc-title">Saving Throw</h2>
+
+                <div class="cc-grid-6">
+                  <div class="cc-field cc-skill">
+                    <label>STR</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="saveProf_str" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="save_str" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label>DEX</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="saveProf_dex" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="save_dex" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label>CON</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="saveProf_con" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="save_con" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label>INT</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="saveProf_int" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="save_int" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label>WIS</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="saveProf_wis" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="save_wis" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label>CHA</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="saveProf_cha" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="save_cha" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+              <!-- Skills -->
+              <div class="cc-section">
+                <h2 class="cc-title">Skills</h2>
+                <div class="cc-grid-6">
+                  <div class="cc-field cc-skill">
+                    <label for="acrobatics">Acrobatics (Nhào lộn)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_acrobatics" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="acrobatics" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="animalHandling">Animal Handling (Thuần hóa)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_animalHandling" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="animalHandling" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="arcana">Arcana (Huyễn học)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_arcana" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="arcana" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="athletics">Athletics (Vận động)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_athletics" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="athletics" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="deception">Deception (Lừa dối)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_deception" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="deception" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="history">History (Lịch sử)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_history" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="history" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="insight">Insight (Thấu hiểu)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_insight" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="insight" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="intimidation">Intimidation (Đe dọa)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_intimidation" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="intimidation" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="investigation">Investigation (Điều tra)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_investigation" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="investigation" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="medicine">Medicine (Y học)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_medicine" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="medicine" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="nature">Nature (Thiên nhiên)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_nature" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="nature" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="perception">Perception (Nhận thức)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_perception" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="perception" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="performance">Performance (Biểu diễn)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_performance" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="performance" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="persuasion">Persuasion (Thuyết phục)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_persuasion" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="persuasion" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="religion">Religion (Tôn giáo)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_religion" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="religion" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="sleightOfHand">Sleight of Hand (Khéo tay)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_sleightOfHand" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="sleightOfHand" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="stealth">Stealth (Ẩn nấp)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_stealth" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="stealth" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+
+                  <div class="cc-field cc-skill">
+                    <label for="survival">Survival (Sinh tồn)</label>
+                    <div class="cc-skill-row">
+                      <label class="cc-profi">
+                        <input type="checkbox" id="p_survival" />
+                        <span>Prof</span>
+                      </label>
+                      <input id="survival" type="number" min="-10" max="20" value="0" readonly>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- DEFENSES / HP / SAVES -->
+              <div class="cc-section">
+                <h2 class="cc-title">Defenses</h2>
+
+                <div class="cc-grid-6">
+                  <div class="cc-field"><label for="initiative">Initiative (Độ ưu tiên)</label><input id="initiative" type="number" placeholder="Ví dụ: 3"></div>
+                  <div class="cc-field"><label for="ac">Armor Class (Giáp)</label><input id="ac" type="number" min="1" max="30" value="10"></div>
+                  <div class="cc-field"><label for="speed">Speed (Tốc độ)</label><input id="speed" value="30 ft"></div>
+                  <div class="cc-field"><label for="proficiencyBonus">Proficiency Bonus (Độ thuần thục)</label><input id="proficiencyBonus" type="number" placeholder="Ví dụ: 2"></div>
+                  <div class="cc-field"><label for="hitDice">Hit Dice</label><input id="hitDice" type="text" placeholder="Ví dụ: 1d8"></div>
+                  <div class="cc-field"><label for="abilitySaveDc">Ability Save DC</label><input id="abilitySaveDc" type="number" min="0" placeholder="Ví dụ: 13" /></div>
+                </div>
+
+                <div class="cc-grid-3" style="margin-top:12px;">
+                  <div class="cc-field"><label for="hp">Hp tối đa</label><input id="hp" type="number" min="1" max="999" value="10"></div>
+                  <div class="cc-field"><label for="currentHp">Hp hiện tại</label><input id="currentHp" type="number" min="0" placeholder="0"></div>
+                  
+                    <div class="cc-grid-3">
+                      <div class="cc-field">
+                        <label style="opacity:.75">Successes</label>
+                        <div class="cc-checkbox">
+                          <input type="checkbox" id="ds_s1"><label for="ds_s1">1</label>
+                          <input type="checkbox" id="ds_s2"><label for="ds_s2">2</label>
+                          <input type="checkbox" id="ds_s3"><label for="ds_s3">3</label>
+                        </div>
+                      </div>
+                      <div class="cc-field">
+                        <label style="opacity:.75">Failures</label>
+                        <div class="cc-checkbox">
+                          <input type="checkbox" id="ds_f1"><label for="ds_f1">1</label>
+                          <input type="checkbox" id="ds_f2"><label for="ds_f2">2</label>
+                          <input type="checkbox" id="ds_f3"><label for="ds_f3">3</label>
+                        </div>
+                      </div>
+                      <div class="cc-field">
+                        <label style="opacity:.75">Heroic Inspiration</label>
+                        <div class="cc-checkbox">
+                          <input type="checkbox" id="heroicInspiration">
+                          <label for="heroicInspiration">Có</label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+              <div class="cc-field">
+                <h2>Resistances / Immunities / Vulnerabilities</h2>
+
+                <!-- Resistances -->
+                <h3 style="margin:10px 0 8px; font-size:14px;">Resistances</h3>
+                <div class="cc-checkgrid" id="resistancesBox" style="grid-template-columns:repeat(5, minmax(0,1fr));">
+                  <label class="cc-check"><input type="checkbox" value="acid"> Acid</label>
+                  <label class="cc-check"><input type="checkbox" value="cold"> Cold</label>
+                  <label class="cc-check"><input type="checkbox" value="fire"> Fire</label>
+                  <label class="cc-check"><input type="checkbox" value="force"> Force</label>
+                  <label class="cc-check"><input type="checkbox" value="lightning"> Lightning</label>
+                  <label class="cc-check"><input type="checkbox" value="necrotic"> Necrotic</label>
+                  <label class="cc-check"><input type="checkbox" value="poison"> Poison</label>
+                  <label class="cc-check"><input type="checkbox" value="psychic"> Psychic</label>
+                  <label class="cc-check"><input type="checkbox" value="radiant"> Radiant</label>
+                  <label class="cc-check"><input type="checkbox" value="thunder"> Thunder</label>
+                  <label class="cc-check"><input type="checkbox" value="bludgeoning"> Bludgeoning</label>
+                  <label class="cc-check"><input type="checkbox" value="slashing"> Slashing</label>
+                  <label class="cc-check"><input type="checkbox" value="piercing"> Piercing</label>
+                  <label class="cc-check"><input type="checkbox" value="nonmagical_bsp"> Nonmagical B/S/P</label>
+                  <label class="cc-check"><input type="checkbox" value="magical_bsp"> Magical B/S/P</label>
+                </div>
+
+                <!-- Immunities -->
+                <h3 style="margin:14px 0 8px; font-size:14px;">Immunities</h3>
+                <div class="cc-checkgrid" id="immunitiesBox" style="grid-template-columns:repeat(5, minmax(0,1fr));">
+                  <label class="cc-check"><input type="checkbox" value="acid"> Acid</label>
+                  <label class="cc-check"><input type="checkbox" value="cold"> Cold</label>
+                  <label class="cc-check"><input type="checkbox" value="fire"> Fire</label>
+                  <label class="cc-check"><input type="checkbox" value="force"> Force</label>
+                  <label class="cc-check"><input type="checkbox" value="lightning"> Lightning</label>
+                  <label class="cc-check"><input type="checkbox" value="necrotic"> Necrotic</label>
+                  <label class="cc-check"><input type="checkbox" value="poison"> Poison</label>
+                  <label class="cc-check"><input type="checkbox" value="psychic"> Psychic</label>
+                  <label class="cc-check"><input type="checkbox" value="radiant"> Radiant</label>
+                  <label class="cc-check"><input type="checkbox" value="thunder"> Thunder</label>
+                  <label class="cc-check"><input type="checkbox" value="bludgeoning"> Bludgeoning</label>
+                  <label class="cc-check"><input type="checkbox" value="slashing"> Slashing</label>
+                  <label class="cc-check"><input type="checkbox" value="piercing"> Piercing</label>
+                  <label class="cc-check"><input type="checkbox" value="nonmagical_bsp"> Nonmagical B/S/P</label>
+                  <label class="cc-check"><input type="checkbox" value="magical_bsp"> Magical B/S/P</label>
+
+                  <!-- thêm phần condition immunity hay gặp -->
+                  <label class="cc-check"><input type="checkbox" value="charmed"> Charmed</label>
+                  <label class="cc-check"><input type="checkbox" value="frightened"> Frightened</label>
+                  <label class="cc-check"><input type="checkbox" value="poisoned"> Poisoned</label>
+                  <label class="cc-check"><input type="checkbox" value="paralyzed"> Paralyzed</label>
+                  <label class="cc-check"><input type="checkbox" value="stunned"> Stunned</label>
+                </div>
+
+                <!-- Vulnerabilities -->
+                <h3 style="margin:14px 0 8px; font-size:14px;">Vulnerabilities</h3>
+                <div class="cc-checkgrid" id="vulnerabilitiesBox" style="grid-template-columns:repeat(5, minmax(0,1fr));">
+                  <label class="cc-check"><input type="checkbox" value="acid"> Acid</label>
+                  <label class="cc-check"><input type="checkbox" value="cold"> Cold</label>
+                  <label class="cc-check"><input type="checkbox" value="fire"> Fire</label>
+                  <label class="cc-check"><input type="checkbox" value="force"> Force</label>
+                  <label class="cc-check"><input type="checkbox" value="lightning"> Lightning</label>
+                  <label class="cc-check"><input type="checkbox" value="necrotic"> Necrotic</label>
+                  <label class="cc-check"><input type="checkbox" value="poison"> Poison</label>
+                  <label class="cc-check"><input type="checkbox" value="psychic"> Psychic</label>
+                  <label class="cc-check"><input type="checkbox" value="radiant"> Radiant</label>
+                  <label class="cc-check"><input type="checkbox" value="thunder"> Thunder</label>
+                  <label class="cc-check"><input type="checkbox" value="bludgeoning"> Bludgeoning</label>
+                  <label class="cc-check"><input type="checkbox" value="slashing"> Slashing</label>
+                  <label class="cc-check"><input type="checkbox" value="piercing"> Piercing</label>
+                  <label class="cc-check"><input type="checkbox" value="nonmagical_bsp"> Nonmagical B/S/P</label>
+                  <label class="cc-check"><input type="checkbox" value="magical_bsp"> Magical B/S/P</label>
+                </div>
+
+                <div class="cc-row-actions" style="margin-top:10px;">
+                  <button class="cc-btn" type="button" id="defAllClear">Bỏ chọn hết</button>
+                </div>
+              </div>
+
+
+              <div class="cc-field">
+                <h2>Train, Proficiency, Action, Feature</h2>
+
+                <div class="cc-listbox">
+                  <div id="trainList" class="cc-list"></div>
+                  <div class="cc-row-actions" style="margin-top:10px;">
+                    <button class="cc-btn" type="button" id="addTrainBtn">+ Thêm dòng</button>
+                    <button class="cc-btn danger" type="button" id="clearTrainBtn">Xoá hết</button>
+                  </div>
+
+                  <div id="proficiencyList" class="cc-list"></div>
+                  <div class="cc-row-actions" style="margin-top:10px;">
+                    <button class="cc-btn" type="button" id="addProficiencyBtn">+ Thêm dòng</button>
+                    <button class="cc-btn danger" type="button" id="clearProficiencyBtn">Xoá hết</button>
+                  </div>
+
+                  <div id="actionList" class="cc-list"></div>
+                  <div class="cc-row-actions" style="margin-top:10px;">
+                    <button class="cc-btn" type="button" id="addActionBtn">+ Thêm dòng</button>
+                    <button class="cc-btn danger" type="button" id="clearActionBtn">Xoá hết</button>
+                  </div>
+
+                  <div id="featureList" class="cc-list"></div>
+                  <div class="cc-row-actions" style="margin-top:10px;">
+                    <button class="cc-btn" type="button" id="addFeatureBtn">+ Thêm dòng</button>
+                    <button class="cc-btn danger" type="button" id="clearFeatureBtn">Xoá hết</button>
+                  </div>
+
+                </div>
+
+                <!-- hidden để lưu JSON khi submit -->
+                <input type="hidden" id="featureListJson" value="[]">
+              </div>
+
+
+              <div class="cc-field">
+                <h2>Spells</h2>
+
+                <div class="cc-tablewrap">
+                  <table class="cc-table cc-spelltable" aria-label="Spells table">
+                    <thead>
+                      <tr>
+                        <th class="cc-xxs">PREP</th>
+                        <th>SPELL NAME</th>
+                        <th class="cc-tiny">SOURCE</th>
+                        <th class="cc-tiny">SAVE/ATK</th>
+                        <th class="cc-tiny">TIME</th>
+                        <th class="cc-tiny">RANGE</th>
+                        <th class="cc-tiny">COMP</th>
+                        <th class="cc-tiny">DURATION</th>
+                        <th class="cc-tiny">PAGE REF</th>
+                        <th>NOTES</th>
+                        <th class="cc-xxs">✕</th>
+                      </tr>
+                    </thead>
+
+                    <tbody id="spellTbody"></tbody>
+                  </table>
+                </div>
+
+                <div class="cc-row-actions" style="margin-top:10px;">
+                  <button class="cc-btn" type="button" id="addSpellRowBtn">+ Thêm spell</button>
+                  <button class="cc-btn" type="button" id="addCantripRowBtn">+ Thêm cantrip</button>
+                  <button class="cc-btn" type="button" id="clearSpellsBtn">Bỏ hết</button>
+                </div>
+
+                <!-- Hidden: dùng để submit -->
+                <input type="hidden" id="spellsJson" value="[]">
+              </div>
+
+              <div class="cc-section">
+                <h2 class="cc-title">Equipment</h2>
+
+                <div class="cc-equip-sheet">
+                  <!-- LEFT: Coins + totals -->
+                  <aside class="cc-equip-side">
+                    <div class="cc-coin">
+                      <label for="coin_cp">CP</label>
+                      <input id="coin_cp" type="number" min="0" value="0">
+                    </div>
+                    <div class="cc-coin">
+                      <label for="coin_sp">SP</label>
+                      <input id="coin_sp" type="number" min="0" value="0">
+                    </div>
+                    <div class="cc-coin">
+                      <label for="coin_ep">EP</label>
+                      <input id="coin_ep" type="number" min="0" value="0">
+                    </div>
+                    <div class="cc-coin">
+                      <label for="coin_gp">GP</label>
+                      <input id="coin_gp" type="number" min="0" value="0">
+                    </div>
+                    <div class="cc-coin">
+                      <label for="coin_pp">PP</label>
+                      <input id="coin_pp" type="number" min="0" value="0">
+                    </div>
+
+                    <div class="cc-side-metrics">
+                      <div class="cc-metric">
+                        <div class="cc-metric__label">WEIGHT CARRIED</div>
+                        <div class="cc-metric__value"><b id="weightCarried">0</b> lb.</div>
+                      </div>
+                      <div class="cc-metric">
+                        <div class="cc-metric__label">ENCUMBERED</div>
+                        <div class="cc-metric__value"><b id="encumberedAt">0</b> lb.</div>
+                        <div class="cc-subnote">= 5 × STR</div>
+                      </div>
+                      <div class="cc-metric">
+                        <div class="cc-metric__label">PUSH / DRAG / LIFT</div>
+                        <div class="cc-metric__value"><b id="pushDragLift">0</b> lb.</div>
+                        <div class="cc-subnote">= 30 × STR</div>
+                      </div>
+                    </div>
+                  </aside>
+
+                  <!-- RIGHT: Two columns of items -->
+                  <div class="cc-equip-main">
+                    <div class="cc-equip-cols">
+                      <!-- Column A -->
+                      <div class="cc-equip-col">
+                        <div class="cc-equip-head">
+                          <span>NAME</span><span>QTY</span><span>WEIGHT</span><span></span>
+                        </div>
+                        <div id="equipColA" class="cc-equip-rows"></div>
+
+                        <div class="cc-row-actions" style="margin-top:10px;">
+                          <button class="cc-btn" type="button" id="addEquipA">+ Add row</button>
+                        </div>
+                      </div>
+
+                      <!-- Column B -->
+                      <div class="cc-equip-col">
+                        <div class="cc-equip-head">
+                          <span>NAME</span><span>QTY</span><span>WEIGHT</span><span></span>
+                        </div>
+                        <div id="equipColB" class="cc-equip-rows"></div>
+
+                        <div class="cc-row-actions" style="margin-top:10px;">
+                          <button class="cc-btn" type="button" id="addEquipB">+ Add row</button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Attuned magic items -->
+                    <div class="cc-attuned">
+                      <div class="cc-attuned__title">ATTUNED MAGIC ITEMS</div>
+                      <div class="cc-equip-head">
+                        <span>NAME</span><span>QTY</span><span>WEIGHT</span><span></span>
+                      </div>
+                      <div id="equipAttuned" class="cc-equip-rows"></div>
+
+                      <div class="cc-row-actions" style="margin-top:10px;">
+                        <button class="cc-btn" type="button" id="addEquipAttuned">+ Add row</button>
+                        <button class="cc-btn danger" type="button" id="clearEquipAll">Clear all</button>
+                      </div>
+                    </div>
+
+                    <input type="hidden" id="equipmentJson" value="[]">
+                    <input type="hidden" id="coinsJson" value="{}">
+
+                  </div>
+                
+                </div>
+              </div>
+              
+              <div class="cc-field cc-attacks">
+              <h2>Attacks</h2>
+
+              <div class="cc-attacks-grid">
+                <div class="cc-attacks-head">
+                  <div>NAME</div>
+                  <div>HIT</div>
+                  <div>DAMAGE/TYPE</div>
+                  <div>NOTES</div>
+                  <div></div>
+                </div>
+
+                <div id="attackRows" class="cc-attacks-rows"></div>
+
+                <div class="cc-row-actions">
+                  <button class="cc-btn" type="button" id="addAttackRowBtn">+ Add row</button>
+                  <button class="cc-btn danger" type="button" id="clearAttacksBtn">Clear all</button>
+                </div>
+
+                <!-- hidden để submit -->
+                <input type="hidden" id="attacksJson" value="[]">
+              </div>
+              </div>
+      
+              
+      <div class="cc-row-actions" style="margin-top:14px;">
+        <button class="cc-btn" type="button" id="publishCharacterBtn">📌 Đăng nhân vật lên web</button>
+        <div id="publishMsg" style="font-size:13px;color:#b91c1c;"></div>
+      </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <script src="/JS/page-character-create.js"></script>
+</body>
+</html>
+
+               

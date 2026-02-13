@@ -1,32 +1,42 @@
+const path = require("path");
+const Database = require("better-sqlite3");
 
- db.exec(`
-     title TEXT NOT NULL,
-     excerpt TEXT DEFAULT "",
-     content TEXT NOT NULL,
-     image TEXT DEFAULT "",
-     category TEXT DEFAULT "Tin mới",
-     author TEXT DEFAULT "",
-     date TEXT DEFAULT "",
-     created_at TEXT DEFAULT CURRENT_TIMESTAMP
-   )
- `);
- 
- // migrate (cũ -> thêm cột nếu thiếu)
- const cols = db.prepare(`PRAGMA table_info(items)`).all().map((c) => c.name);
- const addCol = (name, ddl) => {
-   if (!cols.includes(name)) {
-     try { db.exec(`ALTER TABLE items ADD COLUMN ${ddl}`); } catch {}
-   }
- };
- 
- addCol("excerpt", `excerpt TEXT DEFAULT ""`);
- addCol("image", `image TEXT DEFAULT ""`);
- addCol("category", `category TEXT DEFAULT "Tin mới"`);
- addCol("author", `author TEXT DEFAULT ""`);
- addCol("date", `date TEXT DEFAULT ""`);
- 
+// __dirname = backend/src/db  ->  ../database.sqlite = backend/src/database.sqlite
+const dbPath = path.join(__dirname, "..", "database.sqlite");
+console.log("📂 Using database at:", dbPath);
 
-// bảng nhân vật DnD
+const db = new Database(dbPath);
+db.pragma("journal_mode = WAL");
+
+// ====== users ======
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    role TEXT DEFAULT 'user',
+    email TEXT,
+    phone TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// ====== items ======
+db.exec(`
+  CREATE TABLE IF NOT EXISTS items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    excerpt TEXT DEFAULT "",
+    content TEXT NOT NULL,
+    image TEXT DEFAULT "",
+    category TEXT DEFAULT "Tin mới",
+    author TEXT DEFAULT "",
+    date TEXT DEFAULT "",
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+// ====== characters ======
 db.exec(`
   CREATE TABLE IF NOT EXISTS characters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,4 +65,19 @@ db.exec(`
   )
 `);
 
- module.exports = db;
+// ===== migrate: add is_public if missing (better-sqlite3) =====
+try {
+  const cols = db.prepare("PRAGMA table_info(characters)").all();
+  const has = cols.some(c => c.name === "is_public");
+  if (!has) {
+    db.prepare("ALTER TABLE characters ADD COLUMN is_public INTEGER DEFAULT 1").run();
+    console.log("✅ Migrated: added characters.is_public");
+  }
+} catch (e) {
+  console.error("❌ migrate is_public failed:", e);
+}
+
+
+
+
+module.exports = db;
