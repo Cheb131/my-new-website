@@ -27,6 +27,9 @@ const characterSchema = z.object({
   skills: z.array(z.string().trim().min(1).max(80)).optional().default([]),
   equipment: z.array(z.string().trim().min(1).max(160)).optional().default([]),
   notes: z.array(z.string().trim().min(1).max(240)).optional().default([]),
+
+  // nếu frontend có gửi is_public thì nhận, không thì mặc định true
+  is_public: z.coerce.boolean().optional().default(true),
 });
 
 function mapRow(row) {
@@ -52,11 +55,25 @@ function mapRow(row) {
   };
 }
 
+/**
+ * ✅ Helper: kiểm tra cột có tồn tại (để DB cũ vẫn chạy)
+ */
+let COL_CACHE = null;
+function hasColumn(colName) {
+  if (!COL_CACHE) {
+    const cols = db.prepare("PRAGMA table_info(characters)").all();
+    COL_CACHE = new Set(cols.map((c) => c.name));
+  }
+  return COL_CACHE.has(colName);
+}
+
 // ===== PUBLIC list =====
 exports.getPublic = (req, res) => {
-  const rows = db
-    .prepare("SELECT * FROM characters WHERE is_public = 1 ORDER BY id DESC")
-    .all();
+  const sql = hasColumn("is_public")
+    ? "SELECT * FROM characters WHERE is_public = 1 ORDER BY id DESC"
+    : "SELECT * FROM characters ORDER BY id DESC";
+
+  const rows = db.prepare(sql).all();
   res.json(rows.map(mapRow));
 };
 
@@ -65,15 +82,17 @@ exports.getPublicById = (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
 
-  const row = db
-    .prepare("SELECT * FROM characters WHERE id = ? AND is_public = 1")
-    .get(id);
+  const sql = hasColumn("is_public")
+    ? "SELECT * FROM characters WHERE id = ? AND is_public = 1"
+    : "SELECT * FROM characters WHERE id = ?";
 
+  const row = db.prepare(sql).get(id);
   if (!row) return res.status(404).json({ message: "Character not found" });
+
   res.json(mapRow(row));
 };
 
-// ===== CREATE (ai cũng đăng => luôn public) =====
+// ===== CREATE (ai cũng đăng) =====
 exports.create = (req, res) => {
   const parsed = characterSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -85,27 +104,14 @@ exports.create = (req, res) => {
 
   const data = parsed.data;
 
-  // 22 columns (nếu table của bạn KHÔNG có created_by)
-  // 23 columns (nếu table của bạn CÓ created_by)
-  //
-  // DỰ ÁN BẠN đang có created_by trong schema insert -> mình giữ 23 cột.
-  const sql = `
-    INSERT INTO characters (
-      name, race, class_name, level, alignment, background, avatar, description,
-      str, dex, con, int, wis, cha,
-      hp, ac, speed,
-      skills, equipment, notes,
-      created_by, is_public
-    ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?,
-      ?, ?, ?,
-      ?, ?
-    )
-  `;
+  const cols = [
+    "name", "race", "class_name", "level", "alignment", "background", "avatar", "description",
+    "str", "dex", "con", "int", "wis", "cha",
+    "hp", "ac", "speed",
+    "skills", "equipment", "notes",
+  ];
 
-  const info = db.prepare(sql).run(
+  const values = [
     data.name,
     data.race,
     data.class_name,
@@ -114,29 +120,47 @@ exports.create = (req, res) => {
     data.background,
     data.avatar || "",
     data.description || "",
-
     data.stats.str,
     data.stats.dex,
     data.stats.con,
     data.stats.int,
     data.stats.wis,
     data.stats.cha,
-
     data.hp,
     data.ac,
     data.speed || "30 ft",
-
     JSON.stringify(data.skills || []),
     JSON.stringify(data.equipment || []),
     JSON.stringify(data.notes || []),
+  ];
 
-    "guest",
-    1 // ALWAYS PUBLIC
-  );
+  // optional columns if exist
+  if (hasColumn("created_by")) {
+    cols.push("created_by");
+    values.push("guest");
+  }
+  if (hasColumn("is_public")) {
+    cols.push("is_public");
+    values.push(data.is_public ? 1 : 0);
+  }
 
-  const created = db
-    .prepare("SELECT * FROM characters WHERE id = ?")
-    .get(info.lastInsertRowid);
+  const placeholders = cols.map(() => "?").join(", ");
+  const sql = `INSERT INTO characters (${cols.join(", ")}) VALUES (${placeholders})`;
 
+  const info = db.prepare(sql).run(...values);
+
+  const created = db.prepare("SELECT * FROM characters WHERE id = ?").get(info.lastInsertRowid);
   res.status(201).json(mapRow(created));
+};
+
+// ===== DELETE (ai cũng xoá) =====
+exports.remove = (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
+
+  const row = db.prepare("SELECT id FROM characters WHERE id = ?").get(id);
+  if (!row) return res.status(404).json({ message: "Character not found" });
+
+  db.prepare("DELETE FROM characters WHERE id = ?").run(id);
+  res.json({ ok: true, id });
 };

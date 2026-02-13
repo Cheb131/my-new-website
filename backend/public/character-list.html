@@ -111,6 +111,22 @@
     @media (max-width: 700px){
       .char-grid{ grid-template-columns: 1fr; }
     }
+    .char-card{ position:relative; }
+
+    .char-del{
+      position:absolute;
+      top:10px;
+      right:10px;
+      width:38px;height:38px;
+      border-radius:12px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      cursor:pointer;
+      font-size:16px;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .char-del:hover{ background:#fee2e2; border-color:#fecaca; }
+
   </style>
 </head>
 
@@ -260,131 +276,171 @@
   <script src="/JS/core.js"></script>
 
   <script>
-    (function () {
-      const listBox = document.getElementById("listBox");
-      const reloadBtn = document.getElementById("reloadBtn");
-      const countEl = document.getElementById("charCount");
-      const navSearchInput = document.getElementById("navSearchInput");
+   (function () {
+  const listBox = document.getElementById("listBox");
+  const reloadBtn = document.getElementById("reloadBtn");
+  const countEl = document.getElementById("charCount");
+  const navSearchInput = document.getElementById("navSearchInput");
 
-      let all = [];
+  let all = [];
 
-      function esc(s){
-        return String(s ?? "").replace(/[&<>"']/g, (m) => ({
-          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-        }[m]));
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, (m) => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+
+  function getQuery() {
+    const q = new URLSearchParams(location.search).get("q");
+    return (q || "").trim().toLowerCase();
+  }
+
+  function cardHtml(c) {
+    const id = Number(c.id);
+    const name = esc(c.name || "Unknown");
+    const race = esc(c.race || "—");
+    const cls  = esc(c.class_name || "—");
+    const lv   = Number(c.level || 1);
+    const desc = esc(c.description || "");
+    const avatar = (c.avatar && String(c.avatar).trim()) ? c.avatar : "/Assets/images/sample.png";
+
+    return `
+      <article class="char-card" role="button" tabindex="0" data-id="${id}">
+        <button class="char-del" type="button" data-del="${id}" title="Xoá nhân vật">🗑️</button>
+
+        <div class="char-card-top">
+          <img class="char-avatar" src="${esc(avatar)}" alt="${name}">
+          <div>
+            <h3 class="char-title">${name}</h3>
+            <p class="char-meta">${race} • ${cls} • Lv ${lv}</p>
+          </div>
+        </div>
+
+        <p class="char-desc">${desc || "—"}</p>
+
+        <div class="char-tags">
+          <span class="char-tag">HP: ${Number(c.hp ?? 10)}</span>
+          <span class="char-tag">AC: ${Number(c.ac ?? 10)}</span>
+          <span class="char-tag">Speed: ${esc(c.speed || "30 ft")}</span>
+        </div>
+      </article>
+    `;
+  }
+
+  function render(list, totalAll) {
+    if (!Array.isArray(list) || list.length === 0) {
+      listBox.innerHTML = `
+        <div class="empty-box">
+          Không có nhân vật phù hợp. Hãy thử tìm từ khoá khác hoặc tạo nhân vật mới.
+        </div>
+      `;
+      countEl.textContent = totalAll != null ? `0/${totalAll} nhân vật` : "0 nhân vật";
+      return;
+    }
+
+    listBox.innerHTML = `<div class="char-grid">${list.map(cardHtml).join("")}</div>`;
+
+    // Click card -> vào trang chi tiết (trừ khi click nút xoá)
+    listBox.querySelectorAll(".char-card").forEach((card) => {
+      const go = () => {
+        const id = card.getAttribute("data-id");
+        window.location.href = `character.html?id=${encodeURIComponent(id)}`;
+      };
+
+      card.addEventListener("click", (e) => {
+        // nếu bấm vào nút xoá thì không đi trang detail
+        if (e.target.closest?.("[data-del]")) return;
+        go();
+      });
+
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") go();
+      });
+    });
+  }
+
+  function applyFilter() {
+    const q = getQuery();
+    if (navSearchInput) navSearchInput.value = q ? q : "";
+
+    if (!q) {
+      render(all, all.length);
+      countEl.textContent = `${all.length} nhân vật`;
+      return;
+    }
+
+    const filtered = all.filter((c) => {
+      const s = [
+        c.name, c.race, c.class_name, c.alignment, c.background, c.description
+      ].join(" ").toLowerCase();
+      return s.includes(q);
+    });
+
+    render(filtered, all.length);
+    countEl.textContent = `${filtered.length}/${all.length} nhân vật`;
+  }
+
+  async function load() {
+    listBox.innerHTML = `<div class="empty-box">Đang tải danh sách nhân vật...</div>`;
+    countEl.textContent = "Đang tải...";
+
+    try {
+      const res = await fetch("/api/characters/public");
+      const data = await res.json().catch(() => []);
+      if (!res.ok) {
+        listBox.innerHTML = `<div class="empty-box">Không tải được danh sách (server trả lỗi).</div>`;
+        countEl.textContent = "Lỗi tải";
+        return;
       }
 
-      function getQuery() {
-        const q = new URLSearchParams(location.search).get("q");
-        return (q || "").trim().toLowerCase();
+      all = Array.isArray(data) ? data : [];
+      all.sort((a,b) => Number(b.id || 0) - Number(a.id || 0));
+
+      applyFilter();
+    } catch (e) {
+      listBox.innerHTML = `<div class="empty-box">Không kết nối được server.</div>`;
+      countEl.textContent = "Lỗi kết nối";
+    }
+  }
+
+  // ✅ Xoá nhân vật (event delegation)
+  listBox.addEventListener("click", async (e) => {
+    const btn = e.target.closest?.("[data-del]");
+    if (!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const id = btn.getAttribute("data-del");
+    if (!id) return;
+
+    if (!confirm("Bạn có chắc muốn xoá nhân vật này không?")) return;
+
+    try {
+      const res = await fetch(`/api/characters/${encodeURIComponent(id)}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        alert(data?.message || "Xoá thất bại");
+        return;
       }
 
-      function cardHtml(c) {
-        const id = Number(c.id);
-        const name = esc(c.name || "Unknown");
-        const race = esc(c.race || "—");
-        const cls  = esc(c.class_name || "—");
-        const lv   = Number(c.level || 1);
-        const desc = esc(c.description || "");
-        const avatar = (c.avatar && String(c.avatar).trim()) ? c.avatar : "/Assets/images/sample.png";
+      await load();
+    } catch (err) {
+      alert("Không kết nối được server");
+    }
+  });
 
-        return `
-          <article class="char-card" role="button" tabindex="0" data-id="${id}">
-            <div class="char-card-top">
-              <img class="char-avatar" src="${esc(avatar)}" alt="${name}">
-              <div>
-                <h3 class="char-title">${name}</h3>
-                <p class="char-meta">${race} • ${cls} • Lv ${lv}</p>
-              </div>
-            </div>
+  reloadBtn.addEventListener("click", load);
 
-            <p class="char-desc">${desc || "—"}</p>
+  // Khi back/forward thay đổi ?q=, tự filter lại
+  window.addEventListener("popstate", applyFilter);
 
-            <div class="char-tags">
-              <span class="char-tag">HP: ${Number(c.hp ?? 10)}</span>
-              <span class="char-tag">AC: ${Number(c.ac ?? 10)}</span>
-              <span class="char-tag">Speed: ${esc(c.speed || "30 ft")}</span>
-            </div>
-          </article>
-        `;
-      }
+  load();
+})();
 
-      function render(list, totalAll) {
-        if (!Array.isArray(list) || list.length === 0) {
-          listBox.innerHTML = `
-            <div class="empty-box">
-              Không có nhân vật phù hợp. Hãy thử tìm từ khoá khác hoặc tạo nhân vật mới.
-            </div>
-          `;
-          countEl.textContent = totalAll != null ? `0/${totalAll} nhân vật` : "0 nhân vật";
-          return;
-        }
-
-        listBox.innerHTML = `<div class="char-grid">${list.map(cardHtml).join("")}</div>`;
-
-        listBox.querySelectorAll(".char-card").forEach((card) => {
-          const go = () => {
-            const id = card.getAttribute("data-id");
-            window.location.href = `character.html?id=${encodeURIComponent(id)}`;
-          };
-          card.addEventListener("click", go);
-          card.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") go();
-          });
-        });
-      }
-
-      function applyFilter() {
-        const q = getQuery();
-        if (navSearchInput) navSearchInput.value = q ? q : "";
-
-        if (!q) {
-          render(all, all.length);
-          countEl.textContent = `${all.length} nhân vật`;
-          return;
-        }
-
-        const filtered = all.filter((c) => {
-          const s = [
-            c.name, c.race, c.class_name, c.alignment, c.background, c.description
-          ].join(" ").toLowerCase();
-          return s.includes(q);
-        });
-
-        render(filtered, all.length);
-        countEl.textContent = `${filtered.length}/${all.length} nhân vật`;
-      }
-
-      async function load() {
-        listBox.innerHTML = `<div class="empty-box">Đang tải danh sách nhân vật...</div>`;
-        countEl.textContent = "Đang tải...";
-
-        try {
-          const res = await fetch("/api/characters/public");
-          const data = await res.json().catch(() => []);
-          if (!res.ok) {
-            listBox.innerHTML = `<div class="empty-box">Không tải được danh sách (server trả lỗi).</div>`;
-            countEl.textContent = "Lỗi tải";
-            return;
-          }
-
-          all = Array.isArray(data) ? data : [];
-          all.sort((a,b) => Number(b.id || 0) - Number(a.id || 0));
-
-          applyFilter();
-        } catch (e) {
-          listBox.innerHTML = `<div class="empty-box">Không kết nối được server.</div>`;
-          countEl.textContent = "Lỗi kết nối";
-        }
-      }
-
-      reloadBtn.addEventListener("click", load);
-
-      // Khi back/forward thay đổi ?q=, tự filter lại
-      window.addEventListener("popstate", applyFilter);
-
-      load();
-    })();
   </script>
 </body>
 </html>
