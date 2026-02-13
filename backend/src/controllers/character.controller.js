@@ -101,7 +101,7 @@ exports.create = async (req, res) => {
     VALUES (
       $1,$2,$3,$4,$5,$6,$7,$8,
       $9,$10,$11,$12,$13,$14,$15,$16,$17,
-      $18,$19,$20,$21,$22
+      $18::jsonb,$19::jsonb,$20::jsonb,$21,$22
     )
     RETURNING *
   `;
@@ -124,14 +124,17 @@ exports.create = async (req, res) => {
     data.hp,
     data.ac,
     data.speed || "30 ft",
-    data.skills || [],
-    data.equipment || [],
-    data.notes || [],
+
+    JSON.stringify(data.skills || []),
+    JSON.stringify(data.equipment || []),
+    JSON.stringify(data.notes || []),
+
     "guest",
     !!data.is_public,
   ];
 
   const { rows } = await pool.query(q, params);
+
   res.status(201).json(mapRow(rows[0]));
 };
 
