@@ -6,97 +6,7 @@
   <title>Nhân vật — Hội Quán Dungeons & Dragons</title>
 
   <link rel="stylesheet" href="/CSS/style.css" />
-
-  <style>
-    .character-page { padding: 18px 0 28px; }
-    .character-hero{
-      background:#fff;border:1px solid #e5e7eb;border-radius:16px;
-      padding:16px;margin-bottom:14px;display:grid;grid-template-columns:160px 1fr;gap:16px;align-items:center;
-    }
-    .character-avatar{ width:160px;height:160px;border-radius:16px;object-fit:cover;border:1px solid #e5e7eb;background:#f3f4f6; }
-    .character-hero h1{ margin:0 0 6px;font-size:22px; }
-    .character-hero p{ margin:0;color:#6b7280;line-height:1.4; }
-
-    .grid2{ display:grid;grid-template-columns:1.2fr .8fr;gap:14px; }
-    .card{ background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px; }
-    .card h3{ margin:0 0 10px;font-size:16px; }
-    .basic-list{ margin:0;padding-left:18px; }
-    .basic-list li{ margin:6px 0; }
-
-    .stat-grid{ display:grid;grid-template-columns:repeat(6,1fr);gap:10px; }
-    .stat-grid>div{
-      background:#f3f4f6;border:1px solid #e5e7eb;border-radius:14px;padding:10px 8px;text-align:center;
-    }
-    .stat-grid span{ display:block;font-size:11px;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px; }
-    .stat-grid b{ font-size:18px; }
-
-    .chip-group{ display:flex;flex-wrap:wrap;gap:8px; }
-    .chip-group span{
-      display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;
-      background:#f3f4f6;border:1px solid #e5e7eb;font-size:13px;
-    }
-
-    .list{ margin:0;padding-left:18px; }
-    .list li{ margin:6px 0; }
-
-    /* ===== Attacks table (giống ảnh) ===== */
-    .atk-head{
-      display:grid;
-      grid-template-columns: 2.2fr .6fr 1.1fr 2.5fr 44px;
-      gap:10px;
-      font-size:12px;
-      color:#6b7280;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      margin: 0 0 8px;
-      padding: 0 2px;
-    }
-    .atk-row{
-      display:grid;
-      grid-template-columns: 2.2fr .6fr 1.1fr 2.5fr 44px;
-      gap:10px;
-      margin-bottom:10px;
-      align-items:center;
-    }
-    .atk-box{
-      background:#f3f4f6;border:1px solid #e5e7eb;border-radius:12px;
-      padding:10px 12px;
-      font-size:14px;
-      min-height:42px;
-      display:flex;align-items:center;
-    }
-    .atk-del{
-      width:44px;height:42px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      font-size:16px;
-    }
-
-    /* ===== Spells table ===== */
-    .tbl-wrap{ overflow:auto; }
-    table.tbl{ width:100%; border-collapse:separate; border-spacing:0 10px; }
-    table.tbl th{
-      text-align:left;
-      font-size:12px;color:#6b7280;letter-spacing:.08em;text-transform:uppercase;
-      padding:0 10px;
-      white-space:nowrap;
-    }
-    table.tbl td{ padding:0 10px; }
-    .tbl-pill{
-      background:#f3f4f6;border:1px solid #e5e7eb;border-radius:12px;
-      padding:10px 12px;min-height:42px;display:flex;align-items:center;font-size:14px;
-      white-space:nowrap;
-    }
-
-    .empty{ color:#6b7280; }
-
-    @media (max-width: 900px){
-      .character-hero{ grid-template-columns:120px 1fr; }
-      .character-avatar{ width:120px;height:120px; }
-      .grid2{ grid-template-columns:1fr; }
-      .stat-grid{ grid-template-columns:repeat(3,1fr); }
-      .atk-head,.atk-row{ grid-template-columns: 2fr .7fr 1.2fr 2.1fr 44px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/CSS/character.css" />
 </head>
 
 <body>
@@ -107,7 +17,7 @@
       <div class="banner-inner container">
         <div class="logo-group left">
           <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
-            <img src="Assets/icons/menu.png" alt="">
+            <img src="/Assets/icons/menu.png" alt="">
           </button>
         </div>
       </div>
@@ -131,6 +41,7 @@
     <main class="main-content">
       <section class="character-page">
         <div class="container">
+
           <!-- HERO -->
           <div class="character-hero">
             <img id="charAvatar" class="character-avatar" src="/Assets/images/sample.png" alt="Character" />
@@ -151,12 +62,10 @@
                 <li><strong>Bối cảnh:</strong> <span id="charBg">—</span></li>
               </ul>
 
-              <h3 style="margin-top:14px;">Kỹ năng</h3>
-              <div class="chip-group" id="skillChips">
-                <span>—</span>
-              </div>
+              <h3 class="section-gap">Kỹ năng</h3>
+              <div id="skillsGrid" class="skills-grid"></div>
 
-              <h3 style="margin-top:14px;">Trang bị</h3>
+              <h3 class="section-gap">Trang bị</h3>
               <ul class="list" id="equipList"><li>—</li></ul>
             </div>
 
@@ -171,37 +80,66 @@
                 <div><span>CHA</span><b id="statCha">10</b></div>
               </div>
 
-              <h3 style="margin-top:14px;">Chiến đấu</h3>
-              <ul class="basic-list" style="margin-top:0;">
+              <h3 class="section-gap"></h3>
+              <ul class="basic-list basic-list--compact">
                 <li><strong>HP:</strong> <span id="combatHp">10</span></li>
                 <li><strong>Armor Class:</strong> <span id="combatAc">10</span></li>
                 <li><strong>Tốc độ:</strong> <span id="combatSpeed">30 ft</span></li>
                 <li><strong>Initiative:</strong> <span id="combatInit">+0</span></li>
               </ul>
+
+              <h3 class="section-gap">Saving Throws</h3>
+              <div id="savingGrid" class="saving-grid"></div>
+
             </div>
           </div>
 
           <!-- FEATURES -->
-          <div class="card" style="margin-top:14px;">
+          <div class="card card-gap">
             <h3>Train / Proficiency / Action</h3>
-            <div class="grid2" style="grid-template-columns:1fr 1fr;gap:14px;">
+
+            <div class="grid2 grid2--equal">
               <div>
-                <h3 style="margin-top:0;">Train</h3>
+                <h3 class="subhead">Train</h3>
                 <ul class="list" id="trainUl"><li class="empty">—</li></ul>
 
-                <h3>Proficiency</h3>
+                <h3 class="subhead section-gap">Proficiency</h3>
                 <ul class="list" id="profUl"><li class="empty">—</li></ul>
               </div>
+
               <div>
-                <h3 style="margin-top:0;">Action</h3>
+                <h3 class="subhead">Action</h3>
                 <ul class="list" id="actionUl"><li class="empty">—</li></ul>
               </div>
             </div>
           </div>
 
+          <!-- DEFENSES + SENSES -->
+<div class="grid2 card-gap" style="grid-template-columns:1fr 1fr;">
+  <div class="card">
+    <h3>Resistances / Immunities / Vulnerabilities</h3>
+
+    <h4 class="subhead section-gap">Resistances</h4>
+    <div id="resistChips" class="chip-group"></div>
+
+    <h4 class="subhead section-gap">Immunities</h4>
+    <div id="immuneChips" class="chip-group"></div>
+
+    <h4 class="subhead section-gap">Vulnerabilities</h4>
+    <div id="vulnChips" class="chip-group"></div>
+  </div>
+
+  <div class="card">
+    <h3>Senses</h3>
+    <ul class="basic-list basic-list--compact" id="senseList"></ul>
+  </div>
+</div>
+
+
           <!-- ATTACKS -->
-          <div class="card" style="margin-top:14px;">
+          <div class="card card-gap">
             <h3>Attacks</h3>
+
             <div class="atk-head">
               <div>Name</div>
               <div>Hit</div>
@@ -209,13 +147,15 @@
               <div>Notes</div>
               <div></div>
             </div>
+
             <div id="atkBox"></div>
-            <div id="atkEmpty" class="empty" style="display:none;">—</div>
+            <div id="atkEmpty" class="empty" hidden>—</div>
           </div>
 
           <!-- SPELLS -->
-          <div class="card" style="margin-top:14px;">
+          <div class="card card-gap">
             <h3>Spells</h3>
+
             <div class="tbl-wrap">
               <table class="tbl">
                 <thead>
@@ -223,20 +163,19 @@
                     <th>Prepared</th>
                     <th>Level</th>
                     <th>Name</th>
-                    <th>Source</th>
                     <th>Save/Atk</th>
                     <th>Time</th>
                     <th>Range</th>
                     <th>Comp</th>
                     <th>Duration</th>
-                    <th>Page</th>
                     <th>Notes</th>
                   </tr>
                 </thead>
                 <tbody id="spellTbodyView"></tbody>
               </table>
             </div>
-            <div id="spellEmpty" class="empty" style="display:none;">—</div>
+
+            <div id="spellEmpty" class="empty" hidden>—</div>
           </div>
 
         </div>
@@ -254,202 +193,6 @@
 
   <script src="/JS/menu.js"></script>
   <script src="/JS/core.js"></script>
-
-  <script>
-    (function () {
-      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (m) => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-      }[m]));
-
-      function fmtMod(score) {
-        const s = Number(score ?? 10);
-        const m = Math.floor((s - 10) / 2);
-        return m >= 0 ? `+${m}` : `${m}`;
-      }
-
-      function splitNotes(notesArr) {
-        const out = {
-          train: [], prof: [], action: [],
-          attacks: [], spells: [],
-          other: []
-        };
-        (Array.isArray(notesArr) ? notesArr : []).forEach((line) => {
-          const s = String(line || "").trim();
-          if (!s) return;
-
-          if (s.startsWith("Train:")) out.train.push(s.replace(/^Train:\s*/,""));
-          else if (s.startsWith("Proficiency:")) out.prof.push(s.replace(/^Proficiency:\s*/,""));
-          else if (s.startsWith("Action:")) out.action.push(s.replace(/^Action:\s*/,""));
-          else if (s.startsWith("Attack:")) out.attacks.push(s.replace(/^Attack:\s*/,""));
-          else if (s.startsWith("Spell:")) out.spells.push(s.replace(/^Spell:\s*/,""));
-          else out.other.push(s);
-        });
-        return out;
-      }
-
-      function parseAttackLine(s) {
-        // format bạn đang tạo: "Shortbow | Hit:+3 | Dmg:1d6+3 Piercing | Notes:..."
-        const parts = s.split("|").map(x => x.trim());
-        const name = parts[0] || "";
-        const get = (prefix) => {
-          const p = parts.find(x => x.toLowerCase().startsWith(prefix));
-          return p ? p.split(":").slice(1).join(":").trim() : "";
-        };
-        return {
-          name,
-          hit: get("hit"),
-          dmg: get("dmg"),
-          notes: get("notes")
-        };
-      }
-
-      function parseSpellLine(s) {
-        // format bạn đang tạo: "[P] Name | Src:... | Save/Atk:... | Time:... | Range:... | Comp:... | Dur:... | Page:... | Notes:..."
-        const parts = s.split("|").map(x => x.trim());
-        const first = parts[0] || "";
-        const prepared = first.startsWith("[P]");
-        const name = prepared ? first.replace(/^\[P\]\s*/,"") : first;
-
-        const get = (prefix) => {
-          const p = parts.find(x => x.toLowerCase().startsWith(prefix));
-          return p ? p.split(":").slice(1).join(":").trim() : "";
-        };
-
-        return {
-          prepared,
-          name,
-          source: get("src"),
-          saveAtk: get("save/atk"),
-          time: get("time"),
-          range: get("range"),
-          comp: get("comp"),
-          duration: get("dur"),
-          page: get("page"),
-          notes: get("notes")
-        };
-      }
-
-      function fillUl(id, arr) {
-        const ul = document.getElementById(id);
-        if (!ul) return;
-        if (!arr || arr.length === 0) {
-          ul.innerHTML = `<li class="empty">—</li>`;
-          return;
-        }
-        ul.innerHTML = arr.map(x => `<li>${esc(x)}</li>`).join("");
-      }
-
-      async function load() {
-        const params = new URLSearchParams(location.search);
-        const id = params.get("id");
-        if (!id) return;
-
-        const res = await fetch(`/api/characters/public/${encodeURIComponent(id)}`);
-        const c = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          document.querySelector(".character-page .container").innerHTML =
-            `<div class="card"><h3>Nhân vật không tồn tại hoặc chưa public.</h3></div>`;
-          return;
-        }
-
-        // Basic render
-        const lv = Number(c.level || 1);
-        document.getElementById("charTitle").textContent =
-          `${c.name} — ${c.race} ${c.class_name} (Cấp ${lv})`;
-        document.getElementById("charDesc").textContent = c.description || "—";
-
-        const avatar = document.getElementById("charAvatar");
-        avatar.src = (c.avatar && String(c.avatar).trim()) ? c.avatar : "/Assets/images/sample.png";
-
-        document.getElementById("charRace").textContent = c.race || "—";
-        document.getElementById("charClass").textContent = c.class_name || "—";
-        document.getElementById("charAlign").textContent = c.alignment || "—";
-        document.getElementById("charBg").textContent = c.background || "—";
-
-        const st = c.stats || {};
-        document.getElementById("statStr").textContent = st.str ?? 10;
-        document.getElementById("statDex").textContent = st.dex ?? 10;
-        document.getElementById("statCon").textContent = st.con ?? 10;
-        document.getElementById("statInt").textContent = st.int ?? 10;
-        document.getElementById("statWis").textContent = st.wis ?? 10;
-        document.getElementById("statCha").textContent = st.cha ?? 10;
-
-        document.getElementById("combatHp").textContent = c.hp ?? 10;
-        document.getElementById("combatAc").textContent = c.ac ?? 10;
-        document.getElementById("combatSpeed").textContent = c.speed || "30 ft";
-        document.getElementById("combatInit").textContent = fmtMod(st.dex ?? 10);
-
-        // Skills
-        const skillChips = document.getElementById("skillChips");
-        const skills = Array.isArray(c.skills) ? c.skills : [];
-        skillChips.innerHTML = skills.length ? skills.map(s => `<span>${esc(s)}</span>`).join("") : `<span>—</span>`;
-
-        // Equipment
-        const equipList = document.getElementById("equipList");
-        const eq = Array.isArray(c.equipment) ? c.equipment : [];
-        equipList.innerHTML = eq.length ? eq.map(i => `<li>${esc(i)}</li>`).join("") : `<li class="empty">—</li>`;
-
-        // Notes -> split into sections
-        const groups = splitNotes(c.notes);
-
-        fillUl("trainUl", groups.train);
-        fillUl("profUl", groups.prof);
-        fillUl("actionUl", groups.action);
-
-        // Attacks
-        const atkBox = document.getElementById("atkBox");
-        const atkEmpty = document.getElementById("atkEmpty");
-        const atkRows = groups.attacks.map(parseAttackLine);
-
-        if (!atkRows.length) {
-          atkBox.innerHTML = "";
-          atkEmpty.style.display = "block";
-        } else {
-          atkEmpty.style.display = "none";
-          atkBox.innerHTML = atkRows.map((a) => `
-            <div class="atk-row">
-              <div class="atk-box">${esc(a.name)}</div>
-              <div class="atk-box">${esc(a.hit || "-")}</div>
-              <div class="atk-box">${esc(a.dmg || "-")}</div>
-              <div class="atk-box">${esc(a.notes || "-")}</div>
-              <button class="atk-del" type="button" disabled title="Chỉ xem">✕</button>
-            </div>
-          `).join("");
-        }
-
-        // Spells
-        const spellBody = document.getElementById("spellTbodyView");
-        const spellEmpty = document.getElementById("spellEmpty");
-
-        const spells = groups.spells.map(parseSpellLine);
-        if (!spells.length) {
-          spellBody.innerHTML = "";
-          spellEmpty.style.display = "block";
-        } else {
-          spellEmpty.style.display = "none";
-          spellBody.innerHTML = spells.map(sp => `
-            <tr>
-              <td><div class="tbl-pill">${sp.prepared ? "✓" : ""}</div></td>
-              <td><div class="tbl-pill">—</div></td>
-              <td><div class="tbl-pill">${esc(sp.name)}</div></td>
-              <td><div class="tbl-pill">${esc(sp.source || "-")}</div></td>
-              <td><div class="tbl-pill">${esc(sp.saveAtk || "-")}</div></td>
-              <td><div class="tbl-pill">${esc(sp.time || "-")}</div></td>
-              <td><div class="tbl-pill">${esc(sp.range || "-")}</div></td>
-              <td><div class="tbl-pill">${esc(sp.comp || "-")}</div></td>
-              <td><div class="tbl-pill">${esc(sp.duration || "-")}</div></td>
-              <td><div class="tbl-pill">${esc(sp.page || "-")}</div></td>
-              <td><div class="tbl-pill">${esc(sp.notes || "-")}</div></td>
-            </tr>
-          `).join("");
-        }
-      }
-
-      load().catch(() => {
-        document.querySelector(".character-page .container").innerHTML =
-          `<div class="card"><h3>Lỗi tải nhân vật.</h3></div>`;
-      });
-    })();
-  </script>
+  <script src="/JS/character.js"></script>
 </body>
 </html>

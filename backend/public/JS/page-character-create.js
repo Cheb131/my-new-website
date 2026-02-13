@@ -265,9 +265,12 @@
     const trainList = $("trainList");
     const proficiencyList = $("proficiencyList");
     const actionList = $("actionList");
-    if (!hidden || !trainList || !proficiencyList || !actionList) return;
+    const featureList = $("featureList");
+
+    if (!hidden) return;
 
     function readList(listEl) {
+      if (!listEl) return [];
       const inputs = Array.from(listEl.querySelectorAll(".cc-listrow input[type='text']"));
       return inputs.map((i) => (i.value || "").trim()).filter(Boolean);
     }
@@ -277,10 +280,13 @@
         train: readList(trainList),
         proficiency: readList(proficiencyList),
         action: readList(actionList),
+        feature: readList(featureList),
       });
     }
 
     function addRow(listEl, placeholder, value = "") {
+      if (!listEl) return null;
+
       const row = document.createElement("div");
       row.className = "cc-listrow";
 
@@ -292,7 +298,8 @@
       inp.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
-          addRow(listEl, placeholder, "").focus();
+          const next = addRow(listEl, placeholder, "");
+          next && next.focus();
         }
         if (e.key === "Tab") {
           e.preventDefault();
@@ -322,26 +329,49 @@
       return inp;
     }
 
-    $("addTrainBtn")?.addEventListener("click", () => addRow(trainList, "Ví dụ: Fighting Style: Archery").focus());
+    // TRAIN
+    $("addTrainBtn")?.addEventListener("click", () => {
+      const inp = addRow(trainList, "Ví dụ: Fighting Style: Archery");
+      inp && inp.focus();
+    });
     $("clearTrainBtn")?.addEventListener("click", () => {
-      trainList.innerHTML = "";
+      if (trainList) trainList.innerHTML = "";
       sync();
     });
 
-    $("addProficiencyBtn")?.addEventListener("click", () => addRow(proficiencyList, "Ví dụ: Armor: Light, Medium").focus());
+    // PROFICIENCY
+    $("addProficiencyBtn")?.addEventListener("click", () => {
+      const inp = addRow(proficiencyList, "Ví dụ: Armor: Light, Medium");
+      inp && inp.focus();
+    });
     $("clearProficiencyBtn")?.addEventListener("click", () => {
-      proficiencyList.innerHTML = "";
+      if (proficiencyList) proficiencyList.innerHTML = "";
       sync();
     });
 
-    $("addActionBtn")?.addEventListener("click", () => addRow(actionList, "Ví dụ: Sneak Attack 2d6").focus());
+    // ACTION
+    $("addActionBtn")?.addEventListener("click", () => {
+      const inp = addRow(actionList, "Ví dụ: Sneak Attack 2d6");
+      inp && inp.focus();
+    });
     $("clearActionBtn")?.addEventListener("click", () => {
-      actionList.innerHTML = "";
+      if (actionList) actionList.innerHTML = "";
+      sync();
+    });
+
+    // FEATURE
+    $("addFeatureBtn")?.addEventListener("click", () => {
+      const inp = addRow(featureList, "Ví dụ: Darkvision 60 ft / Rage / Second Wind...");
+      inp && inp.focus();
+    });
+    $("clearFeatureBtn")?.addEventListener("click", () => {
+      if (featureList) featureList.innerHTML = "";
       sync();
     });
 
     sync();
   }
+
 
   // =========================================================
   // 4) Attacks table -> attacksJson
@@ -584,6 +614,8 @@ function wireAutoCalc() {
       add("Train", obj.train);
       add("Proficiency", obj.proficiency);
       add("Action", obj.action);
+      add("Feature", obj.feature);
+
       return out;
     }
 

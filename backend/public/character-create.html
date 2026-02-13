@@ -624,38 +624,54 @@
 
 
               <div class="cc-field">
-                <h2>Train, Proficiency, Action, Feature</h2>
+                <h2>Train / Proficiency / Action / Feature</h2>
 
                 <div class="cc-listbox">
+
+                  <!-- TRAIN -->
+                  <h3 class="cc-subtitle">Train</h3>
                   <div id="trainList" class="cc-list"></div>
                   <div class="cc-row-actions" style="margin-top:10px;">
-                    <button class="cc-btn" type="button" id="addTrainBtn">+ Thêm dòng</button>
-                    <button class="cc-btn danger" type="button" id="clearTrainBtn">Xoá hết</button>
+                    <button class="cc-btn" type="button" id="addTrainBtn">+ Thêm Train</button>
+                    <button class="cc-btn danger" type="button" id="clearTrainBtn">Xoá Train</button>
                   </div>
 
+                  <hr class="cc-sep"/>
+
+                  <!-- PROFICIENCY -->
+                  <h3 class="cc-subtitle">Proficiency</h3>
                   <div id="proficiencyList" class="cc-list"></div>
                   <div class="cc-row-actions" style="margin-top:10px;">
-                    <button class="cc-btn" type="button" id="addProficiencyBtn">+ Thêm dòng</button>
-                    <button class="cc-btn danger" type="button" id="clearProficiencyBtn">Xoá hết</button>
+                    <button class="cc-btn" type="button" id="addProficiencyBtn">+ Thêm Proficiency</button>
+                    <button class="cc-btn danger" type="button" id="clearProficiencyBtn">Xoá Proficiency</button>
                   </div>
 
+                  <hr class="cc-sep"/>
+
+                  <!-- ACTION -->
+                  <h3 class="cc-subtitle">Action</h3>
                   <div id="actionList" class="cc-list"></div>
                   <div class="cc-row-actions" style="margin-top:10px;">
-                    <button class="cc-btn" type="button" id="addActionBtn">+ Thêm dòng</button>
-                    <button class="cc-btn danger" type="button" id="clearActionBtn">Xoá hết</button>
+                    <button class="cc-btn" type="button" id="addActionBtn">+ Thêm Action</button>
+                    <button class="cc-btn danger" type="button" id="clearActionBtn">Xoá Action</button>
                   </div>
 
+                  <hr class="cc-sep"/>
+
+                  <!-- FEATURE -->
+                  <h3 class="cc-subtitle">Feature</h3>
                   <div id="featureList" class="cc-list"></div>
                   <div class="cc-row-actions" style="margin-top:10px;">
-                    <button class="cc-btn" type="button" id="addFeatureBtn">+ Thêm dòng</button>
-                    <button class="cc-btn danger" type="button" id="clearFeatureBtn">Xoá hết</button>
+                    <button class="cc-btn" type="button" id="addFeatureBtn">+ Thêm Feature</button>
+                    <button class="cc-btn danger" type="button" id="clearFeatureBtn">Xoá Feature</button>
                   </div>
 
                 </div>
 
                 <!-- hidden để lưu JSON khi submit -->
-                <input type="hidden" id="featureListJson" value="[]">
+                <input type="hidden" id="featureListJson" value="{}">
               </div>
+
 
 
               <div class="cc-field">
@@ -667,13 +683,11 @@
                       <tr>
                         <th class="cc-xxs">PREP</th>
                         <th>SPELL NAME</th>
-                        <th class="cc-tiny">SOURCE</th>
                         <th class="cc-tiny">SAVE/ATK</th>
                         <th class="cc-tiny">TIME</th>
                         <th class="cc-tiny">RANGE</th>
                         <th class="cc-tiny">COMP</th>
                         <th class="cc-tiny">DURATION</th>
-                        <th class="cc-tiny">PAGE REF</th>
                         <th>NOTES</th>
                         <th class="cc-xxs">✕</th>
                       </tr>

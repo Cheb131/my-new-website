@@ -1,0 +1,229 @@
+.character-page { padding: 18px 0 28px; }
+
+.section-gap { margin-top: 14px; }
+.card-gap { margin-top: 14px; }
+
+.character-hero{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:14px;
+  display:grid;
+  grid-template-columns:160px 1fr;
+  gap:16px;
+  align-items:center;
+}
+
+.character-avatar{
+  width:160px;
+  height:160px;
+  border-radius:16px;
+  object-fit:cover;
+  border:1px solid #e5e7eb;
+  background:#f3f4f6;
+}
+
+.character-hero h1{ margin:0 0 6px; font-size:22px; }
+.character-hero p{ margin:0; color:#6b7280; line-height:1.4; }
+
+.grid2{ display:grid; grid-template-columns:1.2fr .8fr; gap:14px; }
+.grid2--equal{ grid-template-columns:1fr 1fr; }
+
+.card{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:16px;
+  padding:14px;
+}
+
+.card h3{ margin:0 0 10px; font-size:16px; }
+.subhead{ margin-top:0; }
+
+.basic-list{ margin:0; padding-left:18px; }
+.basic-list li{ margin:6px 0; }
+.basic-list--compact{ margin-top:0; }
+
+.list{ margin:0; padding-left:18px; }
+.list li{ margin:6px 0; }
+
+.stat-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+.stat-grid>div{
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:10px 8px;
+  text-align:center;
+}
+.stat-grid span{
+  display:block;
+  font-size:11px;
+  color:#6b7280;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.stat-grid b{ font-size:18px; }
+
+.empty{ color:#6b7280; }
+
+/* ===== Skills ===== */
+.skills-grid{
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.skill-item{
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 10px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.skill-left{ display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; }
+.skill-name{ font-weight:700; font-size:13px; }
+.skill-abil{ color:#6b7280; font-size:12px; }
+.skill-mod{ font-weight:800; min-width:44px; text-align:right; }
+
+.skill-prof{
+  border-color:#c7d2fe;
+  background:#eef2ff;
+}
+.skill-prof .skill-name::after{
+  content:" • Prof";
+  font-weight:700;
+  color:#4338ca;
+  font-size:12px;
+}
+
+/* ===== Attacks table ===== */
+.atk-head{
+  display:grid;
+  grid-template-columns: 2.2fr .6fr 1.1fr 2.5fr 44px;
+  gap:10px;
+  font-size:12px;
+  color:#6b7280;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin: 0 0 8px;
+  padding: 0 2px;
+}
+
+.atk-row{
+  display:grid;
+  grid-template-columns: 2.2fr .6fr 1.1fr 2.5fr 44px;
+  gap:10px;
+  margin-bottom:10px;
+  align-items:center;
+}
+
+.atk-box{
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:14px;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+}
+
+.atk-del{
+  width:44px;
+  height:42px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  background:#fff;
+  cursor:not-allowed;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+}
+
+/* ===== Spells table ===== */
+.tbl-wrap{ overflow:auto; }
+
+table.tbl{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 10px;
+}
+
+table.tbl th{
+  text-align:left;
+  font-size:12px;
+  color:#6b7280;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  padding:0 10px;
+  white-space:nowrap;
+}
+
+table.tbl td{ padding:0 10px; }
+
+.tbl-pill{
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:10px 12px;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  font-size:14px;
+  white-space:nowrap;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px){
+  .character-hero{ grid-template-columns:120px 1fr; }
+  .character-avatar{ width:120px; height:120px; }
+  .grid2{ grid-template-columns:1fr; }
+  .stat-grid{ grid-template-columns:repeat(3,1fr); }
+  .atk-head,.atk-row{ grid-template-columns: 2fr .7fr 1.2fr 2.1fr 44px; }
+  .skills-grid{ grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px){
+  .skills-grid{ grid-template-columns: 1fr; }
+}
+
+/* ===== Saving Throws ===== */
+.saving-grid{
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap:10px;
+}
+
+.save-item{
+  background:#f3f4f6;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:10px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.save-left{ display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; }
+.save-name{ font-weight:700; font-size:13px; }
+.save-abil{ color:#6b7280; font-size:12px; }
+.save-mod{ font-weight:800; min-width:44px; text-align:right; }
+
+.save-prof{
+  border-color:#c7d2fe;
+  background:#eef2ff;
+}
+.save-prof .save-name::after{
+  content:" • Prof";
+  font-weight:700;
+  color:#4338ca;
+  font-size:12px;
+}
+
+@media (max-width: 600px){
+  .saving-grid{ grid-template-columns: 1fr; }
+}
+
