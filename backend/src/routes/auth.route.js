@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const { z } = require("zod");
 
-const db = require("../db/database");
+const { pool } = require("../db/database");
 const { requireAuth, requireAdmin } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
@@ -53,103 +53,112 @@ function normalizeUsername(u) {
 // =========================================================
 // POST /api/auth/login
 // =========================================================
-router.post("/login", (req, res) => {
-  if (!mustHaveJwtSecret(res)) return;
+router.post("/login", async (req, res) => {
+  try {
+    if (!mustHaveJwtSecret(res)) return;
 
-  const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ message: "Validation error" });
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Validation error" });
+    }
+
+    const username = normalizeUsername(parsed.data.username);
+    const password = parsed.data.password;
+
+    const r = await pool.query(
+      "SELECT id, username, password_hash, role, email, phone, created_at FROM users WHERE username = $1",
+      [username]
+    );
+    const user = r.rows[0];
+
+    console.log(
+      "LOGIN user from DB =",
+      user ? { id: user.id, username: user.username, role: user.role } : null
+    );
+
+    if (!user) {
+      return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
+    }
+
+    const ok = bcrypt.compareSync(password, user.password_hash);
+    if (!ok) {
+      return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, role: user.role, username: user.username },
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
+
+    return res.json({
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        email: user.email,
+        phone: user.phone,
+        created_at: user.created_at,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Login failed" });
   }
-
-  const username = normalizeUsername(parsed.data.username);
-  const password = parsed.data.password;
-
-  const user = db
-    .prepare(
-      "SELECT id, username, password_hash, role, email, phone, created_at FROM users WHERE username = ?"
-    )
-    .get(username);
-
-  // ✅ log đúng chỗ (sau khi có user)
-  console.log("LOGIN user from DB =", user ? { id: user.id, username: user.username, role: user.role } : null);
-
-  if (!user) {
-    return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
-  }
-
-  const ok = bcrypt.compareSync(password, user.password_hash);
-  if (!ok) {
-    return res.status(401).json({ message: "Sai tài khoản hoặc mật khẩu" });
-  }
-
-  const token = jwt.sign(
-    { id: user.id, role: user.role, username: user.username },
-    process.env.JWT_SECRET,
-    { expiresIn: "2h" }
-  );
-
-  return res.json({
-    token,
-    user: {
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      email: user.email,
-      phone: user.phone,
-      created_at: user.created_at,
-    },
-  });
 });
-
 
 // =========================================================
 // POST /api/auth/register
 // - Tạo user mới (mặc định role = user)
 // =========================================================
-router.post("/register", (req, res) => {
-  const parsed = registerSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res
-      .status(400)
-      .json({ message: "Validation error", errors: parsed.error.flatten() });
-  }
-
-  const username = normalizeUsername(parsed.data.username);
-  const password = parsed.data.password;
-  const email = parsed.data.email ? String(parsed.data.email).trim() : null;
-  const phone = parsed.data.phone ? String(parsed.data.phone).trim() : null;
-
-  // check tồn tại
-  const exists = db.prepare("SELECT id FROM users WHERE username = ?").get(username);
-  if (exists) {
-    return res.status(409).json({ message: "Tên đăng nhập đã tồn tại" });
-  }
-
-  const passwordHash = bcrypt.hashSync(password, 10);
-
+router.post("/register", async (req, res) => {
   try {
-    const info = db
-      .prepare(
-        "INSERT INTO users (username, password_hash, role, email, phone) VALUES (?, ?, 'user', ?, ?)"
-      )
-      .run(username, passwordHash, email, phone);
+    const parsed = registerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res
+        .status(400)
+        .json({ message: "Validation error", errors: parsed.error.flatten() });
+    }
 
-    const created = db
-      .prepare(
-        "SELECT id, username, role, email, phone, created_at FROM users WHERE id = ?"
-      )
-      .get(info.lastInsertRowid);
+    const username = normalizeUsername(parsed.data.username);
+    const password = parsed.data.password;
+    const email = parsed.data.email ? String(parsed.data.email).trim() : null;
+    const phone = parsed.data.phone ? String(parsed.data.phone).trim() : null;
+
+    // check tồn tại
+    const exists = await pool.query("SELECT id FROM users WHERE username = $1", [
+      username,
+    ]);
+    if (exists.rows[0]) {
+      return res.status(409).json({ message: "Tên đăng nhập đã tồn tại" });
+    }
+
+    const passwordHash = bcrypt.hashSync(password, 10);
+
+    // insert
+    const info = await pool.query(
+      "INSERT INTO users (username, password_hash, role, email, phone) VALUES ($1, $2, 'user', $3, $4) RETURNING id",
+      [username, passwordHash, email, phone]
+    );
+
+    const createdId = info.rows[0].id;
+    const created = await pool.query(
+      "SELECT id, username, role, email, phone, created_at FROM users WHERE id = $1",
+      [createdId]
+    );
 
     return res.status(201).json({
       message: "Đăng ký thành công",
-      user: created,
+      user: created.rows[0],
     });
   } catch (err) {
     // Unique constraint hoặc lỗi DB khác
-    if (String(err?.message || "").includes("UNIQUE")) {
+    // Postgres unique violation code: 23505
+    if (err && err.code === "23505") {
       return res.status(409).json({ message: "Tên đăng nhập đã tồn tại" });
     }
-    console.error(err);
+    console.error("Register error:", err);
     return res.status(500).json({ message: "Register failed" });
   }
 });
@@ -158,106 +167,131 @@ router.post("/register", (req, res) => {
 // GET /api/auth/users
 // - Admin xem danh sách user đã đăng ký
 // =========================================================
-router.get("/users", requireAuth, requireAdmin, (req, res) => {
-  const rows = db
-    .prepare(
+router.get("/users", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
       "SELECT id, username, role, email, phone, created_at FROM users ORDER BY id DESC"
-    )
-    .all();
-
-  res.json(rows);
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("List users error:", err);
+    res.status(500).json({ message: "Failed to load users" });
+  }
 });
 
 // =========================================================
 // PATCH /api/auth/users/:id/role
 // - Admin đổi role user
 // =========================================================
-router.patch("/users/:id/role", requireAuth, requireAdmin, (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id) || id <= 0) {
-    return res.status(400).json({ message: "Invalid user id" });
-  }
+router.patch("/users/:id/role", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id) || id <= 0) {
+      return res.status(400).json({ message: "Invalid user id" });
+    }
 
-  const parsed = roleSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ message: "Validation error" });
-  }
+    const parsed = roleSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Validation error" });
+    }
 
-  const nextRole = parsed.data.role;
+    const nextRole = parsed.data.role;
 
-  // Không cho tự hạ quyền (tránh lock chính mình)
-  if (req.user?.id === id && nextRole !== "admin") {
-    return res
-      .status(400)
-      .json({ message: "Không thể tự hạ quyền của chính mình" });
-  }
-
-  const target = db
-    .prepare("SELECT id, username, role FROM users WHERE id = ?")
-    .get(id);
-  if (!target) return res.status(404).json({ message: "User not found" });
-
-  // Không được làm mất admin cuối cùng
-  if (target.role === "admin" && nextRole !== "admin") {
-    const adminCount = db
-      .prepare("SELECT COUNT(*) AS c FROM users WHERE role = 'admin'")
-      .get()?.c;
-    if (Number(adminCount) <= 1) {
+    // Không cho tự hạ quyền (tránh lock chính mình)
+    if (req.user?.id === id && nextRole !== "admin") {
       return res
         .status(400)
-        .json({ message: "Không thể hạ quyền admin cuối cùng" });
+        .json({ message: "Không thể tự hạ quyền của chính mình" });
     }
+
+    const targetR = await pool.query(
+      "SELECT id, username, role FROM users WHERE id = $1",
+      [id]
+    );
+    const target = targetR.rows[0];
+    if (!target) return res.status(404).json({ message: "User not found" });
+
+    // Không được làm mất admin cuối cùng
+    if (target.role === "admin" && nextRole !== "admin") {
+      const adminCountR = await pool.query(
+        "SELECT COUNT(*)::int AS c FROM users WHERE role = 'admin'"
+      );
+      const adminCount = adminCountR.rows[0]?.c ?? 0;
+
+      if (Number(adminCount) <= 1) {
+        return res
+          .status(400)
+          .json({ message: "Không thể hạ quyền admin cuối cùng" });
+      }
+    }
+
+    await pool.query("UPDATE users SET role = $1 WHERE id = $2", [
+      nextRole,
+      id,
+    ]);
+
+    const updatedR = await pool.query(
+      "SELECT id, username, role, email, phone, created_at FROM users WHERE id = $1",
+      [id]
+    );
+
+    return res.json({
+      message: "Cập nhật role thành công",
+      user: updatedR.rows[0],
+    });
+  } catch (err) {
+    console.error("Update role error:", err);
+    return res.status(500).json({ message: "Update role failed" });
   }
-
-  db.prepare("UPDATE users SET role = ? WHERE id = ?").run(nextRole, id);
-
-  const updated = db
-    .prepare(
-      "SELECT id, username, role, email, phone, created_at FROM users WHERE id = ?"
-    )
-    .get(id);
-
-  return res.json({ message: "Cập nhật role thành công", user: updated });
 });
 
 // =========================================================
 // DELETE /api/auth/users/:id
 // - Admin xoá user
 // =========================================================
-router.delete("/users/:id", requireAuth, requireAdmin, (req, res) => {
-  const id = Number(req.params.id);
-  if (!Number.isFinite(id) || id <= 0) {
-    return res.status(400).json({ message: "Invalid user id" });
-  }
-
-  // Không cho tự xoá
-  if (req.user?.id === id) {
-    return res.status(400).json({ message: "Không thể tự xoá tài khoản" });
-  }
-
-  const target = db
-    .prepare("SELECT id, username, role FROM users WHERE id = ?")
-    .get(id);
-  if (!target) return res.status(404).json({ message: "User not found" });
-
-  // Không được xoá admin cuối cùng
-  if (target.role === "admin") {
-    const adminCount = db
-      .prepare("SELECT COUNT(*) AS c FROM users WHERE role = 'admin'")
-      .get()?.c;
-    if (Number(adminCount) <= 1) {
-      return res
-        .status(400)
-        .json({ message: "Không thể xoá admin cuối cùng" });
+router.delete("/users/:id", requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id) || id <= 0) {
+      return res.status(400).json({ message: "Invalid user id" });
     }
-  }
 
-  const info = db.prepare("DELETE FROM users WHERE id = ?").run(id);
-  if (info.changes === 0) {
-    return res.status(404).json({ message: "User not found" });
-  }
+    // Không cho tự xoá
+    if (req.user?.id === id) {
+      return res.status(400).json({ message: "Không thể tự xoá tài khoản" });
+    }
 
-  return res.json({ message: "Đã xoá user", id });
+    const targetR = await pool.query(
+      "SELECT id, username, role FROM users WHERE id = $1",
+      [id]
+    );
+    const target = targetR.rows[0];
+    if (!target) return res.status(404).json({ message: "User not found" });
+
+    // Không được xoá admin cuối cùng
+    if (target.role === "admin") {
+      const adminCountR = await pool.query(
+        "SELECT COUNT(*)::int AS c FROM users WHERE role = 'admin'"
+      );
+      const adminCount = adminCountR.rows[0]?.c ?? 0;
+
+      if (Number(adminCount) <= 1) {
+        return res
+          .status(400)
+          .json({ message: "Không thể xoá admin cuối cùng" });
+      }
+    }
+
+    const info = await pool.query("DELETE FROM users WHERE id = $1", [id]);
+    if (info.rowCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({ message: "Đã xoá user", id });
+  } catch (err) {
+    console.error("Delete user error:", err);
+    return res.status(500).json({ message: "Delete user failed" });
+  }
 });
 
 module.exports = router;

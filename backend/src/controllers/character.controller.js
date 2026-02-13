@@ -1,4 +1,4 @@
-const db = require("../db/database");
+const { pool } = require("../db/database");
 const { z } = require("zod");
 
 const characterSchema = z.object({
@@ -10,7 +10,6 @@ const characterSchema = z.object({
   background: z.string().trim().min(1).max(140),
   avatar: z.string().trim().optional().default(""),
   description: z.string().trim().optional().default(""),
-
   stats: z.object({
     str: z.coerce.number().int().min(1).max(30),
     dex: z.coerce.number().int().min(1).max(30),
@@ -19,18 +18,22 @@ const characterSchema = z.object({
     wis: z.coerce.number().int().min(1).max(30),
     cha: z.coerce.number().int().min(1).max(30),
   }).default({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }),
-
   hp: z.coerce.number().int().min(1).max(999).default(10),
   ac: z.coerce.number().int().min(1).max(30).default(10),
   speed: z.string().trim().optional().default("30 ft"),
-
   skills: z.array(z.string().trim().min(1).max(80)).optional().default([]),
   equipment: z.array(z.string().trim().min(1).max(160)).optional().default([]),
   notes: z.array(z.string().trim().min(1).max(240)).optional().default([]),
-
-  // nếu frontend có gửi is_public thì nhận, không thì mặc định true
   is_public: z.coerce.boolean().optional().default(true),
 });
+
+function arr(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === "string") {
+    try { return JSON.parse(v); } catch { return []; }
+  }
+  return [];
+}
 
 function mapRow(row) {
   if (!row) return null;
@@ -40,7 +43,7 @@ function mapRow(row) {
     level: Number(row.level || 1),
     hp: Number(row.hp || 10),
     ac: Number(row.ac || 10),
-    is_public: Number(row.is_public || 0) === 1,
+    is_public: !!row.is_public,
     stats: {
       str: Number(row.str || 10),
       dex: Number(row.dex || 10),
@@ -49,51 +52,36 @@ function mapRow(row) {
       wis: Number(row.wis || 10),
       cha: Number(row.cha || 10),
     },
-    skills: row.skills ? JSON.parse(row.skills) : [],
-    equipment: row.equipment ? JSON.parse(row.equipment) : [],
-    notes: row.notes ? JSON.parse(row.notes) : [],
+    skills: arr(row.skills),
+    equipment: arr(row.equipment),
+    notes: arr(row.notes),
   };
 }
 
-/**
- * ✅ Helper: kiểm tra cột có tồn tại (để DB cũ vẫn chạy)
- */
-let COL_CACHE = null;
-function hasColumn(colName) {
-  if (!COL_CACHE) {
-    const cols = db.prepare("PRAGMA table_info(characters)").all();
-    COL_CACHE = new Set(cols.map((c) => c.name));
-  }
-  return COL_CACHE.has(colName);
-}
-
 // ===== PUBLIC list =====
-exports.getPublic = (req, res) => {
-  const sql = hasColumn("is_public")
-    ? "SELECT * FROM characters WHERE is_public = 1 ORDER BY id DESC"
-    : "SELECT * FROM characters ORDER BY id DESC";
-
-  const rows = db.prepare(sql).all();
+exports.getPublic = async (req, res) => {
+  const { rows } = await pool.query(
+    "SELECT * FROM characters WHERE is_public = true ORDER BY id DESC"
+  );
   res.json(rows.map(mapRow));
 };
 
 // ===== PUBLIC detail =====
-exports.getPublicById = (req, res) => {
+exports.getPublicById = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
 
-  const sql = hasColumn("is_public")
-    ? "SELECT * FROM characters WHERE id = ? AND is_public = 1"
-    : "SELECT * FROM characters WHERE id = ?";
+  const { rows } = await pool.query(
+    "SELECT * FROM characters WHERE id = $1 AND is_public = true",
+    [id]
+  );
+  if (!rows[0]) return res.status(404).json({ message: "Character not found" });
 
-  const row = db.prepare(sql).get(id);
-  if (!row) return res.status(404).json({ message: "Character not found" });
-
-  res.json(mapRow(row));
+  res.json(mapRow(rows[0]));
 };
 
 // ===== CREATE (ai cũng đăng) =====
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   const parsed = characterSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({
@@ -104,14 +92,21 @@ exports.create = (req, res) => {
 
   const data = parsed.data;
 
-  const cols = [
-    "name", "race", "class_name", "level", "alignment", "background", "avatar", "description",
-    "str", "dex", "con", "int", "wis", "cha",
-    "hp", "ac", "speed",
-    "skills", "equipment", "notes",
-  ];
+  const q = `
+    INSERT INTO characters (
+      name, race, class_name, level, alignment, background, avatar, description,
+      str, dex, con, int, wis, cha, hp, ac, speed,
+      skills, equipment, notes, created_by, is_public
+    )
+    VALUES (
+      $1,$2,$3,$4,$5,$6,$7,$8,
+      $9,$10,$11,$12,$13,$14,$15,$16,$17,
+      $18,$19,$20,$21,$22
+    )
+    RETURNING *
+  `;
 
-  const values = [
+  const params = [
     data.name,
     data.race,
     data.class_name,
@@ -129,38 +124,25 @@ exports.create = (req, res) => {
     data.hp,
     data.ac,
     data.speed || "30 ft",
-    JSON.stringify(data.skills || []),
-    JSON.stringify(data.equipment || []),
-    JSON.stringify(data.notes || []),
+    data.skills || [],
+    data.equipment || [],
+    data.notes || [],
+    "guest",
+    !!data.is_public,
   ];
 
-  // optional columns if exist
-  if (hasColumn("created_by")) {
-    cols.push("created_by");
-    values.push("guest");
-  }
-  if (hasColumn("is_public")) {
-    cols.push("is_public");
-    values.push(data.is_public ? 1 : 0);
-  }
-
-  const placeholders = cols.map(() => "?").join(", ");
-  const sql = `INSERT INTO characters (${cols.join(", ")}) VALUES (${placeholders})`;
-
-  const info = db.prepare(sql).run(...values);
-
-  const created = db.prepare("SELECT * FROM characters WHERE id = ?").get(info.lastInsertRowid);
-  res.status(201).json(mapRow(created));
+  const { rows } = await pool.query(q, params);
+  res.status(201).json(mapRow(rows[0]));
 };
 
 // ===== DELETE (ai cũng xoá) =====
-exports.remove = (req, res) => {
+exports.remove = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
 
-  const row = db.prepare("SELECT id FROM characters WHERE id = ?").get(id);
-  if (!row) return res.status(404).json({ message: "Character not found" });
+  const found = await pool.query("SELECT id FROM characters WHERE id = $1", [id]);
+  if (!found.rows[0]) return res.status(404).json({ message: "Character not found" });
 
-  db.prepare("DELETE FROM characters WHERE id = ?").run(id);
+  await pool.query("DELETE FROM characters WHERE id = $1", [id]);
   res.json({ ok: true, id });
 };

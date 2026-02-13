@@ -1,4 +1,4 @@
-const db = require("../db/database");
+const { pool } = require("../db/database");
 const { z } = require("zod");
 
 const createSchema = z.object({
@@ -11,70 +11,79 @@ const createSchema = z.object({
   date: z.string().optional().default(""),
 });
 
-exports.getAll = (req, res) => {
-  const rows = db.prepare("SELECT * FROM items ORDER BY id DESC").all();
+exports.getAll = async (req, res) => {
+  const { rows } = await pool.query("SELECT * FROM items ORDER BY id DESC");
   res.json(rows);
 };
 
-exports.getById = (req, res) => {
+exports.getById = async (req, res) => {
   const id = Number(req.params.id);
-  const row = db.prepare("SELECT * FROM items WHERE id = ?").get(id);
-  if (!row) return res.status(404).json({ message: "Not found" });
-  res.json(row);
+  const { rows } = await pool.query("SELECT * FROM items WHERE id = $1", [id]);
+  if (!rows[0]) return res.status(404).json({ message: "Not found" });
+  res.json(rows[0]);
 };
 
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res
-      .status(400)
-      .json({ message: "Validation error", errors: parsed.error.flatten() });
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.flatten() });
   }
 
   const { title, content, excerpt, image, category, author, date } = parsed.data;
 
-  const info = db
-    .prepare(
-      `INSERT INTO items (title, excerpt, content, image, category, author, date)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
-    )
-    .run(title, excerpt || "", content, image || "", category || "Tin mới", author || "", date || "");
+  const q = `
+    INSERT INTO items (title, excerpt, content, image, category, author, date)
+    VALUES ($1,$2,$3,$4,$5,$6,$7)
+    RETURNING *
+  `;
+  const { rows } = await pool.query(q, [
+    title,
+    excerpt || "",
+    content,
+    image || "",
+    category || "Tin mới",
+    author || "",
+    date || "",
+  ]);
 
-  const created = db.prepare("SELECT * FROM items WHERE id = ?").get(info.lastInsertRowid);
-  res.status(201).json(created);
+  res.status(201).json(rows[0]);
 };
 
-exports.remove = (req, res) => {
+exports.remove = async (req, res) => {
   const id = Number(req.params.id);
-  const info = db.prepare("DELETE FROM items WHERE id = ?").run(id);
-  if (info.changes === 0) return res.status(404).json({ message: "Not found" });
+  const r = await pool.query("DELETE FROM items WHERE id = $1", [id]);
+  if (r.rowCount === 0) return res.status(404).json({ message: "Not found" });
   res.json({ message: "Deleted successfully" });
 };
 
-const updateSchema = createSchema;
-
-exports.update = (req, res) => {
+exports.update = async (req, res) => {
   const id = Number(req.params.id);
 
-  const parsed = updateSchema.safeParse(req.body);
+  const parsed = createSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res
-      .status(400)
-      .json({ message: "Validation error", errors: parsed.error.flatten() });
+    return res.status(400).json({ message: "Validation error", errors: parsed.error.flatten() });
   }
 
   const { title, content, excerpt, image, category, author, date } = parsed.data;
 
-  const info = db
-    .prepare(
-      `UPDATE items
-       SET title = ?, excerpt = ?, content = ?, image = ?, category = ?, author = ?, date = ?
-       WHERE id = ?`
-    )
-    .run(title, excerpt || "", content, image || "", category || "Tin mới", author || "", date || "", id);
+  const q = `
+    UPDATE items
+    SET title=$1, excerpt=$2, content=$3, image=$4, category=$5, author=$6, date=$7
+    WHERE id=$8
+    RETURNING *
+  `;
 
-  if (info.changes === 0) return res.status(404).json({ message: "Not found" });
+  const { rows } = await pool.query(q, [
+    title,
+    excerpt || "",
+    content,
+    image || "",
+    category || "Tin mới",
+    author || "",
+    date || "",
+    id,
+  ]);
 
-  const updated = db.prepare("SELECT * FROM items WHERE id = ?").get(id);
-  res.json(updated);
+  if (!rows[0]) return res.status(404).json({ message: "Not found" });
+  res.json(rows[0]);
 };
