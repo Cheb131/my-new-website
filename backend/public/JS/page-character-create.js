@@ -695,11 +695,22 @@ function wireAutoCalc() {
       show("Đang đăng nhân vật...", false);
 
       try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          show("Missing token. Hãy đăng nhập lại.", true);
+          publishBtn.disabled = false;
+          return;
+        }
+
         const res = await fetch("/api/characters", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
+
         const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
