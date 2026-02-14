@@ -37,6 +37,23 @@
     ul.innerHTML = arr.map((x) => `<li>${esc(x)}</li>`).join("");
   }
 
+  // ========== Auth (UI only) ==========
+  function getAuth() {
+    const token = localStorage.getItem("token");
+    if (!token) return { token: null, user: null };
+
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return { token, user: payload }; // { id, role, username, exp... }
+    } catch {
+      return { token: null, user: null };
+    }
+  }
+
+  function norm(s) {
+    return String(s || "").trim().toLowerCase();
+  }
+
   // ========== Notes parsing ==========
   function splitNotes(notesArr) {
     const out = { train: [], prof: [], action: [], attacks: [], spells: [], other: [] };
@@ -57,7 +74,6 @@
   }
 
   function parseAttackLine(s) {
-    // "Shortbow | Hit:+3 | Dmg:1d6+3 Piercing | Notes:..."
     const parts = String(s).split("|").map((x) => x.trim());
     const name = parts[0] || "";
 
@@ -70,7 +86,6 @@
   }
 
   function parseSpellLine(s) {
-    // "[P] Name | Src:... | Save/Atk:... | Time:... | Range:... | Comp:... | Dur:... | Page:... | Notes:..."
     const parts = String(s).split("|").map((x) => x.trim());
     const first = parts[0] || "";
 
@@ -126,8 +141,7 @@
     const PB = pbFromLevel(level);
 
     const profSet = new Set(
-      (Array.isArray(character.skills) ? character.skills : [])
-        .map((s) => String(s).toLowerCase())
+      (Array.isArray(character.skills) ? character.skills : []).map((s) => norm(s))
     );
 
     const st = character.stats || {};
@@ -136,7 +150,7 @@
       const abilScore = st[s.abil] ?? 10;
       const base = modFromScore(abilScore);
 
-      const norm1 = s.key.toLowerCase();
+      const norm1 = norm(s.key);
       const norm2 = norm1.replace(/\s+/g, "_");
       const isProf = profSet.has(norm1) || profSet.has(norm2);
 
@@ -155,62 +169,264 @@
   }
 
   // ========== Saving Throws ==========
-const SAVES = [
-  { key: "Sức mạnh", short: "STR", abil: "str" },
-  { key: "Nhanh nhẹn", short: "DEX", abil: "dex" },
-  { key: "Thể chất", short: "CON", abil: "con" },
-  { key: "Thông minh", short: "INT", abil: "int" },
-  { key: "Uyên bác", short: "WIS", abil: "wis" },
-  { key: "Thu hút", short: "CHA", abil: "cha" },
-];
+  const SAVES = [
+    { key: "Sức mạnh", short: "STR", abil: "str" },
+    { key: "Nhanh nhẹn", short: "DEX", abil: "dex" },
+    { key: "Thể chất", short: "CON", abil: "con" },
+    { key: "Thông minh", short: "INT", abil: "int" },
+    { key: "Uyên bác", short: "WIS", abil: "wis" },
+    { key: "Thu hút", short: "CHA", abil: "cha" },
+  ];
 
-function normToken(v) {
-  return String(v || "")
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .replace(/_/g, "");
-}
+  function normToken(v) {
+    return String(v || "").toLowerCase().replace(/\s+/g, "").replace(/_/g, "");
+  }
 
-function renderSavingThrows(character) {
-  const savingGrid = $("savingGrid");
-  if (!savingGrid) return;
+  function renderSavingThrows(character) {
+    const savingGrid = $("savingGrid");
+    if (!savingGrid) return;
 
-  const level = Number(character.level || 1);
-  const PB = pbFromLevel(level);
+    const level = Number(character.level || 1);
+    const PB = pbFromLevel(level);
 
-  // hỗ trợ nhiều kiểu backend có thể trả
-  const raw =
-    character.saving_throws ??
-    character.save_proficiencies ??
-    character.saves ??
-    [];
+    const raw = character.saving_throws ?? character.save_proficiencies ?? character.saves ?? [];
+    const profSet = new Set((Array.isArray(raw) ? raw : []).map(normToken));
 
-  const profSet = new Set((Array.isArray(raw) ? raw : []).map(normToken));
+    const st = character.stats || {};
 
-  const st = character.stats || {};
+    savingGrid.innerHTML = SAVES.map((s) => {
+      const base = modFromScore(st[s.abil] ?? 10);
 
-  savingGrid.innerHTML = SAVES.map((s) => {
-    const base = modFromScore(st[s.abil] ?? 10);
+      const isProf =
+        profSet.has(normToken(s.abil)) ||
+        profSet.has(normToken(s.key)) ||
+        profSet.has(normToken(s.short));
 
-    // match "str"/"dex"... hoặc "Strength"/"STR"...
-    const isProf =
-      profSet.has(normToken(s.abil)) ||
-      profSet.has(normToken(s.key)) ||
-      profSet.has(normToken(s.short));
+      const total = base + (isProf ? PB : 0);
 
-    const total = base + (isProf ? PB : 0);
-
-    return `
-      <div class="skill-item ${isProf ? "skill-prof" : ""}">
-        <div class="skill-left">
-          <div class="skill-name">${esc(s.key)}</div>
-          <div class="skill-abil">(${s.short})</div>
+      return `
+        <div class="skill-item ${isProf ? "skill-prof" : ""}">
+          <div class="skill-left">
+            <div class="skill-name">${esc(s.key)}</div>
+            <div class="skill-abil">(${s.short})</div>
+          </div>
+          <div class="skill-mod">${fmtSigned(total)}</div>
         </div>
-        <div class="skill-mod">${fmtSigned(total)}</div>
-      </div>
-    `;
-  }).join("");
-}
+      `;
+    }).join("");
+  }
+
+  // ========== Defenses / Senses (giữ như bạn đang có) ==========
+  function asArray(v) {
+    if (Array.isArray(v)) return v.filter(Boolean);
+    if (typeof v === "string") {
+      const s = v.trim();
+      if (!s) return [];
+      return s.split(/[,;]+/).map((x) => x.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
+  function renderChips(elId, items) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+
+    const arr = asArray(items);
+    if (!arr.length) {
+      el.innerHTML = `<span class="empty">—</span>`;
+      return;
+    }
+
+    // esc dùng trong IIFE nên dùng lại bằng cách copy safe:
+    el.innerHTML = arr.map((x) => `<span>${String(x)
+      .replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[m]))}</span>`).join("");
+  }
+
+  function renderSenseList(character) {
+    const ul = document.getElementById("senseList");
+    if (!ul) return;
+
+    const sensesRaw = character.senses ?? character.sense ?? character.sensor ?? null;
+
+    if (sensesRaw && typeof sensesRaw === "object" && !Array.isArray(sensesRaw)) {
+      const entries = Object.entries(sensesRaw)
+        .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "");
+
+      if (!entries.length) {
+        ul.innerHTML = `<li class="empty">—</li>`;
+        return;
+      }
+
+      ul.innerHTML = entries.map(([k, v]) => {
+        const label = String(k)
+          .replace(/_/g, " ")
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        return `<li><strong>${esc(label)}:</strong> ${esc(v)}</li>`;
+      }).join("");
+      return;
+    }
+
+    const arr = asArray(sensesRaw);
+    ul.innerHTML = arr.length
+      ? arr.map((x) => `<li>${esc(x)}</li>`).join("")
+      : `<li class="empty">—</li>`;
+  }
+
+  // ========== Edit mode ==========
+  let current = null;
+  let canEdit = false;
+
+  function showActions() {
+    const bar = $("charActions");
+    if (!bar) return;
+    bar.style.display = canEdit ? "flex" : "none";
+  }
+
+  function setEditMode(on) {
+    const editBtn = $("editBtn");
+    const saveBtn = $("saveBtn");
+    const cancelBtn = $("cancelBtn");
+
+    if (!editBtn || !saveBtn || !cancelBtn) return;
+
+    editBtn.style.display = on ? "none" : "inline-flex";
+    saveBtn.style.display = on ? "inline-flex" : "none";
+    cancelBtn.style.display = on ? "inline-flex" : "none";
+
+    // Toggle inputs
+    const idsText = ["charDesc"];
+    idsText.forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+
+      if (on) {
+        const curVal = el.textContent === "—" ? "" : el.textContent;
+        el.innerHTML = `<textarea id="${id}__ta" style="width:100%;min-height:90px;">${esc(curVal)}</textarea>`;
+      } else {
+        // render lại bằng loadCharacter() cho chắc
+      }
+    });
+
+    // Numeric fields -> input
+    const idsNum = ["statStr", "statDex", "statCon", "statInt", "statWis", "statCha", "combatHp", "combatAc"];
+    idsNum.forEach((id) => {
+      const el = $(id);
+      if (!el) return;
+
+      if (on) {
+        const v = Number(el.textContent) || 0;
+        el.innerHTML = `<input id="${id}__in" type="number" value="${v}" style="width:100%;max-width:110px;">`;
+      }
+    });
+
+    // Speed -> input text
+    const speedEl = $("combatSpeed");
+    if (speedEl && on) {
+      const v = speedEl.textContent || "";
+      speedEl.innerHTML = `<input id="combatSpeed__in" type="text" value="${esc(v)}" style="width:100%;max-width:160px;">`;
+    }
+
+    // Equipment list -> textarea lines
+    const eqEl = $("equipList");
+    if (eqEl && on) {
+      const eq = Array.isArray(current?.equipment) ? current.equipment : [];
+      eqEl.innerHTML = `<li style="list-style:none;padding:0;margin:0;">
+        <textarea id="equipTa" style="width:100%;min-height:140px;" placeholder="Mỗi dòng 1 item...">${esc(eq.join("\n"))}</textarea>
+      </li>`;
+    }
+
+    // Train/Proficiency/Action -> textarea (mỗi dòng)
+    const groups = splitNotes(current?.notes || []);
+    const setTa = (ulId, taId, lines) => {
+      const ul = $(ulId);
+      if (!ul) return;
+      ul.innerHTML = `<li style="list-style:none;padding:0;margin:0;">
+        <textarea id="${taId}" style="width:100%;min-height:120px;" placeholder="Mỗi dòng 1 mục...">${esc(lines.join("\n"))}</textarea>
+      </li>`;
+    };
+
+    if (on) {
+      setTa("trainUl", "trainTa", groups.train);
+      setTa("profUl", "profTa", groups.prof);
+      setTa("actionUl", "actionTa", groups.action);
+    }
+  }
+
+  function readLines(text) {
+    return String(text || "")
+      .split("\n")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  async function saveChanges() {
+    const { token } = getAuth();
+    if (!token) {
+      alert("Bạn cần đăng nhập để sửa.");
+      return;
+    }
+
+    const id = new URLSearchParams(location.search).get("id");
+    if (!id) return;
+
+    // lấy giá trị từ inputs/textarea
+    const stats = {
+      str: Number($("statStr__in")?.value) || 10,
+      dex: Number($("statDex__in")?.value) || 10,
+      con: Number($("statCon__in")?.value) || 10,
+      int: Number($("statInt__in")?.value) || 10,
+      wis: Number($("statWis__in")?.value) || 10,
+      cha: Number($("statCha__in")?.value) || 10,
+    };
+
+    const hp = Number($("combatHp__in")?.value) || 10;
+    const ac = Number($("combatAc__in")?.value) || 10;
+    const speed = String($("combatSpeed__in")?.value || "").trim() || "30 ft";
+    const description = String($("charDesc__ta")?.value || "").trim();
+
+    const equipment = readLines($("equipTa")?.value);
+
+    // build notes back
+    const train = readLines($("trainTa")?.value).map((x) => `Train: ${x}`);
+    const prof = readLines($("profTa")?.value).map((x) => `Proficiency: ${x}`);
+    const action = readLines($("actionTa")?.value).map((x) => `Action: ${x}`);
+
+    // giữ lại attacks/spells/other cũ để không mất
+    const oldGroups = splitNotes(current?.notes || []);
+    const notes = [
+      ...train,
+      ...prof,
+      ...action,
+      ...oldGroups.attacks.map((x) => `Attack: ${x}`),
+      ...oldGroups.spells.map((x) => `Spell: ${x}`),
+      ...oldGroups.other,
+    ];
+
+    const payload = { description, stats, hp, ac, speed, equipment, notes };
+
+    const res = await fetch(`/api/characters/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const t = await res.text();
+      alert("Lưu thất bại: " + t);
+      return;
+    }
+
+    await loadCharacter(); // reload + thoát edit
+  }
 
   // ========== Main load ==========
   async function loadCharacter() {
@@ -228,8 +444,9 @@ function renderSavingThrows(character) {
         return;
       }
 
-      const lv = Number(c.level || 1);
+      current = c;
 
+      const lv = Number(c.level || 1);
       $("charTitle").textContent = `${c.name} — ${c.race} ${c.class_name} (Cấp ${lv})`;
       $("charDesc").textContent = c.description || "—";
 
@@ -257,21 +474,14 @@ function renderSavingThrows(character) {
       renderSkills(c);
       renderSavingThrows(c);
 
-      // ===== Defenses (R/I/V) =====
-    const resist =
-    c.resistances ?? c.resistance ?? c.damage_resistances ?? c.dr ?? [];
-    const immune =
-    c.immunities ?? c.immunity ?? c.damage_immunities ?? c.di ?? [];
-    const vuln =
-    c.vulnerabilities ?? c.vulnerability ?? c.damage_vulnerabilities ?? c.dv ?? [];
-
-    renderChips("resistChips", resist);
-    renderChips("immuneChips", immune);
-    renderChips("vulnChips", vuln);
-
-    // ===== Senses =====
-    renderSenseList(c);
-
+      // Defenses + Senses
+      const resist = c.resistances ?? c.resistance ?? c.damage_resistances ?? c.dr ?? [];
+      const immune = c.immunities ?? c.immunity ?? c.damage_immunities ?? c.di ?? [];
+      const vuln = c.vulnerabilities ?? c.vulnerability ?? c.damage_vulnerabilities ?? c.dv ?? [];
+      renderChips("resistChips", resist);
+      renderChips("immuneChips", immune);
+      renderChips("vulnChips", vuln);
+      renderSenseList(c);
 
       // Equipment
       const eq = Array.isArray(c.equipment) ? c.equipment : [];
@@ -281,7 +491,6 @@ function renderSavingThrows(character) {
 
       // Notes split
       const groups = splitNotes(c.notes);
-
       fillUl("trainUl", groups.train);
       fillUl("profUl", groups.prof);
       fillUl("actionUl", groups.action);
@@ -333,67 +542,41 @@ function renderSavingThrows(character) {
           </tr>
         `).join("");
       }
+
+      // ===== quyền edit: owner hoặc admin =====
+      const { token, user } = getAuth();
+      canEdit =
+        !!token &&
+        !!user &&
+        (user.role === "admin" || norm(c.created_by) === norm(user.username));
+
+      showActions();
+
+      // thoát edit mode nếu đang bật
+      setEditMode(false);
     } catch (e) {
       container.innerHTML = `<div class="card"><h3>Lỗi tải nhân vật.</h3></div>`;
     }
   }
 
-  loadCharacter();
-})();
+  // Bind buttons
+  document.addEventListener("click", (e) => {
+    const t = e.target;
+    if (!t) return;
 
-function asArray(v) {
-  if (Array.isArray(v)) return v.filter(Boolean);
-  if (typeof v === "string") {
-    const s = v.trim();
-    if (!s) return [];
-    // cho phép "fire, cold" hoặc "fire; cold"
-    return s.split(/[,;]+/).map(x => x.trim()).filter(Boolean);
-  }
-  return [];
-}
-
-function renderChips(elId, items) {
-  const el = document.getElementById(elId);
-  if (!el) return;
-
-  const arr = asArray(items);
-  if (!arr.length) {
-    el.innerHTML = `<span class="empty">—</span>`;
-    return;
-  }
-
-  el.innerHTML = arr.map(x => `<span>${esc(x)}</span>`).join("");
-}
-
-function renderSenseList(character) {
-  const ul = document.getElementById("senseList");
-  if (!ul) return;
-
-  // hỗ trợ nhiều key: senses (object/array/string)
-  const sensesRaw = character.senses ?? character.sense ?? character.sensor ?? null;
-
-  // Nếu server trả dạng object: { darkvision: "60 ft", passive_perception: 13 }
-  if (sensesRaw && typeof sensesRaw === "object" && !Array.isArray(sensesRaw)) {
-    const entries = Object.entries(sensesRaw)
-      .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "");
-
-    if (!entries.length) {
-      ul.innerHTML = `<li class="empty">—</li>`;
-      return;
+    if (t.id === "editBtn") {
+      if (!canEdit) return;
+      setEditMode(true);
     }
 
-    ul.innerHTML = entries.map(([k, v]) => {
-      const label = String(k)
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-      return `<li><strong>${esc(label)}:</strong> ${esc(v)}</li>`;
-    }).join("");
-    return;
-  }
+    if (t.id === "cancelBtn") {
+      loadCharacter(); // reload lại dữ liệu, tự tắt edit
+    }
 
-  // Nếu server trả array/string: ["Darkvision 60 ft", "Passive Perception 13"]
-  const arr = asArray(sensesRaw);
-  ul.innerHTML = arr.length
-    ? arr.map(x => `<li>${esc(x)}</li>`).join("")
-    : `<li class="empty">—</li>`;
-}
+    if (t.id === "saveBtn") {
+      saveChanges();
+    }
+  });
+
+  loadCharacter();
+})();

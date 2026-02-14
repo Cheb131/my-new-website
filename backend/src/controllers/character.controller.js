@@ -10,14 +10,16 @@ const characterSchema = z.object({
   background: z.string().trim().min(1).max(140),
   avatar: z.string().trim().optional().default(""),
   description: z.string().trim().optional().default(""),
-  stats: z.object({
-    str: z.coerce.number().int().min(1).max(30),
-    dex: z.coerce.number().int().min(1).max(30),
-    con: z.coerce.number().int().min(1).max(30),
-    int: z.coerce.number().int().min(1).max(30),
-    wis: z.coerce.number().int().min(1).max(30),
-    cha: z.coerce.number().int().min(1).max(30),
-  }).default({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }),
+  stats: z
+    .object({
+      str: z.coerce.number().int().min(1).max(30),
+      dex: z.coerce.number().int().min(1).max(30),
+      con: z.coerce.number().int().min(1).max(30),
+      int: z.coerce.number().int().min(1).max(30),
+      wis: z.coerce.number().int().min(1).max(30),
+      cha: z.coerce.number().int().min(1).max(30),
+    })
+    .default({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }),
   hp: z.coerce.number().int().min(1).max(999).default(10),
   ac: z.coerce.number().int().min(1).max(30).default(10),
   speed: z.string().trim().optional().default("30 ft"),
@@ -30,7 +32,11 @@ const characterSchema = z.object({
 function arr(v) {
   if (Array.isArray(v)) return v;
   if (typeof v === "string") {
-    try { return JSON.parse(v); } catch { return []; }
+    try {
+      return JSON.parse(v);
+    } catch {
+      return [];
+    }
   }
   return [];
 }
@@ -58,6 +64,14 @@ function mapRow(row) {
   };
 }
 
+function isOwnerOrAdmin(reqUser, row) {
+  const isAdmin = reqUser?.role === "admin";
+  const isOwner =
+    String(row?.created_by || "").toLowerCase() ===
+    String(reqUser?.username || "").toLowerCase();
+  return isAdmin || isOwner;
+}
+
 // ===== PUBLIC list =====
 exports.getPublic = async (req, res) => {
   const { rows } = await pool.query(
@@ -80,7 +94,7 @@ exports.getPublicById = async (req, res) => {
   res.json(mapRow(rows[0]));
 };
 
-// ===== CREATE (ai cũng đăng) =====
+// ===== CREATE (phải đăng nhập để có created_by đúng user) =====
 exports.create = async (req, res) => {
   const parsed = characterSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -91,6 +105,9 @@ exports.create = async (req, res) => {
   }
 
   const data = parsed.data;
+
+  // requireAuth sẽ set req.user; vẫn fallback phòng trường hợp khác
+  const createdBy = req.user?.username ? String(req.user.username) : "guest";
 
   const q = `
     INSERT INTO characters (
@@ -129,22 +146,127 @@ exports.create = async (req, res) => {
     JSON.stringify(data.equipment || []),
     JSON.stringify(data.notes || []),
 
-    "guest",
+    createdBy,
     !!data.is_public,
   ];
 
   const { rows } = await pool.query(q, params);
-
   res.status(201).json(mapRow(rows[0]));
 };
 
-// ===== DELETE (ai cũng xoá) =====
+// ===== UPDATE (chỉ owner/admin) =====
+exports.update = async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
+
+  const parsed = characterSchema.partial().safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({
+      message: "Validation error",
+      errors: parsed.error.flatten(),
+    });
+  }
+
+  const curR = await pool.query("SELECT * FROM characters WHERE id = $1", [id]);
+  const cur = curR.rows[0];
+  if (!cur) return res.status(404).json({ message: "Character not found" });
+
+  if (!isOwnerOrAdmin(req.user, cur)) {
+    return res.status(403).json({ message: "Bạn không có quyền sửa nhân vật này" });
+  }
+
+  const patch = parsed.data;
+
+  const next = {
+    name: patch.name ?? cur.name,
+    race: patch.race ?? cur.race,
+    class_name: patch.class_name ?? cur.class_name,
+    level: patch.level ?? cur.level,
+    alignment: patch.alignment ?? cur.alignment,
+    background: patch.background ?? cur.background,
+    avatar: patch.avatar ?? cur.avatar,
+    description: patch.description ?? cur.description,
+
+    stats: patch.stats
+      ? patch.stats
+      : {
+          str: cur.str,
+          dex: cur.dex,
+          con: cur.con,
+          int: cur.int,
+          wis: cur.wis,
+          cha: cur.cha,
+        },
+
+    hp: patch.hp ?? cur.hp,
+    ac: patch.ac ?? cur.ac,
+    speed: patch.speed ?? cur.speed,
+
+    skills: patch.skills ?? arr(cur.skills),
+    equipment: patch.equipment ?? arr(cur.equipment),
+    notes: patch.notes ?? arr(cur.notes),
+
+    is_public:
+      typeof patch.is_public === "boolean" ? patch.is_public : !!cur.is_public,
+  };
+
+  const q = `
+    UPDATE characters SET
+      name=$1, race=$2, class_name=$3, level=$4,
+      alignment=$5, background=$6, avatar=$7, description=$8,
+      str=$9, dex=$10, con=$11, int=$12, wis=$13, cha=$14,
+      hp=$15, ac=$16, speed=$17,
+      skills=$18::jsonb, equipment=$19::jsonb, notes=$20::jsonb,
+      is_public=$21
+    WHERE id=$22
+    RETURNING *
+  `;
+
+  const params = [
+    next.name,
+    next.race,
+    next.class_name,
+    Number(next.level || 1),
+    next.alignment,
+    next.background,
+    next.avatar || "",
+    next.description || "",
+
+    Number(next.stats.str || 10),
+    Number(next.stats.dex || 10),
+    Number(next.stats.con || 10),
+    Number(next.stats.int || 10),
+    Number(next.stats.wis || 10),
+    Number(next.stats.cha || 10),
+
+    Number(next.hp || 10),
+    Number(next.ac || 10),
+    next.speed || "30 ft",
+
+    JSON.stringify(next.skills || []),
+    JSON.stringify(next.equipment || []),
+    JSON.stringify(next.notes || []),
+
+    !!next.is_public,
+    id,
+  ];
+
+  const { rows } = await pool.query(q, params);
+  res.json(mapRow(rows[0]));
+};
+
+// ===== DELETE (chỉ owner/admin) =====
 exports.remove = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
 
-  const found = await pool.query("SELECT id FROM characters WHERE id = $1", [id]);
-  if (!found.rows[0]) return res.status(404).json({ message: "Character not found" });
+  const found = await pool.query("SELECT id, created_by FROM characters WHERE id = $1", [id]);
+  const row = found.rows[0];
+  if (!row) return res.status(404).json({ message: "Character not found" });
+
+  if (!isOwnerOrAdmin(req.user, row)) {
+    return res.status(403).json({ message: "Bạn không có quyền xoá nhân vật này" });
+  }
 
   await pool.query("DELETE FROM characters WHERE id = $1", [id]);
   res.json({ ok: true, id });
