@@ -1,5 +1,16 @@
 (() => {
-  const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
+  /**
+   * API_BASE strategy:
+   * - Production (Render): serve static + API cùng 1 domain => API_BASE = ""
+   * - Local dev (Live Server 5500): gọi API ở localhost:3000
+   * - Có thể override bằng window.__API_BASE (nếu sau này tách frontend/backend)
+   */
+  const API_BASE =
+    (window.__API_BASE && String(window.__API_BASE)) ||
+    ((location.hostname === "localhost" && location.port === "5500")
+      ? "http://localhost:3000"
+      : "");
+
   const LS_USER = "user";
   const LS_TOKEN = "token";
 

@@ -1,3 +1,4 @@
+// routes/api.route.js
 const express = require("express");
 const router = express.Router();
 
@@ -8,13 +9,16 @@ const { requireAuth } = require("../middlewares/auth.middleware");
 router.get("/characters/public", characterController.getPublic);
 router.get("/characters/public/:id", characterController.getPublicById);
 
+// AUTH detail (owner/admin xem full - kể cả không public)
+router.get("/characters/:id", requireAuth, characterController.getById);
+
 // CREATE (phải đăng nhập -> mới có created_by đúng user)
 router.post("/characters", requireAuth, characterController.create);
 
-// UPDATE (chỉ owner/admin - logic check nằm trong controller.update)
+// UPDATE (chỉ owner/admin)
 router.patch("/characters/:id", requireAuth, characterController.update);
 
-// DELETE (chỉ owner/admin - logic check nằm trong controller.remove)
+// DELETE (chỉ owner/admin)
 router.delete("/characters/:id", requireAuth, characterController.remove);
 
 module.exports = router;

@@ -1,11 +1,11 @@
-// src/db/database.js
+// backend/src/db/database.js
 const { Pool } = require("pg");
+
 console.log("DATABASE_URL =", process.env.DATABASE_URL);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Neon cần TLS; config này giúp tránh lỗi cert trên cloud
-  ssl: { rejectUnauthorized: false },
+  ssl: { rejectUnauthorized: false }, // Neon TLS
 });
 
 async function initDb() {
@@ -64,7 +64,14 @@ async function initDb() {
     )
   `);
 
-  console.log("✅ Postgres tables ensured");
+  // migrations (để không lỗi 500 khi INSERT/PATCH)
+  await pool.query(`ALTER TABLE characters ADD COLUMN IF NOT EXISTS feature_lines JSONB DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE characters ADD COLUMN IF NOT EXISTS resistances JSONB DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE characters ADD COLUMN IF NOT EXISTS immunities JSONB DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE characters ADD COLUMN IF NOT EXISTS vulnerabilities JSONB DEFAULT '[]'::jsonb`);
+  await pool.query(`ALTER TABLE characters ADD COLUMN IF NOT EXISTS senses JSONB DEFAULT '{}'::jsonb`);
+
+  console.log("✅ Postgres tables ensured + migrations done");
 }
 
 module.exports = { pool, initDb };

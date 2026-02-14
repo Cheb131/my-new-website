@@ -1,3 +1,4 @@
+// backend/src/app.js
 require("dotenv").config();
 const path = require("path");
 const express = require("express");
@@ -16,10 +17,9 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 /* ================= STATIC FRONTEND ================= */
-// ⛔ PHẢI ĐẶT TRƯỚC API & notFound
+// app.js nằm trong /src => public ở ../public
 const publicDir = path.resolve(__dirname, "../public");
 console.log("STATIC DIR =", publicDir);
-
 app.use(express.static(publicDir));
 
 /* ================= ROOT ================= */
@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 });
 
 /* ================= API ================= */
-app.use("/api", require("./routes/api.route"));
+app.use("/api", apiRoute);
 app.use("/api/auth", authRoute);
 
 /* ================= ERROR ================= */
