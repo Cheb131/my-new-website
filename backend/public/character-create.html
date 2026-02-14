@@ -511,7 +511,7 @@
                   <div class="cc-field"><label for="initiative">Initiative (Độ ưu tiên)</label><input id="initiative" type="number" placeholder="Ví dụ: 3"></div>
                   <div class="cc-field"><label for="ac">Armor Class (Giáp)</label><input id="ac" type="number" min="1" max="30" value="10"></div>
                   <div class="cc-field"><label for="speed">Speed (Tốc độ)</label><input id="speed" value="30 ft"></div>
-                  <div class="cc-field"><label for="proficiencyBonus">Proficiency Bonus (Độ thuần thục)</label><input id="proficiencyBonus" type="number" placeholder="Ví dụ: 2"></div>
+                  <div class="cc-field"><label for="proficiencyBonus">Proficiency Bonus (Thuần thục)</label><input id="proficiencyBonus" type="number" placeholder="Ví dụ: 2"></div>
                   <div class="cc-field"><label for="hitDice">Hit Dice</label><input id="hitDice" type="text" placeholder="Ví dụ: 1d8"></div>
                   <div class="cc-field"><label for="abilitySaveDc">Ability Save DC</label><input id="abilitySaveDc" type="number" min="0" placeholder="Ví dụ: 13" /></div>
                 </div>
@@ -679,19 +679,21 @@
 
                 <div class="cc-tablewrap">
                   <table class="cc-table cc-spelltable" aria-label="Spells table">
-                    <thead>
-                      <tr>
-                        <th class="cc-xxs">PREP</th>
-                        <th>SPELL NAME</th>
-                        <th class="cc-tiny">SAVE/ATK</th>
-                        <th class="cc-tiny">TIME</th>
-                        <th class="cc-tiny">RANGE</th>
-                        <th class="cc-tiny">COMP</th>
-                        <th class="cc-tiny">DURATION</th>
-                        <th>NOTES</th>
-                        <th class="cc-xxs">✕</th>
-                      </tr>
-                    </thead>
+                <thead>
+                  <tr>
+                    <th class="cc-xxs">PREP</th>
+                    <th class="cc-xxs">LEVEL</th>
+                    <th>SPELL NAME</th>
+                    <th class="cc-tiny">SAVE/ATK</th>
+                    <th class="cc-tiny">TIME</th>
+                    <th class="cc-tiny">RANGE</th>
+                    <th class="cc-tiny">COMP</th>
+                    <th class="cc-tiny">DURATION</th>
+                    <th>NOTES</th>
+                    <th class="cc-xxs">✕</th>
+                  </tr>
+                </thead>
+
 
                     <tbody id="spellTbody"></tbody>
                   </table>
@@ -707,100 +709,83 @@
                 <input type="hidden" id="spellsJson" value="[]">
               </div>
 
-              <div class="cc-section">
-                <h2 class="cc-title">Equipment</h2>
+                <!-- EQUIPMENT -->
+                <div class="cc-section">
+                  <h2 class="cc-title">Equipment</h2>
 
-                <div class="cc-equip-sheet">
-                  <!-- LEFT: Coins + totals -->
-                  <aside class="cc-equip-side">
-                    <div class="cc-coin">
-                      <label for="coin_cp">CP</label>
-                      <input id="coin_cp" type="number" min="0" value="0">
-                    </div>
-                    <div class="cc-coin">
-                      <label for="coin_sp">SP</label>
-                      <input id="coin_sp" type="number" min="0" value="0">
-                    </div>
-                    <div class="cc-coin">
-                      <label for="coin_ep">EP</label>
-                      <input id="coin_ep" type="number" min="0" value="0">
-                    </div>
-                    <div class="cc-coin">
-                      <label for="coin_gp">GP</label>
-                      <input id="coin_gp" type="number" min="0" value="0">
-                    </div>
-                    <div class="cc-coin">
-                      <label for="coin_pp">PP</label>
-                      <input id="coin_pp" type="number" min="0" value="0">
-                    </div>
+                  <div class="cc-equip-sheet">
+                    <!-- LEFT: COINS + METRICS -->
+                    <aside class="cc-equip-side">
+                      <div class="cc-coin"><label>CP</label><input id="coin_cp" type="number" min="0" value="0"></div>
+                      <div class="cc-coin"><label>SP</label><input id="coin_sp" type="number" min="0" value="0"></div>
+                      <div class="cc-coin"><label>EP</label><input id="coin_ep" type="number" min="0" value="0"></div>
+                      <div class="cc-coin"><label>GP</label><input id="coin_gp" type="number" min="0" value="0"></div>
+                      <div class="cc-coin"><label>PP</label><input id="coin_pp" type="number" min="0" value="0"></div>
 
-                    <div class="cc-side-metrics">
-                      <div class="cc-metric">
-                        <div class="cc-metric__label">WEIGHT CARRIED</div>
-                        <div class="cc-metric__value"><b id="weightCarried">0</b> lb.</div>
-                      </div>
-                      <div class="cc-metric">
-                        <div class="cc-metric__label">ENCUMBERED</div>
-                        <div class="cc-metric__value"><b id="encumberedAt">0</b> lb.</div>
-                        <div class="cc-subnote">= 5 × STR</div>
-                      </div>
-                      <div class="cc-metric">
-                        <div class="cc-metric__label">PUSH / DRAG / LIFT</div>
-                        <div class="cc-metric__value"><b id="pushDragLift">0</b> lb.</div>
-                        <div class="cc-subnote">= 30 × STR</div>
-                      </div>
-                    </div>
-                  </aside>
+                      <div class="cc-side-metrics">
+                        <div class="cc-metric">
+                          <div class="cc-metric__label">Weight carried</div>
+                          <div class="cc-metric__value"><span id="weightCarried">0</span> lb.</div>
+                        </div>
 
-                  <!-- RIGHT: Two columns of items -->
-                  <div class="cc-equip-main">
-                    <div class="cc-equip-cols">
-                      <!-- Column A -->
-                      <div class="cc-equip-col">
+                        <div class="cc-metric">
+                          <div class="cc-metric__label">Encumbered</div>
+                          <div class="cc-metric__value"><span id="encumberedAt">0</span> lb.</div>
+                          <div class="cc-metric__hint">= 5 × STR</div>
+                        </div>
+
+                        <div class="cc-metric">
+                          <div class="cc-metric__label">Push / Drag / Lift</div>
+                          <div class="cc-metric__value"><span id="pushDragLift">0</span> lb.</div>
+                          <div class="cc-metric__hint">= 30 × STR</div>
+                        </div>
+                      </div>
+                    </aside>
+
+                    <!-- RIGHT: EQUIPMENT LISTS -->
+                    <div class="cc-equip-main">
+                      <!-- EQUIPMENT -->
+                      <div class="cc-equip-panel">
+                        <div class="cc-equip-title">
+                          <h3>Equipment</h3>
+                          <div class="cc-row-actions">
+                            <button type="button" class="cc-btn" id="addEquipA">+ Add row</button>
+                          </div>
+                        </div>
+
                         <div class="cc-equip-head">
-                          <span>NAME</span><span>QTY</span><span>WEIGHT</span><span></span>
+                          <div>NAME</div>
+                          <div style="text-align:center;">QTY</div>
+                          <div style="text-align:center;">WEIGHT</div>
+                          <div></div>
                         </div>
-                        <div id="equipColA" class="cc-equip-rows"></div>
 
-                        <div class="cc-row-actions" style="margin-top:10px;">
-                          <button class="cc-btn" type="button" id="addEquipA">+ Add row</button>
-                        </div>
+                        <div class="cc-equip-rows" id="equipColA"></div>
                       </div>
 
-                      <!-- Column B -->
-                      <div class="cc-equip-col">
+                      <!-- ATTUNED -->
+                      <div class="cc-equip-panel">
+                        <div class="cc-equip-title">
+                          <h3>Attuned magic items</h3>
+                          <div class="cc-row-actions">
+                            <button type="button" class="cc-btn" id="addEquipAttuned">+ Add row</button>
+                            <button type="button" class="cc-btn danger" id="clearEquipAll">Clear all</button>
+                          </div>
+                        </div>
+
                         <div class="cc-equip-head">
-                          <span>NAME</span><span>QTY</span><span>WEIGHT</span><span></span>
+                          <div>NAME</div>
+                          <div style="text-align:center;">QTY</div>
+                          <div style="text-align:center;">WEIGHT</div>
+                          <div></div>
                         </div>
-                        <div id="equipColB" class="cc-equip-rows"></div>
 
-                        <div class="cc-row-actions" style="margin-top:10px;">
-                          <button class="cc-btn" type="button" id="addEquipB">+ Add row</button>
-                        </div>
+                        <div class="cc-equip-rows" id="equipAttuned"></div>
                       </div>
                     </div>
-
-                    <!-- Attuned magic items -->
-                    <div class="cc-attuned">
-                      <div class="cc-attuned__title">ATTUNED MAGIC ITEMS</div>
-                      <div class="cc-equip-head">
-                        <span>NAME</span><span>QTY</span><span>WEIGHT</span><span></span>
-                      </div>
-                      <div id="equipAttuned" class="cc-equip-rows"></div>
-
-                      <div class="cc-row-actions" style="margin-top:10px;">
-                        <button class="cc-btn" type="button" id="addEquipAttuned">+ Add row</button>
-                        <button class="cc-btn danger" type="button" id="clearEquipAll">Clear all</button>
-                      </div>
-                    </div>
-
-                    <input type="hidden" id="equipmentJson" value="[]">
-                    <input type="hidden" id="coinsJson" value="{}">
-
                   </div>
-                
                 </div>
-              </div>
+
               
               <div class="cc-field cc-attacks">
               <h2>Attacks</h2>

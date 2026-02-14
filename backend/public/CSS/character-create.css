@@ -1,5 +1,12 @@
   /* ===== Layout / Hero ===== */
   .cc-wrap { padding: 22px 0 28px; }
+  /* Tránh bị "cắt" nội dung ngang khi có bảng rộng */
+  html, body { overflow-x: auto; }
+  /* Cho form rộng hơn trên desktop để không bị che */
+  .cc-wrap .container{ max-width: 1280px; }
+  @media (min-width: 1440px){
+    .cc-wrap .container{ max-width: 1400px; }
+  }
   .cc-hero { margin: 10px 0 16px; }
   .cc-hero h1 { margin: 0 0 6px; font-size: 26px; line-height: 1.2; }
   .cc-hero p { margin: 0; opacity: .85; }
@@ -203,10 +210,25 @@
   .cc-tablewrap{
     width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-gutter: stable;
     border-radius: 12px;
+    padding-bottom: 6px; /* để scrollbar không bị "ăn" mất */
   }
-  .cc-spelltable{ min-width: 1200px; }
+  /* Giảm min-width để desktop thấy đủ cột hơn (vẫn cho phép scroll) */
+  .cc-spelltable{ min-width: 1080px; }
   .cc-spelltable input[type="text"]{
+    width: 100%;
+    padding: 8px 9px;
+    border-radius: 10px;
+    border: 1px solid rgba(2,6,23,.12);
+    background: rgba(255,255,255,.92);
+    box-sizing: border-box;
+    font-size: 13px;
+  }
+  .cc-spelltable input[type="number"],
+  .cc-spelltable select{
     width: 100%;
     padding: 8px 9px;
     border-radius: 10px;
@@ -243,6 +265,27 @@
     .cc-tiny { width: 66px; }
     .cc-xxs { width: 52px; }
     .cc-table { display:block; overflow-x:auto; }
+  }
+  /* iPhone 15 & mobile nhỏ: tăng cỡ chữ + làm skills/spells dễ đọc */
+  @media (max-width: 430px){
+    .cc-form{ padding: 12px; }
+    .cc-field label{ font-size: 13px; }
+    .cc-field input,
+    .cc-field select,
+    .cc-field textarea{ font-size: 17px; }
+
+    /* Skills: đừng để input bị bóp nhỏ / bị cắt */
+    .cc-skill-row{ flex-direction: column; align-items: stretch; }
+    .cc-profi{ justify-content: flex-start; }
+    .cc-skill-row > input[type="number"]{ width: 100%; }
+
+    /* Spells: vẫn là bảng nhưng scroll mượt và chữ rõ hơn */
+    .cc-spelltable{ min-width: 980px; }
+    .cc-spelltable th,
+    .cc-spelltable td{ padding: 10px 10px; }
+    .cc-spelltable input[type="text"],
+    .cc-spelltable input[type="number"],
+    .cc-spelltable select{ font-size: 15px; padding: 10px 10px; }
   }
   @media (max-width: 520px){
     .cc-checkgrid{ grid-template-columns: 1fr; }
@@ -576,4 +619,283 @@
   border: none;
   border-top: 1px dashed rgba(2,6,23,.14);
   margin: 14px 0;
+}
+
+/* ===========================
+   FIX: Equipment bị chừa trống bên phải + không bị cắt ngang
+   Dán block này ở CUỐI file character-create.css
+=========================== */
+
+/* Nhiều theme/layout hay set overflow hidden làm cắt bảng rộng */
+.page-wrap,
+.main-content,
+.cc-wrap,
+.cc-card{
+  overflow: visible !important;
+}
+
+/* Ép container rộng hơn trên desktop (nếu base.css đang giới hạn) */
+.cc-wrap .container{
+  width: min(1400px, calc(100% - 32px)) !important;
+  max-width: 1400px !important;
+}
+
+/* Equipment layout: đảm bảo grid có thể co giãn đúng */
+.cc-equip-sheet{
+  width: 100%;
+  max-width: none !important;
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+}
+
+/* Main cột bên phải phải được phép “nở” và không gây overflow weird */
+.cc-equip-main{
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+/* 2 cột equipment phải là minmax(0,1fr) để không bị “kẹt” */
+.cc-equip-cols{
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+}
+
+/* Các box bên trong không được tự đặt width cố định */
+.cc-equip-col,
+.cc-attuned{
+  width: 100%;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+/* Fix: input trong grid không làm nở layout */
+.cc-equip-row input,
+.cc-equip-row button{
+  min-width: 0 !important;
+}
+
+/* Mobile: equipment xếp 1 cột cho dễ đọc */
+@media (max-width: 1024px){
+  .cc-equip-sheet{
+    grid-template-columns: 1fr !important;
+  }
+  .cc-equip-cols{
+    grid-template-columns: 1fr !important;
+  }
+}
+/* Equipment chỉ 1 cột */
+.cc-equip-cols--one{
+  grid-template-columns: 1fr !important;
+}
+
+/* ===========================
+   EQUIPMENT - CLEAN MODERN
+   Dán ở CUỐI character-create.css
+=========================== */
+
+/* tổng khu Equipment */
+.cc-equip-sheet{
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+/* side (coins + metrics) */
+.cc-equip-side{
+  border: 1px solid rgba(2,6,23,.10);
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  padding: 12px;
+  box-shadow: 0 10px 22px rgba(2,6,23,.06);
+}
+
+.cc-coin{
+  display: grid;
+  grid-template-columns: 38px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.cc-coin label{
+  font-size: 12px;
+  opacity: .75;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+.cc-coin input{
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(2,6,23,.12);
+  background: rgba(255,255,255,.96);
+  box-sizing: border-box;
+  font-size: 14px;
+}
+.cc-coin input:focus{
+  outline:none;
+  border-color: rgba(212,160,23,.45);
+  box-shadow: 0 0 0 3px rgba(212,160,23,.14);
+}
+
+.cc-side-metrics{
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+.cc-metric{
+  border: 1px solid rgba(2,6,23,.10);
+  border-radius: 14px;
+  background: rgba(255,255,255,.96);
+  padding: 10px 12px;
+}
+.cc-metric__label{
+  font-size: 11px;
+  opacity: .7;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.cc-metric__value{
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.cc-metric__hint{
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: .65;
+}
+
+/* main panel */
+.cc-equip-main{
+  min-width: 0;
+}
+
+.cc-equip-panel{
+  border: 1px solid rgba(2,6,23,.10);
+  border-radius: 16px;
+  background: rgba(255,255,255,.94);
+  padding: 12px;
+  box-shadow: 0 10px 22px rgba(2,6,23,.06);
+}
+
+.cc-equip-panel + .cc-equip-panel{
+  margin-top: 12px;
+}
+
+.cc-equip-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+.cc-equip-title h3{
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  opacity: .75;
+}
+.cc-equip-title .cc-row-actions{
+  margin: 0;
+}
+
+/* header row */
+.cc-equip-head{
+  display: grid;
+  grid-template-columns: 1fr 78px 96px 42px;
+  gap: 10px;
+  padding: 4px 4px 10px;
+  font-size: 11px;
+  opacity: .65;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* rows */
+.cc-equip-rows{
+  display: grid;
+  gap: 10px;
+}
+.cc-equip-row{
+  display: grid;
+  grid-template-columns: 1fr 78px 96px 42px;
+  gap: 10px;
+  align-items: center;
+}
+.cc-equip-row input{
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(2,6,23,.12);
+  background: rgba(255,255,255,.96);
+  box-sizing: border-box;
+  font-size: 14px;
+  min-width: 0;
+}
+.cc-equip-row input:focus{
+  outline:none;
+  border-color: rgba(212,160,23,.45);
+  box-shadow: 0 0 0 3px rgba(212,160,23,.14);
+}
+
+.cc-delbtn{
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(239,68,68,.35);
+  background: rgba(254,226,226,.85);
+  color: #b91c1c;
+  font-weight: 900;
+  cursor: pointer;
+}
+.cc-delbtn:hover{
+  background: rgba(254,202,202,.95);
+}
+
+/* action buttons (Add row / Clear all) */
+.cc-row-actions{
+  display:flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.cc-btn{
+  border: 1px solid rgba(2,6,23,.12);
+  background: rgba(255,255,255,.96);
+  padding: 10px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+}
+.cc-btn:hover{ background: rgba(2,6,23,.03); }
+
+.cc-btn.danger{
+  border-color: rgba(239,68,68,.35);
+  background: rgba(254,226,226,.85);
+  color: #b91c1c;
+}
+.cc-btn.danger:hover{ background: rgba(254,202,202,.95); }
+
+/* responsive */
+@media (max-width: 1024px){
+  .cc-equip-sheet{
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 430px){
+  .cc-equip-head{ display:none; }
+  .cc-equip-row{
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "name name"
+      "qty wt"
+      "del del";
+  }
+  .cc-equip-row input:nth-child(1){ grid-area: name; }
+  .cc-equip-row input:nth-child(2){ grid-area: qty; }
+  .cc-equip-row input:nth-child(3){ grid-area: wt; }
+  .cc-equip-row .cc-delbtn{ grid-area: del; width: 100%; border-radius: 14px; }
 }
