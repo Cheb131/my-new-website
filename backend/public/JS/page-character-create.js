@@ -246,7 +246,8 @@
       if (!name) continue;
       const q = Number.isFinite(qty) ? qty : 0;
       const w = Number.isFinite(wt) ? wt : 0;
-      out.push(`${label}: ${name} x${q} (wt ${w})`);
+      out.push(`${name} x${q} (wt ${w})`);
+
     }
     return out;
   }
@@ -436,7 +437,7 @@
 
     const equipment = [];
     equipment.push(
-      `Coins: CP=${num("coin_cp", 0)} SP=${num("coin_sp", 0)} EP=${num("coin_ep", 0)} GP=${num("coin_gp", 0)} PP=${num("coin_pp", 0)}`
+      `CP=${num("coin_cp", 0)} SP=${num("coin_sp", 0)} EP=${num("coin_ep", 0)} GP=${num("coin_gp", 0)} PP=${num("coin_pp", 0)}`
     );
     readEquipBox("equipColA", "EquipA").forEach((x) => equipment.push(x));
     readEquipBox("equipAttuned", "Attuned").forEach((x) => equipment.push(x));
