@@ -417,9 +417,30 @@
     if (!confirm("Bạn có chắc muốn xoá nhân vật này không?")) return;
 
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Bạn cần đăng nhập để xoá nhân vật.");
+        return;
+      }
+
       const res = await fetch(`/api/characters/${encodeURIComponent(id)}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      if (res.status === 401) {
+        alert("Unauthorized (token hết hạn hoặc chưa đăng nhập).");
+        return;
+      }
+
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        alert("Xoá thất bại: " + (t || res.status));
+        return;
+      }
+
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {

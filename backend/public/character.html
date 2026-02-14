@@ -1,207 +1,179 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <title>Nhân vật — Hội Quán Dungeons & Dragons</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Character</title>
 
+  <link rel="stylesheet" href="/CSS/base.css" />
   <link rel="stylesheet" href="/CSS/style.css" />
+  <link rel="stylesheet" href="/CSS/nav.css" />
+  <link rel="stylesheet" href="/CSS/components.css" />
+  <link rel="stylesheet" href="/CSS/pages.css" />
+  <link rel="stylesheet" href="/CSS/responsive.css" />
   <link rel="stylesheet" href="/CSS/character.css" />
 </head>
 
 <body>
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="header-banner">
-      <img src="/Assets/images/background.jpg" alt="Banner" class="banner-bg" />
-      <div class="banner-inner container">
-        <div class="logo-group left">
-          <button class="menu-toggle" id="mnavToggle" type="button" aria-label="Mở menu">
-            <img src="/Assets/icons/menu.png" alt="">
-          </button>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <!-- NAV -->
-  <nav class="main-nav" aria-label="Điều hướng chính">
-    <div class="container">
-      <ul class="nav-list">
-        <li><a href="index.html">Trang chủ</a></li>
-        <li class="has-dropdown"><a href="list.html">Nhiệm vụ & Sự kiện</a></li>
-        <li class="has-dropdown active"><a href="character-list.html">Sổ tay huấn luyện</a></li>
-        <li class="has-dropdown"><a href="#">Kho tư liệu cổ thư</a></li>
-        <li class="has-dropdown"><a href="#">Kho học cụ</a></li>
-      </ul>
-    </div>
-  </nav>
-
-  <div class="page-wrap">
-    <main class="main-content">
-      <section class="character-page">
-        <div class="container">
-
-          <!-- HERO -->
-          <div class="character-hero">
-            <img id="charAvatar" class="character-avatar" src="/Assets/images/sample.png" alt="Character" />
-            <div>
-              <h1 id="charTitle">Nhân vật</h1>
-              <p id="charDesc" class="empty">—</p>
-            </div>
-
-            <div class="char-actions" id="charActions" style="display:none; gap:10px; margin-top:10px; flex-wrap:wrap;">
-              <button id="editBtn" type="button" class="btn btn--ghost">Sửa</button>
-              <button id="saveBtn" type="button" class="btn btn--primary" style="display:none;">Lưu</button>
-              <button id="cancelBtn" type="button" class="btn btn--ghost" style="display:none;">Hủy</button>
-            </div>
-
-          </div>
-
-          <!-- TOP GRID -->
-          <div class="grid2">
-            <div class="card">
-              <h3>Thông tin cơ bản</h3>
-              <ul class="basic-list">
-                <li><strong>Chủng tộc:</strong> <span id="charRace">—</span></li>
-                <li><strong>Lớp:</strong> <span id="charClass">—</span></li>
-                <li><strong>Xu hướng:</strong> <span id="charAlign">—</span></li>
-                <li><strong>Bối cảnh:</strong> <span id="charBg">—</span></li>
-              </ul>
-
-              <h3 class="section-gap">Kỹ năng</h3>
-              <div id="skillsGrid" class="skills-grid"></div>
-
-              <h3 class="section-gap">Trang bị</h3>
-              <ul class="list" id="equipList"><li>—</li></ul>
-            </div>
-
-            <div class="card">
-              <h3>Chỉ số</h3>
-              <div class="stat-grid">
-                <div><span>STR</span><b id="statStr">10</b></div>
-                <div><span>DEX</span><b id="statDex">10</b></div>
-                <div><span>CON</span><b id="statCon">10</b></div>
-                <div><span>INT</span><b id="statInt">10</b></div>
-                <div><span>WIS</span><b id="statWis">10</b></div>
-                <div><span>CHA</span><b id="statCha">10</b></div>
-              </div>
-
-              <h3 class="section-gap"></h3>
-              <ul class="basic-list basic-list--compact">
-                <li><strong>HP:</strong> <span id="combatHp">10</span></li>
-                <li><strong>Armor Class:</strong> <span id="combatAc">10</span></li>
-                <li><strong>Tốc độ:</strong> <span id="combatSpeed">30 ft</span></li>
-                <li><strong>Initiative:</strong> <span id="combatInit">+0</span></li>
-              </ul>
-
-              <h3 class="section-gap">Saving Throws</h3>
-              <div id="savingGrid" class="saving-grid"></div>
-
-            </div>
-          </div>
-
-          <!-- FEATURES -->
-          <div class="card card-gap">
-            <h3>Train / Proficiency / Action</h3>
-
-            <div class="grid2 grid2--equal">
-              <div>
-                <h3 class="subhead">Train</h3>
-                <ul class="list" id="trainUl"><li class="empty">—</li></ul>
-
-                <h3 class="subhead section-gap">Proficiency</h3>
-                <ul class="list" id="profUl"><li class="empty">—</li></ul>
-              </div>
-
-              <div>
-                <h3 class="subhead">Action</h3>
-                <ul class="list" id="actionUl"><li class="empty">—</li></ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- DEFENSES + SENSES -->
-<div class="grid2 card-gap" style="grid-template-columns:1fr 1fr;">
-    <!-- Resist/Imm/Vuln -->
-  <div class="card" style="margin-top:14px;">
-    <h3>Resistances / Immunities / Vulnerabilities</h3>
-
-    <h4 style="margin:10px 0 6px;">Resistances</h4>
-    <div id="resistChips" class="chip-group"></div>
-
-    <h4 style="margin:10px 0 6px;">Immunities</h4>
-    <div id="immuneChips" class="chip-group"></div>
-
-    <h4 style="margin:10px 0 6px;">Vulnerabilities</h4>
-    <div id="vulnChips" class="chip-group"></div>
-  </div>
-
-  <!-- Senses -->
-  <div class="card" style="margin-top:14px;">
-    <h3>Senses</h3>
-    <ul class="list" id="senseList"><li class="empty">—</li></ul>
-  </div>
-
-</div>
-
-
-          <!-- ATTACKS -->
-          <div class="card card-gap">
-            <h3>Attacks</h3>
-
-            <div class="atk-head">
-              <div>Name</div>
-              <div>Hit</div>
-              <div>Damage/Type</div>
-              <div>Notes</div>
-              <div></div>
-            </div>
-
-            <div id="atkBox"></div>
-            <div id="atkEmpty" class="empty" hidden>—</div>
-          </div>
-
-          <!-- SPELLS -->
-          <div class="card card-gap">
-            <h3>Spells</h3>
-
-            <div class="tbl-wrap">
-              <table class="tbl">
-                <thead>
-                  <tr>
-                    <th>Prepared</th>
-                    <th>Level</th>
-                    <th>Name</th>
-                    <th>Save/Atk</th>
-                    <th>Time</th>
-                    <th>Range</th>
-                    <th>Comp</th>
-                    <th>Duration</th>
-                    <th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody id="spellTbodyView"></tbody>
-              </table>
-            </div>
-
-            <div id="spellEmpty" class="empty" hidden>—</div>
-          </div>
-
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <footer class="site-footer">
-    <div class="container footer-top">
-      <div class="footer-info">
-        <p class="footer-title">© HỘI QUÁN DUNGEONS & DRAGONS VIỆT NAM</p>
-      </div>
-    </div>
-  </footer>
-
   <script src="/JS/menu.js"></script>
+
+  <main class="character-page">
+    <div class="container">
+
+      <!-- Header -->
+      <div class="char-head card">
+        <img id="charAvatar" class="char-avatar" src="/Assets/images/sample.png" alt="Character" />
+
+        <div class="char-head__main">
+          <h1 id="charTitle">Nhân vật</h1>
+          <p id="charDesc" class="empty">—</p>
+
+          <div class="char-actions" id="charActions" style="display:none; gap:10px; margin-top:10px; flex-wrap:wrap;">
+            <button id="editBtn" type="button" class="btn btn--ghost">Sửa</button>
+            <button id="saveBtn" type="button" class="btn btn--primary" style="display:none;">Lưu</button>
+            <button id="cancelBtn" type="button" class="btn btn--ghost" style="display:none;">Hủy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Grid -->
+      <div class="grid2">
+
+        <!-- Left -->
+        <div class="card">
+          <h3>Thông tin cơ bản</h3>
+          <ul class="basic-list">
+            <li><strong>Chủng tộc:</strong> <span id="charRace">—</span></li>
+            <li><strong>Lớp:</strong> <span id="charClass">—</span></li>
+            <li><strong>Xu hướng:</strong> <span id="charAlign">—</span></li>
+            <li><strong>Bối cảnh:</strong> <span id="charBg">—</span></li>
+          </ul>
+
+          <h3 class="section-gap">Kỹ năng</h3>
+          <div id="skillsGrid" class="skills-grid"></div>
+
+          <h3 class="section-gap">Trang bị</h3>
+          <ul class="list" id="equipList"><li class="empty">—</li></ul>
+        </div>
+
+        <!-- Right -->
+        <div class="card">
+          <h3>Chỉ số</h3>
+          <div class="stat-grid">
+            <div><span>STR</span><b id="statStr">10</b></div>
+            <div><span>DEX</span><b id="statDex">10</b></div>
+            <div><span>CON</span><b id="statCon">10</b></div>
+            <div><span>INT</span><b id="statInt">10</b></div>
+            <div><span>WIS</span><b id="statWis">10</b></div>
+            <div><span>CHA</span><b id="statCha">10</b></div>
+          </div>
+
+          <h3 class="section-gap">Combat</h3>
+          <ul class="basic-list">
+            <li><strong>HP:</strong> <span id="combatHp">—</span></li>
+            <li><strong>Armor Class:</strong> <span id="combatAc">—</span></li>
+            <li><strong>Tốc độ:</strong> <span id="combatSpeed">—</span></li>
+            <li><strong>Initiative:</strong> <span id="combatInit">—</span></li>
+          </ul>
+
+          <h3 class="section-gap">Saving Throws</h3>
+          <div id="saveGrid" class="skills-grid"></div>
+        </div>
+      </div>
+
+      <!-- Train / Prof / Action -->
+      <div class="card card-gap">
+        <h3>Train / Proficiency / Action</h3>
+
+        <div class="grid2 grid2--equal">
+          <div>
+            <h3 class="subhead">Train</h3>
+            <ul class="list" id="trainUl"><li class="empty">—</li></ul>
+
+            <h3 class="subhead section-gap">Proficiency</h3>
+            <ul class="list" id="profUl"><li class="empty">—</li></ul>
+          </div>
+
+          <div>
+            <h3 class="subhead">Action</h3>
+            <ul class="list" id="actionUl"><li class="empty">—</li></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Defenses + Senses -->
+      <div class="grid2 card-gap" style="grid-template-columns:1fr 1fr;">
+        <div class="card" style="margin-top:14px;">
+          <h3>Resistances / Immunities / Vulnerabilities</h3>
+
+          <h4 style="margin:10px 0 6px;">Resistances</h4>
+          <div id="resistChips" class="chip-group"></div>
+
+          <h4 style="margin:10px 0 6px;">Immunities</h4>
+          <div id="immuneChips" class="chip-group"></div>
+
+          <h4 style="margin:10px 0 6px;">Vulnerabilities</h4>
+          <div id="vulnChips" class="chip-group"></div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3>Senses</h3>
+          <ul class="list" id="senseList"><li class="empty">—</li></ul>
+        </div>
+      </div>
+
+      <!-- Features -->
+      <div class="card card-gap">
+        <h3>Features / Feats</h3>
+        <ul class="list" id="featureUl"><li class="empty">—</li></ul>
+      </div>
+
+      <!-- Attacks -->
+      <div class="card card-gap">
+        <h3>Attacks</h3>
+
+        <div class="atk-head">
+          <div>Name</div>
+          <div>Hit</div>
+          <div>Damage/Type</div>
+          <div>Notes</div>
+          <div></div>
+        </div>
+
+        <div id="atkBox"></div>
+        <div id="atkEmpty" class="empty" style="margin-top:8px;">—</div>
+      </div>
+
+      <!-- Spells -->
+      <div class="card card-gap">
+        <h3>Spells</h3>
+
+        <div class="table-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>PREP</th>
+                <th>LEVEL</th>
+                <th>NAME</th>
+                <th>SAVE/ATK</th>
+                <th>TIME</th>
+                <th>RANGE</th>
+                <th>COMP</th>
+                <th>DURATION</th>
+                <th>PAGE</th>
+                <th>NOTES</th>
+              </tr>
+            </thead>
+            <tbody id="spellTbodyView"></tbody>
+          </table>
+        </div>
+
+        <div id="spellEmpty" class="empty" style="margin-top:8px;">—</div>
+      </div>
+
+    </div>
+  </main>
+
   <script src="/JS/core.js"></script>
   <script src="/JS/character.js"></script>
 </body>

@@ -27,6 +27,15 @@ const characterSchema = z.object({
   equipment: z.array(z.string().trim().min(1).max(160)).optional().default([]),
   notes: z.array(z.string().trim().min(1).max(240)).optional().default([]),
   is_public: z.coerce.boolean().optional().default(true),
+  resistances: z.array(z.string()).optional().default([]),
+immunities: z.array(z.string()).optional().default([]),
+vulnerabilities: z.array(z.string()).optional().default([]),
+senses: z.object({
+  passivePerception: z.coerce.number().int().min(0).max(99).optional().default(0),
+  passiveInsight: z.coerce.number().int().min(0).max(99).optional().default(0),
+  passiveInvestigation: z.coerce.number().int().min(0).max(99).optional().default(0),
+}).optional().default({ passivePerception:0, passiveInsight:0, passiveInvestigation:0 }),
+
 });
 
 function arr(v) {
@@ -61,6 +70,11 @@ function mapRow(row) {
     skills: arr(row.skills),
     equipment: arr(row.equipment),
     notes: arr(row.notes),
+    resistances: row.resistances ? JSON.parse(row.resistances) : [],
+    immunities: row.immunities ? JSON.parse(row.immunities) : [],
+    vulnerabilities: row.vulnerabilities ? JSON.parse(row.vulnerabilities) : [],
+    senses: row.senses ? JSON.parse(row.senses) : { passivePerception:0, passiveInsight:0, passiveInvestigation:0 },
+
   };
 }
 
@@ -113,12 +127,14 @@ exports.create = async (req, res) => {
     INSERT INTO characters (
       name, race, class_name, level, alignment, background, avatar, description,
       str, dex, con, int, wis, cha, hp, ac, speed,
-      skills, equipment, notes, created_by, is_public
+      skills, equipment, notes, created_by, is_public,
+      resistances, immunities, vulnerabilities, senses
     )
     VALUES (
       $1,$2,$3,$4,$5,$6,$7,$8,
       $9,$10,$11,$12,$13,$14,$15,$16,$17,
-      $18::jsonb,$19::jsonb,$20::jsonb,$21,$22
+      $18::jsonb,$19::jsonb,$20::jsonb,$21,$22,
+      23,24,25,26
     )
     RETURNING *
   `;
@@ -145,7 +161,10 @@ exports.create = async (req, res) => {
     JSON.stringify(data.skills || []),
     JSON.stringify(data.equipment || []),
     JSON.stringify(data.notes || []),
-
+    JSON.stringify(data.resistances || []),
+    JSON.stringify(data.immunities || []),
+    JSON.stringify(data.vulnerabilities || []),
+    JSON.stringify(data.senses || {}),
     createdBy,
     !!data.is_public,
   ];
