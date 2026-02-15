@@ -6,175 +6,367 @@
   <title>Character</title>
 
   <link rel="stylesheet" href="/CSS/base.css" />
-  <link rel="stylesheet" href="/CSS/style.css" />
   <link rel="stylesheet" href="/CSS/nav.css" />
-  <link rel="stylesheet" href="/CSS/components.css" />
   <link rel="stylesheet" href="/CSS/pages.css" />
-  <link rel="stylesheet" href="/CSS/responsive.css" />
   <link rel="stylesheet" href="/CSS/character.css" />
+
 </head>
-
 <body>
-  <script src="/JS/menu.js"></script>
 
-  <main class="character-page">
-    <div class="container">
+  <!-- (Bạn có thể giữ menu/banner chung của site nếu đang include ở file khác) -->
+  <div class="page-wrap">
+    <main class="main-content">
+      <section class="ch-wrap">
+        <div class="container">
 
-      <!-- Header -->
-      <div class="char-head card">
-        <img id="charAvatar" class="char-avatar" src="/Assets/images/sample.png" alt="Character" />
+          <!-- HERO -->
+          <div class="ch-hero">
+            <div class="ch-hero__bg"></div>
 
-        <div class="char-head__main">
-          <h1 id="charTitle">Nhân vật</h1>
-          <p id="charDesc" class="empty">—</p>
+            <div class="ch-hero__bar">
+              <a class="ch-back" href="/character-list.html">← Danh sách nhân vật</a>
 
-          <div class="char-actions" id="charActions" style="display:none; gap:10px; margin-top:10px; flex-wrap:wrap;">
-            <button id="editBtn" type="button" class="btn btn--ghost">Sửa</button>
-            <button id="saveBtn" type="button" class="btn btn--primary" style="display:none;">Lưu</button>
-            <button id="cancelBtn" type="button" class="btn btn--ghost" style="display:none;">Hủy</button>
-          </div>
-        </div>
-      </div>
+              <div class="ch-hero__actions">
+                <button class="ch-btn" id="editBtn" type="button">Chỉnh sửa</button>
+                <button class="ch-btn primary" id="saveBtn" type="button" style="display:none;">Lưu</button>
+                <button class="ch-btn danger" id="cancelBtn" type="button" style="display:none;">Huỷ</button>
+              </div>
+            </div>
 
-      <!-- Top Grid -->
-      <div class="grid2">
+            <div class="ch-hero__main">
+              <div class="ch-avatar" id="avatarBox">
+                <div class="ch-avatar__ring"></div>
+                <div class="ch-avatar__img" id="avatarImg">🧙</div>
+              </div>
 
-        <!-- Left -->
-        <div class="card">
-          <h3>Thông tin cơ bản</h3>
-          <ul class="basic-list">
-            <li><strong>Chủng tộc:</strong> <span id="charRace">—</span></li>
-            <li><strong>Lớp:</strong> <span id="charClass">—</span></li>
-            <li><strong>Xu hướng:</strong> <span id="charAlign">—</span></li>
-            <li><strong>Bối cảnh:</strong> <span id="charBg">—</span></li>
-          </ul>
+              <div class="ch-hero__meta">
+                <div class="ch-titleRow">
+                  <h1 class="ch-name" id="ch_name">Loading…</h1>
+                  <span class="ch-badge" id="ch_publicBadge">PUBLIC</span>
+                </div>
 
-          <h3 class="section-gap">Kỹ năng</h3>
-          <div id="skillsGrid" class="skills-grid"></div>
+                <div class="ch-sub" id="ch_subline">—</div>
 
-          <h3 class="section-gap">Trang bị</h3>
-          <ul class="list" id="equipList"><li class="empty">—</li></ul>
-        </div>
+                <div class="ch-tags" id="ch_tags"></div>
 
-        <!-- Right -->
-        <div class="card">
-          <h3>Chỉ số</h3>
-          <div class="stat-grid">
-            <div><span>STR</span><b id="statStr">10</b></div>
-            <div><span>DEX</span><b id="statDex">10</b></div>
-            <div><span>CON</span><b id="statCon">10</b></div>
-            <div><span>INT</span><b id="statInt">10</b></div>
-            <div><span>WIS</span><b id="statWis">10</b></div>
-            <div><span>CHA</span><b id="statCha">10</b></div>
-          </div>
+                <div class="ch-mini">
+                  <div class="ch-mini__item">
+                    <div class="ch-mini__label">Proficiency Bonus</div>
+                    <div class="ch-mini__value" id="ch_pb">+2</div>
+                  </div>
+                  <div class="ch-mini__item">
+                    <div class="ch-mini__label">Initiative</div>
+                    <div class="ch-mini__value" id="ch_init">+0</div>
+                  </div>
 
-          <h3 class="section-gap">Combat</h3>
-          <ul class="basic-list">
-            <li><strong>HP:</strong> <span id="combatHp">—</span></li>
-            <li><strong>Armor Class:</strong> <span id="combatAc">—</span></li>
-            <li><strong>Tốc độ:</strong> <span id="combatSpeed">—</span></li>
-            <li><strong>Initiative:</strong> <span id="combatInit">—</span></li>
-          </ul>
+                </div>
 
-          <h3 class="section-gap">Saving Throws</h3>
-          <div id="saveGrid" class="skills-grid"></div>
-        </div>
-      </div>
+              </div>
+            </div>
 
-      <!-- Train / Prof / Action -->
-      <div class="card card-gap">
-        <h3>Train / Proficiency / Action</h3>
-
-        <div class="grid2 grid2--equal">
-          <div>
-            <h3 class="subhead">Train</h3>
-            <ul class="list" id="trainUl"><li class="empty">—</li></ul>
-
-            <h3 class="subhead section-gap">Proficiency</h3>
-            <ul class="list" id="profUl"><li class="empty">—</li></ul>
+            <!-- STICKY TABS -->
+            <div class="ch-tabs" id="tabs">
+              <button class="ch-tab is-active" data-tab="overview" type="button">Overview</button>
+              <button class="ch-tab" data-tab="abilities" type="button">Abilities</button>
+              <button class="ch-tab" data-tab="combat" type="button">Combat</button>
+              <button class="ch-tab" data-tab="spells" type="button">Spells</button>
+              <button class="ch-tab" data-tab="inventory" type="button">Inventory</button>
+              <button class="ch-tab" data-tab="features" type="button">Features</button>
+            </div>
           </div>
 
-          <div>
-            <h3 class="subhead">Action</h3>
-            <ul class="list" id="actionUl"><li class="empty">—</li></ul>
+          <!-- MESSAGE -->
+          <div class="ch-msg" id="msgBox" style="display:none;"></div>
+
+          <!-- CONTENT -->
+          <div class="ch-grid">
+
+            <!-- LEFT COLUMN -->
+            <div class="ch-col">
+
+              <!-- OVERVIEW -->
+              <section class="ch-panel ch-panel--active" data-panel="overview">
+                <div class="ch-panel__head">
+                  <h2>Overview</h2>
+                </div>
+
+                <div class="ch-row3">
+                  <div class="ch-field">
+                    <label>Name</label>
+                    <input id="inp_name" type="text" disabled />
+                  </div>
+                  <div class="ch-field">
+                    <label>Race</label>
+                    <input id="inp_race" type="text" disabled />
+                  </div>
+                  <div class="ch-field">
+                    <label>Class</label>
+                    <input id="inp_class" type="text" disabled />
+                  </div>
+
+                  <div class="ch-field">
+                    <label>Level</label>
+                    <input id="inp_level" type="number" min="1" max="20" disabled />
+                  </div>
+                  <div class="ch-field">
+                    <label>Alignment</label>
+                    <input id="inp_alignment" type="text" disabled />
+                  </div>
+                  <div class="ch-field">
+                    <label>Background</label>
+                    <input id="inp_background" type="text" disabled />
+                  </div>
+                </div>
+
+                <div class="ch-field">
+                  <label>Description</label>
+                  <textarea id="inp_description" rows="4" disabled></textarea>
+                </div>
+
+                <div class="ch-senses">
+                  <div class="ch-sense">
+                    <div class="ch-sense__label">Passive Perception</div>
+                    <input id="inp_pa_perception" type="number" min="0" max="99" disabled />
+                  </div>
+                  <div class="ch-sense">
+                    <div class="ch-sense__label">Passive Insight</div>
+                    <input id="inp_pa_insight" type="number" min="0" max="99" disabled />
+                  </div>
+                  <div class="ch-sense">
+                    <div class="ch-sense__label">Passive Investigation</div>
+                    <input id="inp_pa_investigation" type="number" min="0" max="99" disabled />
+                  </div>
+                </div>
+              </section>
+
+              <!-- ABILITIES -->
+              <section class="ch-panel" data-panel="abilities">
+                <div class="ch-panel__head">
+                  <h2>Abilities</h2>
+                </div>
+
+                <div class="ch-abilities" id="abilitiesGrid"></div>
+
+                <div class="ch-split">
+                  <div class="ch-card">
+                    <div class="ch-card__head">
+                      <h3>Saving Throws</h3>
+                      <small>(tick prof khi edit)</small>
+                    </div>
+                    <div class="ch-list" id="savingList"></div>
+                  </div>
+
+                  <div class="ch-card">
+                    <div class="ch-card__head">
+                      <h3>Skills</h3>
+                      <small>(tick prof khi edit)</small>
+                    </div>
+                    <div class="ch-list" id="skillsList"></div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- COMBAT -->
+              <section class="ch-panel" data-panel="combat">
+                <div class="ch-panel__head">
+                  <h2>Combat</h2>
+                </div>
+
+                <div class="ch-combatRow">
+                  <div class="ch-pill">
+                    <div class="ch-pill__label">Armor Class</div>
+                    <input id="inp_ac" type="number" min="0" max="40" disabled />
+                  </div>
+                  <div class="ch-pill">
+                    <div class="ch-pill__label">Hit Points</div>
+                    <input id="inp_hp" type="number" min="0" max="999" disabled />
+                  </div>
+                  <div class="ch-pill">
+                    <div class="ch-pill__label">Speed</div>
+                    <input id="inp_speed" type="text" disabled />
+                  </div>
+                  <div class="ch-pill">
+                    <div class="ch-pill__label">Initiative</div>
+                    <div class="ch-pill__value" id="combatInit">+0</div>
+                  </div>
+                </div>
+
+                <div class="ch-split">
+                  <div class="ch-card">
+                    <div class="ch-card__head">
+                      <h3>Defenses</h3>
+                    </div>
+
+                    <div class="ch-defgrid">
+                      <div class="ch-def">
+                        <div class="ch-def__label">Resistances</div>
+                        <div class="ch-chips" id="chips_res"></div>
+                      </div>
+                      <div class="ch-def">
+                        <div class="ch-def__label">Immunities</div>
+                        <div class="ch-chips" id="chips_imm"></div>
+                      </div>
+                      <div class="ch-def">
+                        <div class="ch-def__label">Vulnerabilities</div>
+                        <div class="ch-chips" id="chips_vul"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="ch-card">
+                    <div class="ch-card__head">
+                      <h3>Attacks (from notes)</h3>
+                    </div>
+                  <div class="ch-tableWrap">
+                  <table class="ch-table" id="spellsTable">
+                    <thead>
+                      <tr>
+                        <th class="t-xs">NAME</th>
+                        <th class="t-xs">HIT</th>
+                        <th class="t-sm">DAMAGE/TYPE</th>
+                        <th class="t-sm">NOTES</th>
+                        <th class="t-sm">RANGE</th>
+                        <th class="t-sm">COMP</th>
+                        <th class="t-sm">DURATION</th>
+                        <th>NOTES</th>
+                      </tr>
+                    </thead>
+                    <tbody id="attacksTbody"></tbody>
+                  </table>
+                </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- SPELLS -->
+              <section class="ch-panel" data-panel="spells">
+                <div class="ch-panel__head">
+                  <h2>Spells</h2>
+                </div>
+
+                <div class="ch-tableWrap">
+                  <table class="ch-table" id="spellsTable">
+                    <thead>
+                      <tr>
+                        <th class="t-xs">PREP</th>
+                        <th class="t-xs">LEVEL</th>
+                        <th>NAME</th>
+                        <th class="t-sm">SAVE/ATK</th>
+                        <th class="t-sm">TIME</th>
+                        <th class="t-sm">RANGE</th>
+                        <th class="t-sm">COMP</th>
+                        <th class="t-sm">DURATION</th>
+                        <th>NOTES</th>
+                      </tr>
+                    </thead>
+                    <tbody id="spellsTbody"></tbody>
+                  </table>
+                </div>
+
+                <div class="ch-subhint">
+                  Spells được đọc từ <code>notes[]</code> theo format <code>Spell:</code>.
+                </div>
+              </section>
+
+              <!-- INVENTORY -->
+              <section class="ch-panel" data-panel="inventory">
+                <div class="ch-panel__head">
+                  <h2>Inventory</h2>
+                </div>
+
+                <div class="ch-card">
+                  <div class="ch-card__head">
+                    <h3>Coins</h3>
+                  </div>
+                  <div class="ch-coins" id="coinsBox"></div>
+                </div>
+
+                <div class="ch-card">
+                  <div class="ch-card__head">
+                    <h3>Equipment</h3>
+                    <small>(edit trực tiếp list)</small>
+                  </div>
+
+                  <div class="ch-equipEdit" id="equipEditBox"></div>
+
+                  <div class="ch-equipActions" id="equipActions" style="display:none;">
+                    <button class="ch-btn" type="button" id="addEquipLineBtn">+ Thêm dòng</button>
+                  </div>
+
+                  <div class="ch-equipList" id="equipList"></div>
+                </div>
+              </section>
+
+              <!-- FEATURES -->
+              <section class="ch-panel" data-panel="features">
+                <div class="ch-panel__head">
+                  <h2>Features</h2>
+                </div>
+
+                <div class="ch-card">
+                  <div class="ch-card__head">
+                    <h3>Feature lines</h3>
+                    <small>(edit trực tiếp)</small>
+                  </div>
+
+                  <div id="featuresEditBox"></div>
+
+                  <div class="ch-equipActions" id="featureActions" style="display:none;">
+                    <button class="ch-btn" type="button" id="addFeatureBtn">+ Thêm feature</button>
+                  </div>
+
+                  <div class="ch-noteList" id="featuresList"></div>
+                </div>
+
+                <div class="ch-card">
+                  <div class="ch-card__head">
+                    <h3>Notes</h3>
+                    <small>(phần còn lại)</small>
+                  </div>
+                  <div class="ch-noteList" id="notesList"></div>
+                </div>
+              </section>
+
+            </div>
+
+            <!-- RIGHT COLUMN (sticky summary) -->
+            <aside class="ch-side">
+              <div class="ch-side__box">
+                <div class="ch-side__title">Quick</div>
+
+                <div class="ch-quick">
+                  <div class="ch-q">
+                    <div class="ch-q__label">AC</div>
+                    <div class="ch-q__val" id="q_ac">10</div>
+                  </div>
+                  <div class="ch-q">
+                    <div class="ch-q__label">HP</div>
+                    <div class="ch-q__val" id="q_hp">10</div>
+                  </div>
+                  <div class="ch-q">
+                    <div class="ch-q__label">Speed</div>
+                    <div class="ch-q__val" id="q_speed">30 ft</div>
+                  </div>
+                  <div class="ch-q">
+                    <div class="ch-q__label">PB</div>
+                    <div class="ch-q__val" id="q_pb">+2</div>
+                  </div>
+                </div>
+
+                <div class="ch-side__title">Ability Mods</div>
+                <div class="ch-mods" id="modsBox"></div>
+              </div>
+            </aside>
+
           </div>
+
         </div>
-      </div>
+      </section>
+    </main>
+  </div>
 
-      <!-- Defenses + Senses -->
-      <div class="grid2 card-gap" style="grid-template-columns:1fr 1fr;">
-        <div class="card" style="margin-top:14px;">
-          <h3>Resistances / Immunities / Vulnerabilities</h3>
+<script src="/JS/core.js"></script>
+<script src="/JS/character.js"></script>
 
-          <h4 style="margin:10px 0 6px;">Resistances</h4>
-          <div id="resistChips" class="chip-group"></div>
-
-          <h4 style="margin:10px 0 6px;">Immunities</h4>
-          <div id="immuneChips" class="chip-group"></div>
-
-          <h4 style="margin:10px 0 6px;">Vulnerabilities</h4>
-          <div id="vulnChips" class="chip-group"></div>
-        </div>
-
-        <div class="card" style="margin-top:14px;">
-          <h3>Senses</h3>
-          <ul class="list" id="senseList"><li class="empty">—</li></ul>
-        </div>
-      </div>
-
-      <!-- Features -->
-      <div class="card card-gap">
-        <h3>Features / Feats</h3>
-        <ul class="list" id="featureUl"><li class="empty">—</li></ul>
-      </div>
-
-      <!-- Attacks -->
-      <div class="card card-gap">
-        <h3>Attacks</h3>
-
-        <div class="atk-head">
-          <div>Name</div>
-          <div>Hit</div>
-          <div>Damage/Type</div>
-          <div>Notes</div>
-          <div></div>
-        </div>
-
-        <div id="atkBox"></div>
-        <div id="atkEmpty" class="empty" style="margin-top:8px;">—</div>
-      </div>
-
-      <!-- Spells -->
-      <div class="card card-gap">
-        <h3>Spells</h3>
-
-        <div class="table-wrap">
-          <table class="tbl">
-            <thead>
-              <tr>
-                <th>PREP</th>
-                <th>LEVEL</th>
-                <th>NAME</th>
-                <th>SAVE/ATK</th>
-                <th>TIME</th>
-                <th>RANGE</th>
-                <th>COMP</th>
-                <th>DURATION</th>
-                <th>PAGE</th>
-                <th>NOTES</th>
-              </tr>
-            </thead>
-            <tbody id="spellTbodyView"></tbody>
-          </table>
-        </div>
-
-        <div id="spellEmpty" class="empty" style="margin-top:8px;">—</div>
-      </div>
-
-    </div>
-  </main>
-
-  <script src="/JS/core.js"></script>
-  <script src="/JS/character.js"></script>
 </body>
 </html>

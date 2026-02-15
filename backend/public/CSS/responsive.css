@@ -1,491 +1,178 @@
 /* =========================================================
-   TABLET (768–1024): nav cuộn ngang
+   MOBILE NAV SYSTEM (MATCHES menu.js EXACTLY)
 ========================================================= */
-@media (min-width: 768px) and (max-width: 1024px){
-  .main-nav .container{ overflow: hidden; }
+
+/* ===== Overlay ===== */
+
+.mnav-overlay{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(3px);
+  z-index: 9998;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
+}
+
+/* ===== Drawer ===== */
+
+.mnav{
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 80%;
+  max-width: 340px;
+  height: 100vh;
+
+  background: linear-gradient(180deg,#1f1533,#0f0a1a);
+  color: #fff;
+
+  z-index: 9999;
+
+  transform: translateX(-100%);
+  transition: transform .25s ease;
+
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* ===== Open state ===== */
+
+body.mnav-open .mnav{
+  transform: translateX(0);
+}
+
+body.mnav-open .mnav-overlay{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+body.mnav-open{
+  overflow: hidden;
+}
+
+/* =========================================================
+   Mnav content
+========================================================= */
+
+.mnav-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.mnav-title{
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.mnav-close{
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.mnav-body{
+  padding: 16px;
+}
+
+.mnav-list{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.mnav-list li{
+  margin-bottom: 6px;
+}
+
+.mnav-list a{
+  display: block;
+  padding: 12px 10px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.mnav-list a:hover{
+  background: rgba(255,255,255,.08);
+}
+
+/* ===== Submenu ===== */
+
+.has-sub{
+  position: relative;
+}
+
+.sub-toggle{
+  position: absolute;
+  right: 6px;
+  top: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  cursor: pointer;
+}
+
+.sub{
+  display: none;
+  margin-top: 6px;
+  padding-left: 12px;
+}
+
+.has-sub.open .sub{
+  display: block;
+}
+
+.sub li a{
+  font-size: 14px;
+  opacity: .85;
+  padding: 8px 10px;
+}
+
+/* ===== Search in mnav ===== */
+
+.mnav-search-li input{
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-size: 16px;
+}
+
+.mnav-search-li button{
+  display: none;
+}
+
+/* =========================================================
+   Hide desktop nav on mobile
+========================================================= */
+
+@media (max-width: 780px){
 
   .nav-list{
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .nav-list::-webkit-scrollbar{ display: none; }
-}
-
-/* =========================================================
-   ≤1024px: SUBMENU xổ xuống dưới (accordion)
-========================================================= */
-@media (max-width: 1024px){
-  .nav-list > li.has-dropdown > ul.dropdown{
-    position: static;
-    width: 100%;
-    min-width: 0;
-    margin: 8px 0 12px;
-    padding: 0;
-
-    border: 0;
-    box-shadow: none;
-    background: transparent;
-
-    opacity: 1;
-    transform: none;
-    pointer-events: auto;
-    display: none;
-  }
-
-  .nav-list > li.has-dropdown.open > ul.dropdown{
-    display: block;
-  }
-
-  .featured-content {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* =========================================================
-   MOBILE
-========================================================= */
-@media (max-width: 767px) {
-  /* 1) Ẩn menu desktop (thanh ngang) */
-  .main-nav {
     display: none !important;
   }
 
-  /* 2) Cho burger nằm trên banner (góc trái) */
-  .header-banner .banner-inner {
-    justify-content: flex-start;
-    position: relative !important;
+  .nav-search{
+    display: none !important;
   }
 
-  .menu-toggle {
+  .menu-toggle{
     display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-
-    width: 44px;
-    height: 44px;
-
-    border: 0;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, 0.92);
-    cursor: pointer;
-
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 50;
-  }
-
-  .menu-toggle img {
-    width: 24px;
-    height: 24px;
-    display: block;
-  }
-
-  /* 3) Overlay */
-  .mnav-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: 99998;
-    display: none;
-  }
-
-  /* 4) Panel menu (ĐỎ) - chỉ hiện khi bấm burger */
-  .mnav {
-    position: fixed;
-    top: 0;
-    left: 0;
-
-    width: min(88vw, 420px);
-    height: 100vh;
-
-    background: #d40000; /* ✅ đỏ */
-    z-index: 99999;
-
-    transform: translateX(-105%);
-    transition: transform 0.25s ease;
-
-    display: flex;
-    flex-direction: column;
-
-    /* tránh click khi đang đóng */
-    pointer-events: none;
-  }
-
-  body.mnav-open .mnav {
-    transform: translateX(0);
-    pointer-events: auto;
-  }
-
-  body.mnav-open .mnav-overlay {
-    display: block;
-  }
-
-  body.mnav-open {
-    overflow: hidden;
-  }
-
-  .page-wrap {
-    padding-bottom: 280px;
-  }
-}
-
-/* =========================================================
-   BANNER
-========================================================= */
-@media (max-width: 1199px){
-
-  .header-banner{
-    height: auto !important;
-    background: transparent !important;
-  }
-
-  .header-banner::before{
-    display: none !important;
-  }
-
-  .header-banner .banner-bg{
-    position: relative !important;   
-    inset: auto !important;
-    width: 100% !important;
-    height: auto !important;
-
-    display: block !important;
-    object-fit: contain !important;  
-    object-position: center !important;
-  }
-
-  .header-banner .banner-inner{
-    position: absolute !important;
-    inset: 0;
-  }
-}
-
-/* =========================================================
-   DESKTOP/TABLET: MENU FULL WIDTH (nằm dưới banner)
-========================================================= */
-@media (min-width: 768px) {
-  /* bỏ khoảng đệm ngoài để menu sát dưới banner hơn */
-  .main-nav {
-    padding: 0;
-  }
-
-  /* thanh đỏ full ngang */
-  .main-nav .container {
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    box-sizing: border-box;
-
-    /* tùy bạn muốn bo góc hay không */
-    border-radius: 10;
-
-    /* cho nội dung không sát mép */
-    padding: var(--menu-pad) 16px;
-  }
-}
-
-/* =========================================================
-   MOBILE MENU
-========================================================= */
-@media (max-width: 767px) {
-  /* Overlay mờ + blur nhẹ */
-  #mnavOverlay.mnav-overlay {
-    display: none;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(2px);
-  }
-
-  body.mnav-open #mnavOverlay.mnav-overlay {
-    display: block;
-  }
-
-  /* Panel */
-  #mnav.mnav {
-    background: #d40000;
-    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
-
-    /* bo góc phía phải cho “mềm” */
-    border-radius: 0 16px 16px 0;
-
-    /* an toàn tai thỏ */
-    padding-top: env(safe-area-inset-top);
-  }
-
-  /* Header */
-  #mnav .mnav-head {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-
-    padding: 14px 14px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-
-    background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.10),
-      rgba(0, 0, 0, 0.00)
-    );
-
-    justify-content: space-between;
-  }
-
-  #mnav .mnav-title {
-    font-size: 13px;
-    font-weight: 900;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    opacity: 0.95;
-    margin-right: auto;
-  }
-
-  /* nút burger */
-  #mnavToggle {
-    position: absolute !important;
-    top: auto !important;
-    left: auto !important;
-
-    right: 12px !important;
-    bottom: 12px !important;
-
-    z-index: 9999 !important;
-  }
-
-  #mnav .mnav-close {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    margin-left: auto;
-  }
-
-  #mnav .mnav-close:active {
-    transform: scale(0.98);
-  }
-
-  /* Body padding */
-  #mnav .mnav-body {
-    padding: 12px 14px 18px;
-  }
-
-  /* ===== SEARCH LI (clone từ desktop) ===== */
-  #mnav .mnav-search-li {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-    padding: 0 0 12px;
-    margin: 0 0 10px;
-  }
-
-  #mnav .mnav-search-li form {
-    display: grid;
-    grid-template-columns: 1fr 44px;
-    gap: 10px;
-    align-items: center;
-    grid-template-columns: 1fr 44px;
-    gap: 8px;
-  }
-
-  #mnav .mnav-search-li input[type="search"],
-  #mnav .mnav-search-li input[type="text"] {
-    height: 44px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    background: rgba(0, 0, 0, 0.12);
-    padding: 0 14px;
-    font-size: 14px;
-    width: 100%;
-    min-width: 0;
-  }
-
-  #mnav .mnav-search-li button {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    background: rgba(0, 0, 0, 0.18);
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* icon search trong button (nếu là ảnh đen) -> đổi thành trắng */
-  #mnav .mnav-search-li button img {
-    width: 18px;
-    height: 18px;
-    display: block;
-    filter: invert(1);
-  }
-
-  /* ===== LIST ===== */
-  #mnav .mnav-list > li {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-    padding: 6px 0;
-  }
-
-  #mnav .mnav-list > li > a {
-    display: flex;
-    align-items: center;
-
-    padding: 12px 12px;
-    border-radius: 12px;
-
-    color: #fff !important;
-    text-decoration: none !important;
-
-    font-size: 15px;
-    font-weight: 900;
-    line-height: 1.25;
-
-    /* cho chữ dài tự xuống dòng */
-    white-space: normal;
-  }
-
-  #mnav .mnav-list > li > a:hover {
-    background: rgba(255, 255, 255, 0.08);
-  }
-
-  #mnav .mnav-list > li > a:active {
-    transform: scale(0.995);
-  }
-
-  /* Active */
-  #mnav .mnav-list > li > a.is-active {
-    background: linear-gradient(180deg, #ff9a2e, #b45309);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  }
-
-  /* ===== SUBMENU (accordion) ===== */
-  #mnav .mnav-list > li.has-sub {
-    position: relative;
-  }
-
-  #mnav .mnav-list > li.has-sub > a {
-    padding-right: 54px;
-  }
-
-  #mnav .mnav-list > li.has-sub > .sub-toggle {
-    position: absolute;
-    right: 10px;
-    top: 10px;
-
-    width: 36px;
-    height: 36px;
-
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-
-    background: rgba(0, 0, 0, 0.18);
-    color: #fff;
-
-    font-size: 18px;
-    font-weight: 900;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  #mnav .mnav-list > li.has-sub.open > .sub-toggle {
-    background: rgba(255, 255, 255, 0.14);
-  }
-
-  #mnav .mnav-list > li.has-sub > ul.sub {
-    margin: 8px 0 10px;
-    padding: 10px;
-
-    list-style: none;
-    border-radius: 14px;
-
-    background: rgba(0, 0, 0, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-
-    display: none;
-  }
-
-  #mnav .mnav-list > li.has-sub.open > ul.sub {
-    display: block;
-  }
-
-  #mnav .mnav-list > li.has-sub > ul.sub a {
-    display: block;
-    padding: 10px 12px;
-    border-radius: 12px;
-
-    color: #fff !important;
-    text-decoration: none !important;
-
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1.25;
-    white-space: normal;
-
-    background: rgba(255, 255, 255, 0.06);
-  }
-
-  #mnav .mnav-list > li.has-sub > ul.sub a:hover {
-    background: rgba(255, 255, 255, 0.10);
-  }
-
-/* =========================================================
-   MOBILE MENU: X sang phải + ô tìm kiếm dài hơn
-========================================================= */
-  /* 1) Đưa nút X sang phải */
-  #mnav .mnav-head {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  #mnav .mnav-title {
-    flex: 1 1 auto;
-  }
-
-  #mnav #mnavClose,
-  #mnav .mnav-close {
-    margin-left: auto; /* ép về bên phải */
-  }
-
-  /* 2) Thanh tìm kiếm dài hơn */
-  #mnav .mnav-search-li {
-    width: 100%;
-  }
-
-  #mnav .mnav-search-li form {
-    width: 100%;
-  }
-
-  /* nếu bạn đang dùng grid */
-  #mnav .mnav-search-li form {
-    display: grid !important;
-    grid-template-columns: 1fr 44px; /* input dài, nút search 44px */
-    gap: 10px;
-  }
-
-  /* khóa input full width (vì nó vẫn mang class .search__input từ desktop) */
-  #mnav .mnav-search-li .search,
-  #mnav .mnav-search-li .search__input,
-  #mnav .mnav-search-li input[type="search"],
-  #mnav .mnav-search-li input[type="text"] {
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0 !important;
-  }
-
-  /* ===== HOME (MOBILE)===== */
-  .featured-content {
-    display: grid;
-    grid-template-columns: 1fr; /* 1 cột => tự xuống dưới theo đúng thứ tự HTML */
-    gap: 12px;
-  }
-
-  .featured-main,
-  .news-list {
-    width: 100%;
   }
 
 }

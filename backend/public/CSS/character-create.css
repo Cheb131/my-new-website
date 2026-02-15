@@ -899,3 +899,61 @@
   .cc-equip-row input:nth-child(3){ grid-area: wt; }
   .cc-equip-row .cc-delbtn{ grid-area: del; width: 100%; border-radius: 14px; }
 }
+/* ===== FIX: Attacks không bị tràn khỏi khung ===== */
+
+/* 1) Nếu parent đang là flex/grid, bắt buộc cho phép co lại */
+.ch-panel,
+.ch-card,
+.ch-card__body,
+.ch-section,
+.combat,
+.combat__main,
+.combat__content,
+.combat__right,
+.combat__left {
+  min-width: 0; /* cực quan trọng để content không đẩy bung khung */
+}
+
+/* 2) Khung Attacks: luôn nằm trong card, tràn thì cuộn ngang */
+#attacksBox,
+.attacksBox,
+.ch-attacks,
+.combat-attacks {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 3) Nếu Attacks là table: khóa layout để không bung ra */
+#attacksBox table,
+.attacksBox table,
+.ch-attacks table,
+.combat-attacks table {
+  width: 100%;
+  table-layout: fixed;   /* không để cột tự nở vô hạn */
+  border-collapse: collapse;
+}
+
+/* 4) Cell không đẩy bung: cắt ... */
+#attacksBox th,
+#attacksBox td,
+.attacksBox th,
+.attacksBox td,
+.ch-attacks th,
+.ch-attacks td,
+.combat-attacks th,
+.combat-attacks td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 5) Nhưng cột NOTES nên cho wrap để đọc được */
+#attacksBox td:last-child,
+.attacksBox td:last-child,
+.ch-attacks td:last-child,
+.combat-attacks td:last-child {
+  white-space: normal;
+  word-break: break-word;
+}

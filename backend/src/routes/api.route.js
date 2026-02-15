@@ -1,24 +1,21 @@
-// routes/api.route.js
 const express = require("express");
 const router = express.Router();
 
 const characterController = require("../controllers/character.controller");
-const { requireAuth } = require("../middlewares/auth.middleware");
 
-// PUBLIC (ai cũng xem)
+// ✅ BỎ ĐĂNG NHẬP: mọi API nhân vật đều PUBLIC
+
+// Public list/detail (chỉ những nhân vật is_public=true)
 router.get("/characters/public", characterController.getPublic);
 router.get("/characters/public/:id", characterController.getPublicById);
 
-// AUTH detail (owner/admin xem full - kể cả không public)
-router.get("/characters/:id", requireAuth, characterController.getById);
+// Full list/detail (tất cả nhân vật, kể cả is_public=false)
+router.get("/characters", characterController.getAll);
+router.get("/characters/:id", characterController.getById);
 
-// CREATE (phải đăng nhập -> mới có created_by đúng user)
-router.post("/characters", requireAuth, characterController.create);
-
-// UPDATE (chỉ owner/admin)
-router.patch("/characters/:id", requireAuth, characterController.update);
-
-// DELETE (chỉ owner/admin)
-router.delete("/characters/:id", requireAuth, characterController.remove);
+// CRUD (ai cũng tạo/sửa/xoá được)
+router.post("/characters", characterController.create);
+router.patch("/characters/:id", characterController.update);
+router.delete("/characters/:id", characterController.remove);
 
 module.exports = router;

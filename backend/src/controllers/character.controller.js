@@ -1,6 +1,9 @@
-// backend/src/controllers/character.controller.js
 const { pool } = require("../db/database");
 const { z } = require("zod");
+
+// ✅ BỎ ĐĂNG NHẬP: ai cũng có thể tạo/xem/sửa/xoá.
+// - created_by sẽ mặc định "guest" (hoặc nếu bạn vẫn gửi req.user từ đâu đó thì vẫn nhận)
+// - vẫn giữ is_public để bạn có thể dùng 2 endpoint: /public (lọc) và /characters (tất cả)
 
 const characterSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -28,15 +31,14 @@ const characterSchema = z.object({
   speed: z.string().trim().optional().default("30 ft"),
 
   skills: z.array(z.string().trim().min(1).max(80)).optional().default([]),
-  equipment: z.array(z.string().trim().min(1).max(240)).optional().default([]),
-  notes: z.array(z.string().trim().min(1).max(600)).optional().default([]),
+  equipment: z.array(z.string().trim().min(1).max(160)).optional().default([]),
+  notes: z.array(z.string().trim().min(1).max(240)).optional().default([]),
 
-  // extra
-  feature_lines: z.array(z.string().trim().min(1).max(600)).optional().default([]),
+  is_public: z.coerce.boolean().optional().default(true),
 
-  resistances: z.array(z.string()).optional().default([]),
-  immunities: z.array(z.string()).optional().default([]),
-  vulnerabilities: z.array(z.string()).optional().default([]),
+  resistances: z.array(z.string().trim().min(1).max(80)).optional().default([]),
+  immunities: z.array(z.string().trim().min(1).max(80)).optional().default([]),
+  vulnerabilities: z.array(z.string().trim().min(1).max(80)).optional().default([]),
 
   senses: z
     .object({
@@ -46,42 +48,35 @@ const characterSchema = z.object({
     })
     .optional()
     .default({ passivePerception: 0, passiveInsight: 0, passiveInvestigation: 0 }),
-
-  is_public: z.coerce.boolean().optional().default(true),
 });
 
-function arr(v) {
-  if (Array.isArray(v)) return v.map(String);
-  if (v && typeof v === "object" && !Array.isArray(v)) return [];
-  if (typeof v === "string") {
-    const s = v.trim();
-    if (!s) return [];
-    try {
-      const j = JSON.parse(s);
-      return Array.isArray(j) ? j.map(String) : [];
-    } catch {
-      return [];
+function safeJson(v, fallback) {
+  try {
+    if (v == null) return fallback;
+    if (typeof v === "object") return v;
+    if (typeof v === "string") {
+      const s = v.trim();
+      if (!s) return fallback;
+      return JSON.parse(s);
     }
+    return fallback;
+  } catch {
+    return fallback;
   }
-  return [];
 }
 
-function obj(v, fallback = {}) {
-  if (v && typeof v === "object" && !Array.isArray(v)) return v;
-  if (typeof v === "string") {
-    const s = v.trim();
-    if (!s) return fallback;
-    try {
-      const j = JSON.parse(s);
-      if (j && typeof j === "object" && !Array.isArray(j)) return j;
-    } catch {}
-  }
-  return fallback;
+function arr(v) {
+  const a = safeJson(v, []);
+  return Array.isArray(a) ? a : [];
+}
+
+function obj(v) {
+  const o = safeJson(v, {});
+  return o && typeof o === "object" && !Array.isArray(o) ? o : {};
 }
 
 function mapRow(row) {
   if (!row) return null;
-
   return {
     ...row,
     id: Number(row.id),
@@ -99,28 +94,18 @@ function mapRow(row) {
       cha: Number(row.cha || 10),
     },
 
-    // ✅ jsonb từ pg thường đã là object/array -> KHÔNG JSON.parse bừa
     skills: arr(row.skills),
     equipment: arr(row.equipment),
     notes: arr(row.notes),
-    feature_lines: arr(row.feature_lines),
 
     resistances: arr(row.resistances),
     immunities: arr(row.immunities),
     vulnerabilities: arr(row.vulnerabilities),
-    senses: obj(row.senses, { passivePerception: 0, passiveInsight: 0, passiveInvestigation: 0 }),
+    senses: obj(row.senses),
   };
 }
 
-function isOwnerOrAdmin(reqUser, row) {
-  const isAdmin = reqUser?.role === "admin";
-  const isOwner =
-    String(row?.created_by || "").toLowerCase() ===
-    String(reqUser?.username || "").toLowerCase();
-  return isAdmin || isOwner;
-}
-
-// ===== PUBLIC list =====
+// ===== PUBLIC list (is_public=true) =====
 exports.getPublic = async (req, res) => {
   const { rows } = await pool.query(
     "SELECT * FROM characters WHERE is_public = true ORDER BY id DESC"
@@ -128,7 +113,7 @@ exports.getPublic = async (req, res) => {
   res.json(rows.map(mapRow));
 };
 
-// ===== PUBLIC detail =====
+// ===== PUBLIC detail (is_public=true) =====
 exports.getPublicById = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
@@ -138,27 +123,26 @@ exports.getPublicById = async (req, res) => {
     [id]
   );
   if (!rows[0]) return res.status(404).json({ message: "Character not found" });
-
   res.json(mapRow(rows[0]));
 };
 
-// ===== AUTH detail (owner/admin xem private) =====
+// ===== ALL list (không filter) =====
+exports.getAll = async (req, res) => {
+  const { rows } = await pool.query("SELECT * FROM characters ORDER BY id DESC");
+  res.json(rows.map(mapRow));
+};
+
+// ===== ALL detail (không filter) =====
 exports.getById = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
 
-  const r = await pool.query("SELECT * FROM characters WHERE id = $1", [id]);
-  const row = r.rows[0];
-  if (!row) return res.status(404).json({ message: "Character not found" });
-
-  if (!row.is_public && !isOwnerOrAdmin(req.user, row)) {
-    return res.status(403).json({ message: "Bạn không có quyền xem nhân vật này" });
-  }
-
-  res.json(mapRow(row));
+  const { rows } = await pool.query("SELECT * FROM characters WHERE id = $1", [id]);
+  if (!rows[0]) return res.status(404).json({ message: "Character not found" });
+  res.json(mapRow(rows[0]));
 };
 
-// ===== CREATE =====
+// ===== CREATE (ai cũng tạo) =====
 exports.create = async (req, res) => {
   const parsed = characterSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -175,14 +159,16 @@ exports.create = async (req, res) => {
     INSERT INTO characters (
       name, race, class_name, level, alignment, background, avatar, description,
       str, dex, con, int, wis, cha, hp, ac, speed,
-      skills, equipment, notes, feature_lines, created_by, is_public,
+      skills, equipment, notes,
+      created_by, is_public,
       resistances, immunities, vulnerabilities, senses
     )
     VALUES (
       $1,$2,$3,$4,$5,$6,$7,$8,
       $9,$10,$11,$12,$13,$14,$15,$16,$17,
-      $18::jsonb,$19::jsonb,$20::jsonb,$21::jsonb,$22,$23,
-      $24::jsonb,$25::jsonb,$26::jsonb,$27::jsonb
+      $18::jsonb,$19::jsonb,$20::jsonb,
+      $21,$22,
+      $23::jsonb,$24::jsonb,$25::jsonb,$26::jsonb
     )
     RETURNING *
   `;
@@ -203,6 +189,7 @@ exports.create = async (req, res) => {
     data.stats.int,
     data.stats.wis,
     data.stats.cha,
+
     data.hp,
     data.ac,
     data.speed || "30 ft",
@@ -210,7 +197,6 @@ exports.create = async (req, res) => {
     JSON.stringify(data.skills || []),
     JSON.stringify(data.equipment || []),
     JSON.stringify(data.notes || []),
-    JSON.stringify(data.feature_lines || []),
 
     createdBy,
     !!data.is_public,
@@ -218,14 +204,14 @@ exports.create = async (req, res) => {
     JSON.stringify(data.resistances || []),
     JSON.stringify(data.immunities || []),
     JSON.stringify(data.vulnerabilities || []),
-    JSON.stringify(data.senses || {}),
+    JSON.stringify(data.senses || { passivePerception: 0, passiveInsight: 0, passiveInvestigation: 0 }),
   ];
 
   const { rows } = await pool.query(q, params);
   res.status(201).json(mapRow(rows[0]));
 };
 
-// ===== UPDATE (owner/admin) =====
+// ===== UPDATE (ai cũng sửa) =====
 exports.update = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
@@ -242,10 +228,6 @@ exports.update = async (req, res) => {
   const cur = curR.rows[0];
   if (!cur) return res.status(404).json({ message: "Character not found" });
 
-  if (!isOwnerOrAdmin(req.user, cur)) {
-    return res.status(403).json({ message: "Bạn không có quyền sửa nhân vật này" });
-  }
-
   const patch = parsed.data;
 
   const next = {
@@ -260,7 +242,14 @@ exports.update = async (req, res) => {
 
     stats: patch.stats
       ? patch.stats
-      : { str: cur.str, dex: cur.dex, con: cur.con, int: cur.int, wis: cur.wis, cha: cur.cha },
+      : {
+          str: cur.str,
+          dex: cur.dex,
+          con: cur.con,
+          int: cur.int,
+          wis: cur.wis,
+          cha: cur.cha,
+        },
 
     hp: patch.hp ?? cur.hp,
     ac: patch.ac ?? cur.ac,
@@ -269,14 +258,13 @@ exports.update = async (req, res) => {
     skills: patch.skills ?? arr(cur.skills),
     equipment: patch.equipment ?? arr(cur.equipment),
     notes: patch.notes ?? arr(cur.notes),
-    feature_lines: patch.feature_lines ?? arr(cur.feature_lines),
+
+    is_public: typeof patch.is_public === "boolean" ? patch.is_public : !!cur.is_public,
 
     resistances: patch.resistances ?? arr(cur.resistances),
     immunities: patch.immunities ?? arr(cur.immunities),
     vulnerabilities: patch.vulnerabilities ?? arr(cur.vulnerabilities),
-    senses: patch.senses ?? obj(cur.senses, { passivePerception: 0, passiveInsight: 0, passiveInvestigation: 0 }),
-
-    is_public: typeof patch.is_public === "boolean" ? patch.is_public : !!cur.is_public,
+    senses: patch.senses ?? obj(cur.senses),
   };
 
   const q = `
@@ -285,12 +273,16 @@ exports.update = async (req, res) => {
       alignment=$5, background=$6, avatar=$7, description=$8,
       str=$9, dex=$10, con=$11, int=$12, wis=$13, cha=$14,
       hp=$15, ac=$16, speed=$17,
-      skills=$18::jsonb, equipment=$19::jsonb, notes=$20::jsonb, feature_lines=$21::jsonb,
+      skills=$18::jsonb, equipment=$19::jsonb, notes=$20::jsonb,
+      created_by=$21,
       is_public=$22,
       resistances=$23::jsonb, immunities=$24::jsonb, vulnerabilities=$25::jsonb, senses=$26::jsonb
     WHERE id=$27
     RETURNING *
   `;
+
+  // Nếu trước đây có created_by rỗng, mình set lại guest cho nhất quán
+  const createdBy = (cur.created_by && String(cur.created_by).trim()) ? cur.created_by : "guest";
 
   const params = [
     next.name,
@@ -316,14 +308,14 @@ exports.update = async (req, res) => {
     JSON.stringify(next.skills || []),
     JSON.stringify(next.equipment || []),
     JSON.stringify(next.notes || []),
-    JSON.stringify(next.feature_lines || []),
 
+    createdBy,
     !!next.is_public,
 
     JSON.stringify(next.resistances || []),
     JSON.stringify(next.immunities || []),
     JSON.stringify(next.vulnerabilities || []),
-    JSON.stringify(next.senses || {}),
+    JSON.stringify(next.senses || { passivePerception: 0, passiveInsight: 0, passiveInvestigation: 0 }),
 
     id,
   ];
@@ -332,18 +324,14 @@ exports.update = async (req, res) => {
   res.json(mapRow(rows[0]));
 };
 
-// ===== DELETE (owner/admin) =====
+// ===== DELETE (ai cũng xoá) =====
 exports.remove = async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isFinite(id)) return res.status(400).json({ message: "Invalid id" });
 
-  const found = await pool.query("SELECT id, created_by FROM characters WHERE id = $1", [id]);
+  const found = await pool.query("SELECT id FROM characters WHERE id = $1", [id]);
   const row = found.rows[0];
   if (!row) return res.status(404).json({ message: "Character not found" });
-
-  if (!isOwnerOrAdmin(req.user, row)) {
-    return res.status(403).json({ message: "Bạn không có quyền xoá nhân vật này" });
-  }
 
   await pool.query("DELETE FROM characters WHERE id = $1", [id]);
   res.json({ ok: true, id });

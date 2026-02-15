@@ -1,16 +1,8 @@
 (() => {
-  /**
-   * API_BASE strategy:
-   * - Production (Render): serve static + API cùng 1 domain => API_BASE = ""
-   * - Local dev (Live Server 5500): gọi API ở localhost:3000
-   * - Có thể override bằng window.__API_BASE (nếu sau này tách frontend/backend)
-   */
-  const API_BASE =
-    (window.__API_BASE && String(window.__API_BASE)) ||
-    ((location.hostname === "localhost" && location.port === "5500")
-      ? "http://localhost:3000"
-      : "");
+  const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
 
+  // ✅ Web đã bỏ đăng nhập: vẫn giữ mấy hàm token để không phá các file cũ,
+  // nhưng UI sẽ không còn login/register/logout.
   const LS_USER = "user";
   const LS_TOKEN = "token";
 
@@ -30,20 +22,31 @@
     localStorage.removeItem(LS_TOKEN);
   }
 
+  function normalizePath(path) {
+    // đảm bảo luôn bắt đầu bằng "/"
+    const p = String(path || "");
+    if (!p) return "/";
+    return p.startsWith("/") ? p : `/${p}`;
+  }
+
   async function apiFetch(path, options = {}) {
     const headers = { ...(options.headers || {}) };
     if (!headers["Content-Type"] && options.body) headers["Content-Type"] = "application/json";
 
+    // token không bắt buộc, nhưng nếu còn lưu thì vẫn gửi (không ảnh hưởng)
     const token = getToken();
     if (token) headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+    const urlPath = normalizePath(path);
+    const res = await fetch(`${API_BASE}${urlPath}`, { ...options, headers });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       const msg = data?.message || `${res.status} ${res.statusText}`;
-      throw new Error(msg);
+      const reason = data?.reason ? ` (${data.reason})` : "";
+      throw new Error(`${msg}${reason}`);
     }
+
     return data;
   }
 
@@ -55,6 +58,8 @@
     setAuth,
     clearAuth,
     apiFetch,
+
+    // back-compat
     loadArticles: () => apiFetch("/api/items"),
   };
 
@@ -68,90 +73,30 @@
     const userDropdown = document.getElementById("userDropdown");
     const userNameEl = document.getElementById("userName");
 
-    // ===== LOGIN MODAL =====
+    // ✅ Không dùng login modal nữa
     const loginModal = document.getElementById("loginModal");
-    const loginClose = document.getElementById("loginClose");
-    const loginForm = document.getElementById("loginForm");
-    const loginError = document.getElementById("loginError");
-    const loginUsername = document.getElementById("loginUsername");
-    const loginPassword = document.getElementById("loginPassword");
-
-    function openModal() {
-      if (!loginModal) {
-        // page nào không có modal thì về index
-        window.location.href = "index.html";
-        return;
-      }
-      loginError && (loginError.style.display = "none");
-      loginError && (loginError.textContent = "");
-      loginModal.hidden = false;
-      setTimeout(() => loginUsername?.focus(), 0);
-    }
-
-    function closeModal() {
-      if (!loginModal) return;
-      loginModal.hidden = true;
-    }
-
-    // Cho menu mobile gọi được
-    window.openLoginModal = openModal;
+    if (loginModal) loginModal.hidden = true;
+    window.openLoginModal = () => {
+      // Không làm gì nữa
+      alert("Web đã bỏ đăng nhập. Bạn có thể tạo/xem/chỉnh sửa nhân vật trực tiếp.");
+    };
 
     function refreshUserName() {
-      const user = getUser();
       if (!userNameEl) return;
-      if (user?.username) {
-        userNameEl.hidden = false;
-        userNameEl.textContent = user.username;
-      } else {
-        userNameEl.hidden = true;
-        userNameEl.textContent = "";
-      }
+      userNameEl.hidden = false;
+      userNameEl.textContent = "Guest";
     }
 
     function renderDropdown() {
       if (!userDropdown || !navUserBox) return;
 
-      const user = getUser();
-      if (!user) {
-        userDropdown.innerHTML = `
-          <li><a href="#" id="loginAction">Đăng nhập</a></li>
-          <li><a href="#" id="registerAction">Đăng ký</a></li>
-        `;
-
-        document.getElementById("loginAction")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          navUserBox.classList.remove("open");
-          openModal();
-        });
-
-        document.getElementById("registerAction")?.addEventListener("click", (e) => {
-          e.preventDefault();
-          navUserBox.classList.remove("open");
-          window.location.href = "register.html";
-        });
-        return;
-      }
-
-      const role = user.role || "user";
-      const isAdmin = role === "admin";
-      const isManager = role === "manager";
-
+      // ✅ Luôn hiển thị menu public
       userDropdown.innerHTML = `
-        <li><a href="character.html">Thông tin nhân vật</a></li>
-        ${isAdmin ? `<li><a href="character-create.html">Tạo nhân vật (Admin)</a></li>` : ""}
-        ${(isAdmin || isManager) ? `<li><a href="post.html">Đăng bài viết</a></li>` : ""}
-        ${isAdmin ? `<li><a href="my-posts.html">Quản lý bài viết</a></li>` : ""}
-        <li><a href="#" id="logoutAction">Đăng xuất</a></li>
+        <li><a href="character-list.html">Danh sách nhân vật</a></li>
+        <li><a href="character-create.html">Tạo nhân vật</a></li>
+        <li><a href="post.html">Đăng bài viết</a></li>
+        <li><a href="my-posts.html">Bài viết của tôi</a></li>
       `;
-
-      document.getElementById("logoutAction")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        clearAuth();
-        navUserBox.classList.remove("open");
-        refreshUserName();
-        renderDropdown();
-        window.location.reload();
-      });
     }
 
     userToggleBtn?.addEventListener("click", (e) => {
@@ -162,38 +107,6 @@
 
     document.addEventListener("click", (e) => {
       if (navUserBox && !navUserBox.contains(e.target)) navUserBox.classList.remove("open");
-    });
-
-    // Login submit
-    loginForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const username = (loginUsername?.value || "").trim();
-      const password = (loginPassword?.value || "").trim();
-
-      try {
-        const data = await apiFetch("/api/auth/login", {
-          method: "POST",
-          body: JSON.stringify({ username, password }),
-        });
-
-        setAuth(data.user, data.token);
-        closeModal();
-        refreshUserName();
-        renderDropdown();
-        window.location.reload();
-      } catch (err) {
-        if (loginError) {
-          loginError.textContent = err.message || "Đăng nhập thất bại";
-          loginError.style.display = "block";
-        } else {
-          alert(err.message || "Đăng nhập thất bại");
-        }
-      }
-    });
-
-    loginClose?.addEventListener("click", closeModal);
-    loginModal?.addEventListener("click", (e) => {
-      if (e.target === loginModal) closeModal();
     });
 
     refreshUserName();
