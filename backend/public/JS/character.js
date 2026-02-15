@@ -3,17 +3,19 @@
   ✅ Tabs always clickable
   ✅ Edit/Save/Cancel ổn định
   ✅ Editor chuẩn bảng cho: Coins, Equipment, Features, Attacks, Spells
+  ✅ Thêm Spellcasting: Ability / Save DC / Attack Bonus (có edit + auto calc)
   ✅ Tính toán: PB, Initiative, Passive Perception/Insight/Investigation, HP (auto)
-  ✅ Persist các phần chưa được backend UPDATE (coins/defenses/attacks/spells/features/senses/hpMode) qua notes[]
-     - Coins:   "Coins: CP=0 SP=0 EP=0 GP=0 PP=0"
-     - Defenses:"Resist: ..."  "Immune: ..."  "Vuln: ..."
-     - Senses:  "Senses: PP=10 PI=10 PINV=10"
-     - HP mode: "HPMode: auto" | "HPMode: manual"
-     - Attacks: "Attack: name|abil|prof|dice|addMod|notes|range|comp|duration"
-     - Spells:  "Spell: prep|level|name|saveAtk|time|range|comp|duration|notes"
-     - Features:"Feature: ..."
-  Lưu ý: backend hiện tại (controller.update) KHÔNG update resistances/immunities/vulnerabilities/senses/feature_lines,
-  nên file này tự lưu chúng vào notes[] để không mất.
+  ✅ Persist các phần chưa được backend UPDATE (coins/defenses/attacks/spells/features/senses/hpMode/spellcast) qua notes[]
+
+  Notes formats:
+    - Coins:   "Coins: CP=0 SP=0 EP=0 GP=0 PP=0"
+    - Defenses:"Resist: ..."  "Immune: ..."  "Vuln: ..."
+    - Senses:  "Senses: PP=10 PI=10 PINV=10"
+    - HP mode: "HPMode: auto" | "HPMode: manual"
+    - Spellcast:"Spellcast: abil=wis auto=1 dc=12 atk=+4"
+    - Attacks: "Attack: name|abil|prof|dice|addMod|notes|range|comp|duration"
+    - Spells:  "Spell: prep|level|name|saveAtk|time|range|comp|duration|notes"
+    - Features:"Feature: ..."
 */
 
 (() => {
@@ -28,7 +30,7 @@
   const ABILS = ["str", "dex", "con", "int", "wis", "cha"];
   const ABIL_LABEL = { str: "STR", dex: "DEX", con: "CON", int: "INT", wis: "WIS", cha: "CHA" };
 
-  // Skill keys we store in DB (snake_case)
+  // Skill keys we store (snake_case)
   const SKILLS = {
     acrobatics: "dex",
     animal_handling: "wis",
@@ -88,6 +90,19 @@
     artificer: 8,
   };
 
+  // Spellcasting default by class
+  const SPELLCAST_DEFAULT = {
+    artificer: "int",
+    bard: "cha",
+    cleric: "wis",
+    druid: "wis",
+    paladin: "cha",
+    ranger: "wis",
+    sorcerer: "cha",
+    warlock: "cha",
+    wizard: "int",
+  };
+
   const fmt = (n) => (Number(n) >= 0 ? `+${Number(n)}` : `${Number(n)}`);
   const mod = (s) => Math.floor((Number(s || 10) - 10) / 2);
   const clampInt = (n, a, b) => {
@@ -97,8 +112,7 @@
   };
   const pb = (lv) => 2 + Math.floor((clampInt(lv || 1, 1, 20) - 1) / 4);
 
-  // Avg per level beyond 1 in 5e:
-  // d6->4, d8->5, d10->6, d12->7. That's floor(die/2)+1.
+  // Avg per level beyond 1 in 5e: floor(die/2)+1
   const avgDie = (die) => Math.floor(Number(die || 8) / 2) + 1;
 
   function classHitDie(className) {
@@ -117,13 +131,17 @@
   }
 
   function calcPassive({ abilityScore, level, isProf }) {
-    // 10 + ability mod + PB if proficient
     const base = 10 + mod(abilityScore || 10);
     const add = isProf ? pb(level || 1) : 0;
     return clampInt(base + add, 0, 99);
   }
 
-  // ====== Notes section formats ======
+  function guessSpellcastingAbility(className) {
+    const key = String(className || "").trim().toLowerCase();
+    return SPELLCAST_DEFAULT[key] || "int";
+  }
+
+  // ====== Notes prefixes ======
   const PFX = {
     coins: "Coins:",
     resist: "Resist:",
@@ -131,6 +149,7 @@
     vuln: "Vuln:",
     senses: "Senses:",
     hpMode: "HPMode:",
+    spellcast: "Spellcast:",
     attack: "Attack:",
     spell: "Spell:",
     feature: "Feature:",
@@ -160,20 +179,14 @@
     return String(k || "").trim().toLowerCase();
   }
 
+  // ====== Coins ======
   function parseCoinsLine(line) {
-    // Coins: CP=0 SP=0 EP=0 GP=0 PP=0
     const s = String(line || "");
     const get = (sym) => {
       const m = new RegExp(`${sym}\\s*=\\s*(\\d+)`, "i").exec(s);
       return m ? clampInt(m[1], 0, 999999) : 0;
     };
-    return {
-      cp: get("CP"),
-      sp: get("SP"),
-      ep: get("EP"),
-      gp: get("GP"),
-      pp: get("PP"),
-    };
+    return { cp: get("CP"), sp: get("SP"), ep: get("EP"), gp: get("GP"), pp: get("PP") };
   }
 
   function coinsToLine(coins) {
@@ -185,6 +198,7 @@
     )} GP=${clampInt(c.gp || 0, 0, 999999)} PP=${clampInt(c.pp || 0, 0, 999999)}`;
   }
 
+  // ====== Defenses ======
   function parseListLine(line, prefix) {
     const s = String(line || "");
     if (!s.toLowerCase().startsWith(prefix.toLowerCase())) return [];
@@ -197,12 +211,14 @@
   }
 
   function listToLine(prefix, arr) {
-    const a = safeArr(arr).map((x) => String(x || "").trim()).filter(Boolean);
+    const a = safeArr(arr)
+      .map((x) => String(x || "").trim())
+      .filter(Boolean);
     return `${prefix} ${a.join(", ")}`.trim();
   }
 
+  // ====== Senses ======
   function parseSensesLine(line) {
-    // Senses: PP=10 PI=10 PINV=10
     const s = String(line || "");
     const get = (key) => {
       const m = new RegExp(`${key}\\s*=\\s*(\\d+)`, "i").exec(s);
@@ -226,6 +242,7 @@
     return `${PFX.senses} PP=${ppv} PI=${piv} PINV=${pinv}`;
   }
 
+  // ====== HP mode ======
   function parseHpMode(line) {
     const s = String(line || "").trim().toLowerCase();
     if (!s.startsWith(PFX.hpMode.toLowerCase())) return null;
@@ -240,6 +257,34 @@
     return `${PFX.hpMode} ${m}`;
   }
 
+  // ====== Spellcasting block ======
+  function parseSpellcastLine(line) {
+    const s = String(line || "").trim();
+    if (!s.toLowerCase().startsWith(PFX.spellcast.toLowerCase())) return null;
+    const body = s.slice(PFX.spellcast.length).trim();
+
+    const abil = /abil\s*=\s*(str|dex|con|int|wis|cha)/i.exec(body);
+    const auto = /auto\s*=\s*(0|1|true|false)/i.exec(body);
+    const dc = /dc\s*=\s*([+-]?\d+)/i.exec(body);
+    const atk = /atk\s*=\s*([+-]?\d+)/i.exec(body);
+
+    return {
+      ability: abil ? abil[1].toLowerCase() : null,
+      auto: auto ? !(auto[1].toLowerCase() === "0" || auto[1].toLowerCase() === "false") : null,
+      dc: dc ? Number(dc[1]) : null,
+      atk: atk ? Number(atk[1]) : null,
+    };
+  }
+
+  function spellcastToLine(sc) {
+    const ability = ABILS.includes(sc?.ability) ? sc.ability : "int";
+    const auto = sc?.auto ? 1 : 0;
+    const dc = clampInt(sc?.dc ?? 0, 0, 99);
+    const atk = clampInt(sc?.atk ?? 0, -30, 30);
+    return fitStructured(`${PFX.spellcast} abil=${ability} auto=${auto} dc=${dc} atk=${atk >= 0 ? "+" + atk : atk}`);
+  }
+
+  // ====== Attack/Spell lines (pipe-separated) ======
   function escapePipe(s) {
     return String(s ?? "").replaceAll("|", "\\|");
   }
@@ -248,7 +293,6 @@
   }
 
   function splitPipes(line) {
-    // Split by | but allow escaped \|
     const s = String(line || "");
     const out = [];
     let cur = "";
@@ -277,7 +321,6 @@
   }
 
   function parseAttackLine(line) {
-    // Attack: name|abil|prof|dice|addMod|notes|range|comp|duration
     const s = String(line || "");
     if (!s.toLowerCase().startsWith(PFX.attack.toLowerCase())) return null;
     const raw = s.slice(PFX.attack.length).trim();
@@ -310,7 +353,6 @@
   }
 
   function parseSpellLine(line) {
-    // Spell: prep|level|name|saveAtk|time|range|comp|duration|notes
     const s = String(line || "");
     if (!s.toLowerCase().startsWith(PFX.spell.toLowerCase())) return null;
     const raw = s.slice(PFX.spell.length).trim();
@@ -333,12 +375,13 @@
 
   function spellToLine(sp) {
     const x = sp || {};
-    const line = `${PFX.spell} ${x.prep ? "1" : "0"}|${clampInt(x.level ?? 0, 0, 9)}|${escapePipe(x.name || "")} |${escapePipe(
+    // prep|level|name|saveAtk|time|range|comp|duration|notes
+    const line = `${PFX.spell} ${x.prep ? "1" : "0"}|${clampInt(x.level ?? 0, 0, 9)}|${escapePipe(x.name || "")}|${escapePipe(
       x.saveAtk || ""
-    )}|${escapePipe(x.time || "")} |${escapePipe(x.range || "")} |${escapePipe(x.comp || "")} |${escapePipe(
+    )}|${escapePipe(x.time || "")}|${escapePipe(x.range || "")}|${escapePipe(x.comp || "")}|${escapePipe(
       x.duration || ""
     )}|${escapePipe(x.notes || "")}`;
-    return fitStructured(line.replace(/\s+\|/g, "|").replace(/\|\s+/g, "|"));
+    return fitStructured(line);
   }
 
   function parseFeatureLine(line) {
@@ -351,23 +394,25 @@
     return fitStructured(`${PFX.feature} ${String(text || "").trim()}`);
   }
 
-  // ====== UI state ======
+  // ====== UI State ======
   let ID = null;
-  let CHAR = null; // server entity
+  let CHAR = null;
   let VIEW_PUBLIC = false;
   let EDIT = false;
   let ORIG_SNAPSHOT = null;
 
-  // derived + editable sections
+  // Derived & editable sections
   let COINS = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
   let DEF = { resistances: [], immunities: [], vulnerabilities: [] };
   let HP_MODE = "auto"; // auto | manual
+  let SPELLCAST = { ability: "int", auto: true, dc: 0, atk: 0 };
+
   let ATTACKS = [];
   let SPELLS = [];
   let FEATURES = [];
   let REM_NOTES = [];
 
-  // ====== small UI CSS injection for table editors ======
+  // ====== Small style injection ======
   function injectEditorStyles() {
     if (document.getElementById("chEditorStyles")) return;
     const st = document.createElement("style");
@@ -383,7 +428,7 @@
     document.head.appendChild(st);
   }
 
-  // ====== messaging ======
+  // ====== Messaging ======
   function toast(msg, danger = false) {
     const box = $("msgBox");
     if (!box) {
@@ -399,7 +444,7 @@
     }, 2200);
   }
 
-  // ====== tabs (always works) ======
+  // ====== Tabs ======
   function initTabs() {
     const tabs = document.querySelectorAll(".ch-tab");
     const panels = document.querySelectorAll(".ch-panel");
@@ -418,15 +463,14 @@
     });
   }
 
-  // ====== normalize & parse notes into sections ======
+  // ====== Normalize + parse ======
   function normalizeChar(raw) {
     const c = raw || {};
     c.level = clampInt(c.level ?? 1, 1, 20);
     c.hp = clampInt(c.hp ?? 10, 1, 999);
-    c.ac = clampInt(c.ac ?? 10, 1, 30);
+    c.ac = clampInt(c.ac ?? 10, 1, 40);
     c.speed = String(c.speed ?? "30 ft");
 
-    // stats
     c.stats = c.stats && typeof c.stats === "object" ? c.stats : {
       str: Number(c.str ?? 10),
       dex: Number(c.dex ?? 10),
@@ -435,6 +479,7 @@
       wis: Number(c.wis ?? 10),
       cha: Number(c.cha ?? 10),
     };
+
     ABILS.forEach((k) => {
       c.stats[k] = clampInt(c.stats[k] ?? 10, 1, 30);
     });
@@ -448,9 +493,11 @@
   function parseSectionsFromNotes(notes) {
     const n = safeArr(notes);
 
+    // Coins
     const coinsLine = n.find((x) => String(x).toLowerCase().startsWith(PFX.coins.toLowerCase())) || "";
     COINS = coinsLine ? parseCoinsLine(coinsLine) : { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
 
+    // Defenses
     const rLine = n.find((x) => String(x).toLowerCase().startsWith(PFX.resist.toLowerCase())) || "";
     const iLine = n.find((x) => String(x).toLowerCase().startsWith(PFX.immune.toLowerCase())) || "";
     const vLine = n.find((x) => String(x).toLowerCase().startsWith(PFX.vuln.toLowerCase())) || "";
@@ -460,6 +507,7 @@
       vulnerabilities: vLine ? parseListLine(vLine, PFX.vuln) : safeArr(CHAR?.vulnerabilities),
     };
 
+    // Senses + HP mode
     const sensesLine = n.find((x) => String(x).toLowerCase().startsWith(PFX.senses.toLowerCase())) || "";
     const hpModeLine = n.find((x) => String(x).toLowerCase().startsWith(PFX.hpMode.toLowerCase())) || "";
 
@@ -471,16 +519,30 @@
     const hm = hpModeLine ? parseHpMode(hpModeLine) : null;
     HP_MODE = hm || "auto";
 
+    // Spellcasting
+    const scLine = n.find((x) => String(x).toLowerCase().startsWith(PFX.spellcast.toLowerCase())) || "";
+    const parsedSc = scLine ? parseSpellcastLine(scLine) : null;
+    const guessed = guessSpellcastingAbility(CHAR?.class_name);
+    SPELLCAST = {
+      ability: ABILS.includes(parsedSc?.ability) ? parsedSc.ability : guessed,
+      auto: typeof parsedSc?.auto === "boolean" ? parsedSc.auto : true,
+      dc: Number.isFinite(parsedSc?.dc) ? parsedSc.dc : 0,
+      atk: Number.isFinite(parsedSc?.atk) ? parsedSc.atk : 0,
+    };
+
+    // Attacks
     ATTACKS = n
       .filter((x) => String(x).toLowerCase().startsWith(PFX.attack.toLowerCase()))
       .map(parseAttackLine)
       .filter(Boolean);
 
+    // Spells
     SPELLS = n
       .filter((x) => String(x).toLowerCase().startsWith(PFX.spell.toLowerCase()))
       .map(parseSpellLine)
       .filter(Boolean);
 
+    // Features
     const fromFeatureNotes = n
       .filter((x) => String(x).toLowerCase().startsWith(PFX.feature.toLowerCase()))
       .map(parseFeatureLine)
@@ -489,6 +551,7 @@
     const serverFeatures = safeArr(CHAR?.feature_lines).map((x) => String(x || "").trim()).filter(Boolean);
     FEATURES = fromFeatureNotes.length ? fromFeatureNotes : serverFeatures;
 
+    // Remaining notes
     const isReserved = (line) => {
       const s = String(line || "").toLowerCase();
       return (
@@ -498,6 +561,7 @@
         s.startsWith(PFX.vuln.toLowerCase()) ||
         s.startsWith(PFX.senses.toLowerCase()) ||
         s.startsWith(PFX.hpMode.toLowerCase()) ||
+        s.startsWith(PFX.spellcast.toLowerCase()) ||
         s.startsWith(PFX.attack.toLowerCase()) ||
         s.startsWith(PFX.spell.toLowerCase()) ||
         s.startsWith(PFX.feature.toLowerCase())
@@ -517,6 +581,8 @@
 
     out.push(fitStructured(sensesToLine(CHAR.senses || {})));
     out.push(fitStructured(hpModeToLine(HP_MODE)));
+
+    out.push(fitStructured(spellcastToLine(SPELLCAST)));
 
     ATTACKS.forEach((a) => out.push(attackToLine(a)));
     SPELLS.forEach((s) => out.push(spellToLine(s)));
@@ -543,7 +609,7 @@
     });
   }
 
-  // ====== computed updates ======
+  // ====== skill/save sets ======
   function getSkillProfSet() {
     const set = new Set();
     safeArr(CHAR?.skills).forEach((s) => {
@@ -575,6 +641,7 @@
     CHAR.skills = skills;
   }
 
+  // ====== computed updates ======
   function updateComputed() {
     if (!CHAR) return;
 
@@ -592,7 +659,6 @@
     const ppv = calcPassive({ abilityScore: CHAR.stats.wis, level: lvl, isProf: skillSet.has("perception") });
     const piv = calcPassive({ abilityScore: CHAR.stats.wis, level: lvl, isProf: skillSet.has("insight") });
     const pinv = calcPassive({ abilityScore: CHAR.stats.int, level: lvl, isProf: skillSet.has("investigation") });
-
     CHAR.senses = { passivePerception: ppv, passiveInsight: piv, passiveInvestigation: pinv };
 
     if ($("inp_pa_perception")) $("inp_pa_perception").value = String(ppv);
@@ -601,14 +667,35 @@
 
     // Auto HP
     if (HP_MODE === "auto") {
-      CHAR.hp = clampInt(
-        calcHp({ level: CHAR.level, class_name: CHAR.class_name, conScore: CHAR.stats.con }),
-        1,
-        999
-      );
+      CHAR.hp = clampInt(calcHp({ level: CHAR.level, class_name: CHAR.class_name, conScore: CHAR.stats.con }), 1, 999);
       if ($("inp_hp")) $("inp_hp").value = String(CHAR.hp);
       if ($("q_hp")) $("q_hp").textContent = String(CHAR.hp);
     }
+
+    // Spellcasting auto
+    if (!SPELLCAST || typeof SPELLCAST !== "object") {
+      SPELLCAST = { ability: guessSpellcastingAbility(CHAR.class_name), auto: true, dc: 0, atk: 0 };
+    }
+    if (!ABILS.includes(SPELLCAST.ability)) SPELLCAST.ability = guessSpellcastingAbility(CHAR.class_name);
+
+    if (SPELLCAST.auto) {
+      const abilityMod = mod(CHAR.stats[SPELLCAST.ability] ?? 10);
+      SPELLCAST.atk = abilityMod + pbVal;
+      SPELLCAST.dc = 8 + abilityMod + pbVal;
+    } else {
+      SPELLCAST.dc = clampInt(SPELLCAST.dc ?? 0, 0, 99);
+      SPELLCAST.atk = clampInt(SPELLCAST.atk ?? 0, -30, 30);
+    }
+
+    // If UI exists, refresh it
+    const dcEl = $("sc_dc");
+    const atkEl = $("sc_atk");
+    const abilEl = $("sc_abil");
+    const autoEl = $("sc_auto");
+    if (abilEl) abilEl.value = SPELLCAST.ability;
+    if (autoEl) autoEl.checked = !!SPELLCAST.auto;
+    if (dcEl) dcEl.value = String(SPELLCAST.dc ?? 0);
+    if (atkEl) atkEl.value = String(SPELLCAST.atk ?? 0);
   }
 
   // ====== render ======
@@ -616,11 +703,11 @@
     if (!CHAR) return;
 
     if ($("ch_name")) $("ch_name").textContent = CHAR.name || "—";
-    if ($("ch_subline")) $("ch_subline").textContent = `${CHAR.race || "—"} • ${CHAR.class_name || "—"} • Level ${CHAR.level || 1}`;
+    if ($("ch_subline"))
+      $("ch_subline").textContent = `${CHAR.race || "—"} • ${CHAR.class_name || "—"} • Level ${CHAR.level || 1}`;
 
     if ($("ch_publicBadge")) $("ch_publicBadge").style.display = CHAR.is_public ? "inline-flex" : "none";
 
-    // avatar
     const avatarImg = $("avatarImg");
     if (avatarImg) {
       const av = String(CHAR.avatar || "").trim();
@@ -631,7 +718,6 @@
       }
     }
 
-    // tags
     const tags = $("ch_tags");
     if (tags) {
       tags.innerHTML = "";
@@ -644,9 +730,9 @@
       addTag(`PB ${fmt(pb(CHAR.level))}`);
       addTag(`Init ${fmt(mod(CHAR.stats.dex))}`);
       addTag(`HP ${CHAR.hp}`);
+      if (SPELLCAST?.ability) addTag(`Spell ${ABIL_LABEL[SPELLCAST.ability]} DC ${SPELLCAST.dc}`);
     }
 
-    // Quick
     if ($("q_ac")) $("q_ac").textContent = String(CHAR.ac ?? 10);
     if ($("q_hp")) $("q_hp").textContent = String(CHAR.hp ?? 10);
     if ($("q_speed")) $("q_speed").textContent = String(CHAR.speed ?? "30 ft");
@@ -683,29 +769,29 @@
     const grid = $("abilitiesGrid");
     if (!grid || !CHAR) return;
 
-    grid.innerHTML = ABILS
-      .map((k) => {
-        const score = CHAR.stats[k];
-        return `
+    grid.innerHTML = ABILS.map((k) => {
+      const score = CHAR.stats[k];
+      return `
         <div class="ch-abil">
           <div class="ch-abil__label">${ABIL_LABEL[k]}</div>
           <input id="stat_${k}" type="number" min="1" max="30" value="${score}" ${EDIT ? "" : "disabled"} />
           <div class="ch-abil__mod" id="mod_${k}">${fmt(mod(score))}</div>
         </div>
       `;
-      })
-      .join("");
+    }).join("");
 
     ABILS.forEach((k) => {
-      const el = $(`stat_${k}`);
+      const el = $("stat_" + k);
       if (!el) return;
       el.oninput = () => {
         CHAR.stats[k] = clampInt(el.value || 10, 1, 30);
-        if ($(`mod_${k}`)) $(`mod_${k}`).textContent = fmt(mod(CHAR.stats[k]));
+        const mEl = $("mod_" + k);
+        if (mEl) mEl.textContent = fmt(mod(CHAR.stats[k]));
         updateComputed();
         renderSavesAndSkills();
         renderModsBox();
         renderAttacks();
+        renderSpellcastRow();
       };
     });
   }
@@ -719,26 +805,23 @@
     const saveSet = getSaveProfSet();
     const skillSet = getSkillProfSet();
 
-    savingList.innerHTML = ABILS
-      .map((k) => {
-        const base = mod(CHAR.stats[k]);
-        const total = base + (saveSet.has(k) ? pbVal : 0);
-        return `
+    savingList.innerHTML = ABILS.map((k) => {
+      const base = mod(CHAR.stats[k]);
+      const total = base + (saveSet.has(k) ? pbVal : 0);
+      return `
         <label class="ch-list__item" style="display:flex;align-items:center;gap:10px;">
           <input class="prof-box" type="checkbox" data-save="${k}" ${saveSet.has(k) ? "checked" : ""} ${EDIT ? "" : "disabled"} />
           <span style="flex:1;">${ABIL_LABEL[k]}</span>
           <strong>${fmt(total)}</strong>
         </label>
       `;
-      })
-      .join("");
+    }).join("");
 
-    skillsList.innerHTML = Object.keys(SKILLS)
-      .map((key) => {
-        const abil = SKILLS[key];
-        const base = mod(CHAR.stats[abil]);
-        const total = base + (skillSet.has(key) ? pbVal : 0);
-        return `
+    skillsList.innerHTML = Object.keys(SKILLS).map((key) => {
+      const abil = SKILLS[key];
+      const base = mod(CHAR.stats[abil]);
+      const total = base + (skillSet.has(key) ? pbVal : 0);
+      return `
         <label class="ch-list__item" style="display:flex;align-items:center;gap:10px;">
           <input class="prof-box" type="checkbox" data-skill="${key}" ${skillSet.has(key) ? "checked" : ""} ${EDIT ? "" : "disabled"} />
           <span style="flex:1;">${SKILL_LABEL[key] || key}</span>
@@ -746,8 +829,7 @@
           <strong>${fmt(total)}</strong>
         </label>
       `;
-      })
-      .join("");
+    }).join("");
 
     savingList.querySelectorAll("[data-save]").forEach((cb) => {
       cb.onchange = () => {
@@ -770,6 +852,7 @@
         setSkillAndSaveSets(nextSkill, getSaveProfSet());
         updateComputed();
         renderSavesAndSkills();
+        renderSpellcastRow();
       };
     });
   }
@@ -781,7 +864,7 @@
     if ($("inp_hp")) $("inp_hp").value = String(CHAR.hp ?? 10);
     if ($("inp_speed")) $("inp_speed").value = String(CHAR.speed ?? "30 ft");
 
-    // Inject HP mode toggle under HP input
+    // HP mode toggle under HP input
     const hpPill = $("inp_hp")?.closest(".ch-pill");
     if (hpPill && !hpPill.querySelector("#hpModeToggle")) {
       const wrap = document.createElement("div");
@@ -801,10 +884,9 @@
       hpModeToggle.disabled = !EDIT;
       hpModeToggle.onchange = () => {
         HP_MODE = hpModeToggle.checked ? "auto" : "manual";
-        if (HP_MODE === "auto") {
-          updateComputed();
-          renderCombat();
-        }
+        updateComputed();
+        renderCombat();
+        renderHero();
       };
     }
 
@@ -814,7 +896,7 @@
 
     if ($("inp_ac")) {
       $("inp_ac").oninput = () => {
-        CHAR.ac = clampInt($("inp_ac").value || 10, 1, 30);
+        CHAR.ac = clampInt($("inp_ac").value || 10, 0, 40);
         if ($("q_ac")) $("q_ac").textContent = String(CHAR.ac);
       };
     }
@@ -824,6 +906,7 @@
         if (HP_MODE !== "manual") return;
         CHAR.hp = clampInt($("inp_hp").value || 10, 1, 999);
         if ($("q_hp")) $("q_hp").textContent = String(CHAR.hp);
+        renderHero();
       };
     }
 
@@ -856,7 +939,10 @@
     const renderInput = (box, key, label) => {
       if (!box) return;
       const val = safeArr(DEF[key]).join(", ");
-      box.innerHTML = `<input class="def-edit" type="text" data-def="${key}" placeholder="${label} (comma separated)" value="${val}" ${EDIT ? "" : "disabled"} />`;
+      box.innerHTML = `<input class="def-edit" type="text" data-def="${key}" placeholder="${label} (comma separated)" value="${val.replaceAll(
+        '"',
+        "&quot;"
+      )}" ${EDIT ? "" : "disabled"} />`;
       const inp = box.querySelector("input");
       if (inp) {
         inp.oninput = () => {
@@ -873,6 +959,109 @@
     renderInput(boxVul, "vulnerabilities", "Vulnerabilities");
   }
 
+  // ====== Spellcasting row ======
+  function ensureSpellcastRow() {
+    const panel = document.querySelector('.ch-panel[data-panel="spells"]');
+    if (!panel) return;
+
+    let row = panel.querySelector("#spellcastRow");
+    if (row) return;
+
+    row = document.createElement("div");
+    row.className = "ch-combatRow";
+    row.id = "spellcastRow";
+
+    row.innerHTML = `
+      <div class="ch-pill">
+        <div class="ch-pill__label">Spellcasting Ability</div>
+        <select id="sc_abil"></select>
+      </div>
+      <div class="ch-pill">
+        <div class="ch-pill__label">Spell Save DC</div>
+        <input id="sc_dc" type="number" min="0" max="99" />
+        <div class="ch-inlineToggle" id="sc_autoWrap" style="margin-top:8px;">
+          <label style="display:inline-flex;align-items:center;gap:8px;">
+            <input id="sc_auto" type="checkbox" />
+            <span>Auto calc (8 + PB + mod / PB + mod)</span>
+          </label>
+        </div>
+      </div>
+      <div class="ch-pill">
+        <div class="ch-pill__label">Spell Attack Bonus</div>
+        <input id="sc_atk" type="number" min="-30" max="30" />
+      </div>
+    `;
+
+    const tableWrap = panel.querySelector(".ch-tableWrap");
+    if (tableWrap) panel.insertBefore(row, tableWrap);
+    else panel.appendChild(row);
+
+    // Fill ability select options
+    const sel = row.querySelector("#sc_abil");
+    if (sel) {
+      sel.innerHTML = ABILS.map((k) => `<option value="${k}">${ABIL_LABEL[k]}</option>`).join("");
+    }
+  }
+
+  function renderSpellcastRow() {
+    ensureSpellcastRow();
+
+    const abilEl = $("sc_abil");
+    const dcEl = $("sc_dc");
+    const atkEl = $("sc_atk");
+    const autoEl = $("sc_auto");
+    const autoWrap = $("sc_autoWrap");
+
+    if (!abilEl || !dcEl || !atkEl || !autoEl || !autoWrap) return;
+
+    abilEl.value = SPELLCAST.ability;
+    autoEl.checked = !!SPELLCAST.auto;
+
+    abilEl.disabled = !EDIT;
+    autoEl.disabled = !EDIT;
+
+    if (!EDIT) {
+      autoWrap.style.display = "none";
+    } else {
+      autoWrap.style.display = "";
+    }
+
+    // In auto, show computed values and lock dc/atk
+    dcEl.value = String(clampInt(SPELLCAST.dc ?? 0, 0, 99));
+    atkEl.value = String(clampInt(SPELLCAST.atk ?? 0, -30, 30));
+
+    dcEl.disabled = !EDIT || SPELLCAST.auto;
+    atkEl.disabled = !EDIT || SPELLCAST.auto;
+
+    // events
+    abilEl.onchange = () => {
+      SPELLCAST.ability = abilEl.value;
+      updateComputed();
+      renderSpellcastRow();
+      renderHero();
+    };
+
+    autoEl.onchange = () => {
+      SPELLCAST.auto = !!autoEl.checked;
+      updateComputed();
+      renderSpellcastRow();
+      renderHero();
+    };
+
+    dcEl.oninput = () => {
+      if (SPELLCAST.auto) return;
+      SPELLCAST.dc = clampInt(dcEl.value || 0, 0, 99);
+      renderHero();
+    };
+
+    atkEl.oninput = () => {
+      if (SPELLCAST.auto) return;
+      SPELLCAST.atk = clampInt(atkEl.value || 0, -30, 30);
+      renderHero();
+    };
+  }
+
+  // ====== Attacks ======
   function attackHit(a) {
     const pbVal = pb(CHAR.level);
     const abil = ABILS.includes(a.ability) ? a.ability : "str";
@@ -891,10 +1080,9 @@
     if (!tbody || !CHAR) return;
     injectEditorStyles();
 
-    tbody.innerHTML = ATTACKS
-      .map((a, i) => {
-        if (!EDIT) {
-          return `
+    tbody.innerHTML = ATTACKS.map((a, i) => {
+      if (!EDIT) {
+        return `
           <tr>
             <td class="t-xs">${a.name || ""}</td>
             <td class="t-xs"><strong>${fmt(attackHit(a))}</strong></td>
@@ -906,17 +1094,19 @@
             <td></td>
           </tr>
         `;
-        }
+      }
 
-        return `
+      const esc = (s) => String(s || "").replaceAll('"', "&quot;");
+
+      return `
         <tr>
-          <td><input id="atk_name_${i}" type="text" value="${(a.name || "").replaceAll('"', '&quot;')}" /></td>
+          <td><input id="atk_name_${i}" type="text" value="${esc(a.name)}" /></td>
           <td><strong>${fmt(attackHit(a))}</strong></td>
-          <td><input id="atk_dice_${i}" type="text" value="${(a.dice || "").replaceAll('"', '&quot;')}" placeholder="1d8 slashing" /></td>
-          <td><input id="atk_notes_${i}" type="text" value="${(a.notes || "").replaceAll('"', '&quot;')}" /></td>
-          <td><input id="atk_range_${i}" type="text" value="${(a.range || "").replaceAll('"', '&quot;')}" /></td>
-          <td><input id="atk_comp_${i}" type="text" value="${(a.comp || "").replaceAll('"', '&quot;')}" /></td>
-          <td><input id="atk_dur_${i}" type="text" value="${(a.duration || "").replaceAll('"', '&quot;')}" /></td>
+          <td><input id="atk_dice_${i}" type="text" value="${esc(a.dice)}" placeholder="1d8 slashing" /></td>
+          <td><input id="atk_notes_${i}" type="text" value="${esc(a.notes)}" /></td>
+          <td><input id="atk_range_${i}" type="text" value="${esc(a.range)}" /></td>
+          <td><input id="atk_comp_${i}" type="text" value="${esc(a.comp)}" /></td>
+          <td><input id="atk_dur_${i}" type="text" value="${esc(a.duration)}" /></td>
           <td>
             <div class="cell-actions">
               <select id="atk_abil_${i}" class="tiny">
@@ -935,8 +1125,7 @@
           </td>
         </tr>
       `;
-      })
-      .join("");
+    }).join("");
 
     // Add attack button
     const combatPanel = document.querySelector('.ch-panel[data-panel="combat"]');
@@ -973,16 +1162,16 @@
     if (!EDIT) return;
 
     ATTACKS.forEach((a, i) => {
-      const name = $(`atk_name_${i}`);
-      const dice = $(`atk_dice_${i}`);
-      const notes = $(`atk_notes_${i}`);
-      const range = $(`atk_range_${i}`);
-      const comp = $(`atk_comp_${i}`);
-      const dur = $(`atk_dur_${i}`);
-      const abil = $(`atk_abil_${i}`);
-      const prof = $(`atk_prof_${i}`);
-      const addm = $(`atk_add_${i}`);
-      const del = $(`atk_del_${i}`);
+      const name = $("atk_name_" + i);
+      const dice = $("atk_dice_" + i);
+      const notes = $("atk_notes_" + i);
+      const range = $("atk_range_" + i);
+      const comp = $("atk_comp_" + i);
+      const dur = $("atk_dur_" + i);
+      const abil = $("atk_abil_" + i);
+      const prof = $("atk_prof_" + i);
+      const addm = $("atk_add_" + i);
+      const del = $("atk_del_" + i);
 
       const rerender = () => renderAttacks();
       if (name) name.oninput = () => (a.name = name.value);
@@ -1014,15 +1203,15 @@
     });
   }
 
+  // ====== Spells ======
   function renderSpells() {
     const tbody = $("spellsTbody");
     if (!tbody) return;
     injectEditorStyles();
 
-    tbody.innerHTML = SPELLS
-      .map((s, i) => {
-        if (!EDIT) {
-          return `
+    tbody.innerHTML = SPELLS.map((s, i) => {
+      if (!EDIT) {
+        return `
           <tr>
             <td class="t-xs">${s.prep ? "✓" : ""}</td>
             <td class="t-xs">${s.level}</td>
@@ -1035,30 +1224,31 @@
             <td>${s.notes || ""}</td>
           </tr>
         `;
-        }
+      }
 
-        return `
+      const esc = (x) => String(x || "").replaceAll('"', "&quot;");
+
+      return `
         <tr>
           <td class="t-xs" style="text-align:center;"><input id="sp_p_${i}" type="checkbox" ${s.prep ? "checked" : ""} /></td>
           <td class="t-xs"><input id="sp_lv_${i}" class="xs" type="number" min="0" max="9" value="${s.level}" /></td>
-          <td><input id="sp_name_${i}" type="text" value="${(s.name || "").replaceAll('"', '&quot;')}" /></td>
-          <td class="t-sm"><input id="sp_sa_${i}" type="text" value="${(s.saveAtk || "").replaceAll('"', '&quot;')}" /></td>
-          <td class="t-sm"><input id="sp_time_${i}" type="text" value="${(s.time || "").replaceAll('"', '&quot;')}" /></td>
-          <td class="t-sm"><input id="sp_range_${i}" type="text" value="${(s.range || "").replaceAll('"', '&quot;')}" /></td>
-          <td class="t-sm"><input id="sp_comp_${i}" type="text" value="${(s.comp || "").replaceAll('"', '&quot;')}" /></td>
-          <td class="t-sm"><input id="sp_dur_${i}" type="text" value="${(s.duration || "").replaceAll('"', '&quot;')}" /></td>
+          <td><input id="sp_name_${i}" type="text" value="${esc(s.name)}" /></td>
+          <td class="t-sm"><input id="sp_sa_${i}" type="text" value="${esc(s.saveAtk)}" /></td>
+          <td class="t-sm"><input id="sp_time_${i}" type="text" value="${esc(s.time)}" /></td>
+          <td class="t-sm"><input id="sp_range_${i}" type="text" value="${esc(s.range)}" /></td>
+          <td class="t-sm"><input id="sp_comp_${i}" type="text" value="${esc(s.comp)}" /></td>
+          <td class="t-sm"><input id="sp_dur_${i}" type="text" value="${esc(s.duration)}" /></td>
           <td>
             <div style="display:flex;gap:10px;align-items:center;">
-              <input id="sp_notes_${i}" type="text" value="${(s.notes || "").replaceAll('"', '&quot;')}" style="flex:1;" />
+              <input id="sp_notes_${i}" type="text" value="${esc(s.notes)}" style="flex:1;" />
               <button type="button" class="ch-btn danger" id="sp_del_${i}" style="padding:6px 10px;">X</button>
             </div>
           </td>
         </tr>
       `;
-      })
-      .join("");
+    }).join("");
 
-    // Add spell button
+    // Add spell button in spells panel head
     const spellsPanel = document.querySelector('.ch-panel[data-panel="spells"]');
     const head = spellsPanel ? spellsPanel.querySelector(".ch-panel__head") : null;
     if (head && EDIT && !head.querySelector("#addSpellBtn")) {
@@ -1081,23 +1271,36 @@
     if (!EDIT) return;
 
     SPELLS.forEach((s, i) => {
-      if ($(`sp_p_${i}`)) $(`sp_p_${i}`).onchange = () => (s.prep = !!$(`sp_p_${i}`).checked);
-      if ($(`sp_lv_${i}`)) $(`sp_lv_${i}`).oninput = () => (s.level = clampInt($(`sp_lv_${i}`).value || 0, 0, 9));
-      if ($(`sp_name_${i}`)) $(`sp_name_${i}`).oninput = () => (s.name = $(`sp_name_${i}`).value);
-      if ($(`sp_sa_${i}`)) $(`sp_sa_${i}`).oninput = () => (s.saveAtk = $(`sp_sa_${i}`).value);
-      if ($(`sp_time_${i}`)) $(`sp_time_${i}`).oninput = () => (s.time = $(`sp_time_${i}`).value);
-      if ($(`sp_range_${i}`)) $(`sp_range_${i}`).oninput = () => (s.range = $(`sp_range_${i}`).value);
-      if ($(`sp_comp_${i}`)) $(`sp_comp_${i}`).oninput = () => (s.comp = $(`sp_comp_${i}`).value);
-      if ($(`sp_dur_${i}`)) $(`sp_dur_${i}`).oninput = () => (s.duration = $(`sp_dur_${i}`).value);
-      if ($(`sp_notes_${i}`)) $(`sp_notes_${i}`).oninput = () => (s.notes = $(`sp_notes_${i}`).value);
-      if ($(`sp_del_${i}`))
-        $(`sp_del_${i}`).onclick = () => {
+      const get = (id) => $(id + "_" + i);
+      const p = get("sp_p");
+      const lv = get("sp_lv");
+      const name = get("sp_name");
+      const sa = get("sp_sa");
+      const time = get("sp_time");
+      const range = get("sp_range");
+      const comp = get("sp_comp");
+      const dur = get("sp_dur");
+      const notes = get("sp_notes");
+      const del = get("sp_del");
+
+      if (p) p.onchange = () => (s.prep = !!p.checked);
+      if (lv) lv.oninput = () => (s.level = clampInt(lv.value || 0, 0, 9));
+      if (name) name.oninput = () => (s.name = name.value);
+      if (sa) sa.oninput = () => (s.saveAtk = sa.value);
+      if (time) time.oninput = () => (s.time = time.value);
+      if (range) range.oninput = () => (s.range = range.value);
+      if (comp) comp.oninput = () => (s.comp = comp.value);
+      if (dur) dur.oninput = () => (s.duration = dur.value);
+      if (notes) notes.oninput = () => (s.notes = notes.value);
+      if (del)
+        del.onclick = () => {
           SPELLS.splice(i, 1);
           renderSpells();
         };
     });
   }
 
+  // ====== Coins / Equipment / Features / Notes remainder ======
   function renderCoins() {
     const box = $("coinsBox");
     if (!box) return;
@@ -1150,29 +1353,30 @@
     }
 
     listBox.innerHTML = "";
-    editBox.innerHTML = CHAR.equipment
-      .map((line, i) => {
-        const v = String(line || "").replaceAll('"', '&quot;');
-        return `
-          <div style="display:flex;gap:10px;margin:8px 0;">
-            <input id="equip_${i}" type="text" value="${v}" style="flex:1;" />
-            <button type="button" class="ch-btn danger" id="equip_del_${i}" style="padding:6px 10px;">X</button>
-          </div>
-        `;
-      })
-      .join("");
+    editBox.innerHTML = CHAR.equipment.map((line, i) => {
+      const v = String(line || "").replaceAll('"', "&quot;");
+      return `
+        <div style="display:flex;gap:10px;margin:8px 0;">
+          <input id="equip_${i}" type="text" value="${v}" style="flex:1;" />
+          <button type="button" class="ch-btn danger" id="equip_del_${i}" style="padding:6px 10px;">X</button>
+        </div>
+      `;
+    }).join("");
 
     CHAR.equipment.forEach((_, i) => {
-      if ($("equip_" + i)) $("equip_" + i).oninput = () => (CHAR.equipment[i] = $("equip_" + i).value);
-      if ($("equip_del_" + i))
-        $("equip_del_" + i).onclick = () => {
+      const inp = $("equip_" + i);
+      const del = $("equip_del_" + i);
+      if (inp) inp.oninput = () => (CHAR.equipment[i] = inp.value);
+      if (del)
+        del.onclick = () => {
           CHAR.equipment.splice(i, 1);
           renderEquipment();
         };
     });
 
-    if ($("addEquipLineBtn"))
-      $("addEquipLineBtn").onclick = () => {
+    const add = $("addEquipLineBtn");
+    if (add)
+      add.onclick = () => {
         CHAR.equipment.push("");
         renderEquipment();
       };
@@ -1193,29 +1397,30 @@
     }
 
     listBox.innerHTML = "";
-    editBox.innerHTML = FEATURES
-      .map((line, i) => {
-        const v = String(line || "").replaceAll('"', '&quot;');
-        return `
-          <div style="display:flex;gap:10px;margin:8px 0;">
-            <input id="feat_${i}" type="text" value="${v}" style="flex:1;" />
-            <button type="button" class="ch-btn danger" id="feat_del_${i}" style="padding:6px 10px;">X</button>
-          </div>
-        `;
-      })
-      .join("");
+    editBox.innerHTML = FEATURES.map((line, i) => {
+      const v = String(line || "").replaceAll('"', "&quot;");
+      return `
+        <div style="display:flex;gap:10px;margin:8px 0;">
+          <input id="feat_${i}" type="text" value="${v}" style="flex:1;" />
+          <button type="button" class="ch-btn danger" id="feat_del_${i}" style="padding:6px 10px;">X</button>
+        </div>
+      `;
+    }).join("");
 
     FEATURES.forEach((_, i) => {
-      if ($(`feat_${i}`)) $(`feat_${i}`).oninput = () => (FEATURES[i] = $(`feat_${i}`).value);
-      if ($(`feat_del_${i}`))
-        $(`feat_del_${i}`).onclick = () => {
+      const inp = $("feat_" + i);
+      const del = $("feat_del_" + i);
+      if (inp) inp.oninput = () => (FEATURES[i] = inp.value);
+      if (del)
+        del.onclick = () => {
           FEATURES.splice(i, 1);
           renderFeatures();
         };
     });
 
-    if ($("addFeatureBtn"))
-      $("addFeatureBtn").onclick = () => {
+    const add = $("addFeatureBtn");
+    if (add)
+      add.onclick = () => {
         FEATURES.push("");
         renderFeatures();
       };
@@ -1231,17 +1436,15 @@
     }
 
     box.innerHTML =
-      REM_NOTES
-        .map((line, i) => {
-          const v = String(line || "").replaceAll('"', '&quot;');
-          return `
+      REM_NOTES.map((line, i) => {
+        const v = String(line || "").replaceAll('"', "&quot;");
+        return `
           <div style="display:flex;gap:10px;margin:8px 0;">
             <input id="note_${i}" type="text" value="${v}" style="flex:1;" />
             <button type="button" class="ch-btn danger" id="note_del_${i}" style="padding:6px 10px;">X</button>
           </div>
         `;
-        })
-        .join("") +
+      }).join("") +
       `
         <div style="margin-top:10px;">
           <button type="button" class="ch-btn" id="note_add_btn">+ Thêm note</button>
@@ -1249,16 +1452,19 @@
       `;
 
     REM_NOTES.forEach((_, i) => {
-      if ($("note_" + i)) $("note_" + i).oninput = () => (REM_NOTES[i] = $("note_" + i).value);
-      if ($("note_del_" + i))
-        $("note_del_" + i).onclick = () => {
+      const inp = $("note_" + i);
+      const del = $("note_del_" + i);
+      if (inp) inp.oninput = () => (REM_NOTES[i] = inp.value);
+      if (del)
+        del.onclick = () => {
           REM_NOTES.splice(i, 1);
           renderNotesRemainder();
         };
     });
 
-    if ($("note_add_btn"))
-      $("note_add_btn").onclick = () => {
+    const add = $("note_add_btn");
+    if (add)
+      add.onclick = () => {
         REM_NOTES.push("");
         renderNotesRemainder();
       };
@@ -1268,21 +1474,27 @@
     if (!CHAR) return;
 
     updateComputed();
+
     renderHero();
     renderOverview();
     renderAbilities();
     renderSavesAndSkills();
+
     renderCombat();
     renderDefenses();
     renderAttacks();
+
+    renderSpellcastRow();
     renderSpells();
+
     renderCoins();
     renderEquipment();
     renderFeatures();
     renderNotesRemainder();
     renderModsBox();
 
-    const enableIds = [
+    // enable overview inputs
+    [
       "inp_name",
       "inp_race",
       "inp_class",
@@ -1290,11 +1502,11 @@
       "inp_alignment",
       "inp_background",
       "inp_description",
-    ];
-    enableIds.forEach((id) => {
+    ].forEach((id) => {
       if ($(id)) $(id).disabled = !EDIT;
     });
 
+    // computed passive: always disabled
     ["inp_pa_perception", "inp_pa_insight", "inp_pa_investigation"].forEach((id) => {
       if ($(id)) $(id).disabled = true;
     });
@@ -1306,7 +1518,11 @@
       if (!el) return;
       el.oninput = () => {
         CHAR[key] = el.value;
-        if (key === "name" || key === "race" || key === "class_name") renderHero();
+        if (key === "name" || key === "race" || key === "class_name") {
+          updateComputed();
+          renderHero();
+          renderSpellcastRow();
+        }
       };
     };
 
@@ -1317,20 +1533,21 @@
     bind("inp_background", "background");
     bind("inp_description", "description");
 
-    if ($("inp_level")) {
-      $("inp_level").oninput = () => {
-        CHAR.level = clampInt($("inp_level").value || 1, 1, 20);
+    const lv = $("inp_level");
+    if (lv) {
+      lv.oninput = () => {
+        CHAR.level = clampInt(lv.value || 1, 1, 20);
         updateComputed();
         renderHero();
         renderSavesAndSkills();
-        renderSpells();
         renderAttacks();
         renderCombat();
+        renderSpellcastRow();
       };
     }
   }
 
-  // ====== edit mode toggles ======
+  // ====== Edit mode ======
   function setEdit(on) {
     if (VIEW_PUBLIC && on) {
       toast("Bạn đang xem bản public — không thể chỉnh sửa", true);
@@ -1351,6 +1568,7 @@
       COINS: JSON.parse(JSON.stringify(COINS)),
       DEF: JSON.parse(JSON.stringify(DEF)),
       HP_MODE,
+      SPELLCAST: JSON.parse(JSON.stringify(SPELLCAST)),
       ATTACKS: JSON.parse(JSON.stringify(ATTACKS)),
       SPELLS: JSON.parse(JSON.stringify(SPELLS)),
       FEATURES: JSON.parse(JSON.stringify(FEATURES)),
@@ -1364,6 +1582,7 @@
     COINS = JSON.parse(JSON.stringify(ORIG_SNAPSHOT.COINS));
     DEF = JSON.parse(JSON.stringify(ORIG_SNAPSHOT.DEF));
     HP_MODE = ORIG_SNAPSHOT.HP_MODE;
+    SPELLCAST = JSON.parse(JSON.stringify(ORIG_SNAPSHOT.SPELLCAST));
     ATTACKS = JSON.parse(JSON.stringify(ORIG_SNAPSHOT.ATTACKS));
     SPELLS = JSON.parse(JSON.stringify(ORIG_SNAPSHOT.SPELLS));
     FEATURES = JSON.parse(JSON.stringify(ORIG_SNAPSHOT.FEATURES));
@@ -1377,6 +1596,7 @@
     }
 
     updateComputed();
+
     const notes = buildNotesForSave();
 
     CHAR.equipment = safeArr(CHAR.equipment)
@@ -1409,7 +1629,7 @@
       },
 
       hp: clampInt(CHAR.hp || 10, 1, 999),
-      ac: clampInt(CHAR.ac || 10, 1, 30),
+      ac: clampInt(CHAR.ac || 10, 0, 40),
       speed: String(CHAR.speed || "30 ft"),
 
       skills: safeArr(CHAR.skills),

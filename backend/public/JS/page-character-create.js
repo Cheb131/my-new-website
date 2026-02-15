@@ -1,46 +1,28 @@
-// public/JS/character.js
+// public/JS/page-character-create.js
 (() => {
   "use strict";
 
   const $ = (id) => document.getElementById(id);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  // ===== utils =====
-  function esc(s) {
-    return String(s ?? "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[m]));
+  // ===== helpers =====
+  function num(v, fallback = 0) {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : fallback;
   }
 
-  function qs() {
-    return new URLSearchParams(location.search);
-  }
-
-  function getId() {
-    const id = qs().get("id");
-    return (id || "").trim();
-  }
-
-  function token() {
-    return localStorage.getItem("token") || "";
-  }
-
-  function fmtSigned(n) {
-    const x = Number(n) || 0;
+  function signed(n) {
+    const x = num(n, 0);
     return x >= 0 ? `+${x}` : String(x);
   }
 
   function modFromScore(score) {
-    const s = Number(score);
-    if (!Number.isFinite(s)) return 0;
+    const s = num(score, 10);
     return Math.floor((s - 10) / 2);
   }
 
   function profBonusFromLevel(level) {
-    const lv = Math.max(1, Math.min(20, Number(level) || 1));
+    const lv = Math.max(1, Math.min(20, num(level, 1)));
     if (lv <= 4) return 2;
     if (lv <= 8) return 3;
     if (lv <= 12) return 4;
@@ -48,37 +30,29 @@
     return 6;
   }
 
-  function showMsg(text, kind = "") {
-    const box = $("msgBox");
+  function toast(msg, isErr = true) {
+    const box = $("publishMsg");
     if (!box) return;
-    if (!text) {
-      box.style.display = "none";
-      box.className = "ch-msg";
-      box.textContent = "";
-      return;
+    box.textContent = msg || "";
+    box.style.color = isErr ? "#b91c1c" : "#065f46";
+  }
+
+  function ensureCore() {
+    if (window.Core?.apiFetch) return window.Core;
+
+    // fallback (trường hợp trang bị load thiếu core.js)
+    const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
+    async function apiFetch(path, options = {}) {
+      const headers = { ...(options.headers || {}) };
+      if (!headers["Content-Type"] && options.body) headers["Content-Type"] = "application/json";
+      const token = localStorage.getItem("token") || "";
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.message || `${res.status} ${res.statusText}`);
+      return data;
     }
-    box.style.display = "block";
-    box.className = `ch-msg ${kind}`.trim();
-    box.textContent = text;
-  }
-
-  function setText(id, value) {
-    const el = $(id);
-    if (!el) return;
-    el.textContent = String(value ?? "");
-  }
-
-  function setVal(id, value) {
-    const el = $(id);
-    if (!el) return;
-    el.value = value ?? "";
-  }
-
-  function setDisabled(ids, disabled) {
-    ids.forEach((id) => {
-      const el = $(id);
-      if (el) el.disabled = !!disabled;
-    });
+    return { API_BASE, apiFetch, getUser: () => null, getToken: () => localStorage.getItem("token") || "" };
   }
 
   // ===== constants =====
@@ -91,953 +65,683 @@
     ["cha", "CHA"],
   ];
 
-  const SAVE_NAMES = [
-    ["str", "Strength"],
-    ["dex", "Dexterity"],
-    ["con", "Constitution"],
-    ["int", "Intelligence"],
-    ["wis", "Wisdom"],
-    ["cha", "Charisma"],
-  ];
-
   const SKILLS = [
-    ["acrobatics", "Acrobatics", "dex"],
-    ["animalHandling", "Animal Handling", "wis"],
-    ["arcana", "Arcana", "int"],
-    ["athletics", "Athletics", "str"],
-    ["deception", "Deception", "cha"],
-    ["history", "History", "int"],
-    ["insight", "Insight", "wis"],
-    ["intimidation", "Intimidation", "cha"],
-    ["investigation", "Investigation", "int"],
-    ["medicine", "Medicine", "wis"],
-    ["nature", "Nature", "int"],
-    ["perception", "Perception", "wis"],
-    ["performance", "Performance", "cha"],
-    ["persuasion", "Persuasion", "cha"],
-    ["religion", "Religion", "int"],
-    ["sleightOfHand", "Sleight of Hand", "dex"],
-    ["stealth", "Stealth", "dex"],
-    ["survival", "Survival", "wis"],
+    ["acrobatics", "dex"],
+    ["animalHandling", "wis"],
+    ["arcana", "int"],
+    ["athletics", "str"],
+    ["deception", "cha"],
+    ["history", "int"],
+    ["insight", "wis"],
+    ["intimidation", "cha"],
+    ["investigation", "int"],
+    ["medicine", "wis"],
+    ["nature", "int"],
+    ["perception", "wis"],
+    ["performance", "cha"],
+    ["persuasion", "cha"],
+    ["religion", "int"],
+    ["sleightOfHand", "dex"],
+    ["stealth", "dex"],
+    ["survival", "wis"],
   ];
 
   // ===== state =====
-  let CHAR = null;           // fetched char object
-  let EDIT = false;          // edit mode
-  let PROF_SAVES = new Set();// save prof keys
-  let PROF_SKILLS = new Set();// skill keys
-  let EQUIP_LINES = [];      // editable list (strings)
-  let FEATURE_LINES = [];    // editable features (strings)
-  let NOTES_RAW = [];        // notes (strings)
+  const STATE = {
+    train: [],
+    proficiency: [],
+    action: [],
+    feature: [],
+    spells: [],
+    attacks: [],
+    manualInitiative: false,
+    manualPB: false,
+    manualPassives: { perception: false, insight: false, investigation: false },
+  };
 
-  // ===== parsing notes helpers =====
-  function parseMeta(notes) {
-    // from page-character-create.js:
-    // Meta: Initiative=...
-    // Meta: ProficiencyBonus=...
-    // Meta: SaveProficiencies=str,dex,...
-    // and spells/attacks lines.
-    const meta = {};
-    for (const line of notes) {
-      const m = /^Meta:\s*([^=]+)=(.*)$/.exec(line);
-      if (!m) continue;
-      meta[m[1].trim()] = m[2].trim();
-    }
-    return meta;
+  // ===== list editors =====
+  function listRow(value = "") {
+    const row = document.createElement("div");
+    row.className = "cc-listrow";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = value;
+    input.placeholder = "Nhập nội dung...";
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "cc-delbtn";
+    del.textContent = "✕";
+
+    row.appendChild(input);
+    row.appendChild(del);
+    return { row, input, del };
   }
 
-  function parseCoinsFromEquipment(equipment) {
-    // equipment line might be: "Coins: CP=0 SP=0 ..."
-    // or "CP=0 SP=0 ..."
-    const out = { cp: 0, sp: 0, ep: 0, gp: 0, pp: 0 };
-    const coinLine = (equipment || []).find((x) => /CP\s*=\s*\d+/i.test(String(x)));
-    if (!coinLine) return out;
+  function bindListEditor(key, listElId, addBtnId, clearBtnId) {
+    const listEl = $(listElId);
+    const addBtn = $(addBtnId);
+    const clearBtn = $(clearBtnId);
 
-    const s = String(coinLine);
-    const get = (k) => {
-      const m = new RegExp(`${k}\\s*=\\s*(\\d+)`, "i").exec(s);
-      return m ? Number(m[1]) : 0;
-    };
-    out.cp = get("CP");
-    out.sp = get("SP");
-    out.ep = get("EP");
-    out.gp = get("GP");
-    out.pp = get("PP");
-    return out;
-  }
+    if (!listEl || !addBtn || !clearBtn) return;
 
-  function stripPrefixEquip(line) {
-    // removes "EquipA:" / "EquipB:" / "Equip:" / etc
-    return String(line || "").replace(/^\s*Equip[A-Za-z]*\s*:\s*/i, "").trim();
-  }
+    function sync() {
+      const values = $$(".cc-listrow input[type='text']", listEl)
+        .map((i) => (i.value || "").trim())
+        .filter(Boolean);
+      STATE[key] = values;
 
-  function splitEquipment(equipment) {
-    const lines = (equipment || [])
-      .map((x) => String(x || "").trim())
-      .filter(Boolean);
-
-    // remove coins line(s) from equip list display/edit
-    const equipOnly = lines.filter((x) => !/CP\s*=\s*\d+/i.test(x));
-    return equipOnly.map(stripPrefixEquip);
-  }
-
-  function parseSpellsFromNotes(notes) {
-    // Spell: [P] Name | Level:1 | Save/Atk:.. | Time:.. | Range:.. | Comp:.. | Dur:.. | Page:- | Notes:..
-    const spells = [];
-    for (const line of notes) {
-      if (!/^Spell:\s*/.test(line)) continue;
-      const raw = line.replace(/^Spell:\s*/i, "").trim();
-      const parts = raw.split("|").map((x) => x.trim()).filter(Boolean);
-
-      // first part contains name, maybe with [P]
-      let first = parts[0] || "";
-      let prepared = false;
-      if (first.startsWith("[P]")) {
-        prepared = true;
-        first = first.replace(/^\[P\]\s*/i, "");
+      const hidden = $("featureListJson");
+      if (hidden) {
+        hidden.value = JSON.stringify({
+          train: STATE.train,
+          proficiency: STATE.proficiency,
+          action: STATE.action,
+          feature: STATE.feature,
+        });
       }
-      const name = first;
-
-      const obj = { prepared, level: "", saveAtk: "", time: "", range: "", comp: "", dur: "", notes: "" };
-
-      for (const p of parts.slice(1)) {
-        const mm = /^([^:]+)\s*:\s*(.*)$/.exec(p);
-        if (!mm) continue;
-        const k = mm[1].trim().toLowerCase();
-        const v = mm[2].trim();
-        if (k === "level") obj.level = v;
-        if (k === "save/atk" || k === "saveatk") obj.saveAtk = v;
-        if (k === "time") obj.time = v;
-        if (k === "range") obj.range = v;
-        if (k === "comp") obj.comp = v;
-        if (k === "dur" || k === "duration") obj.dur = v;
-        if (k === "notes") obj.notes = v;
-      }
-
-      obj.name = name;
-      spells.push(obj);
     }
-    return spells;
-  }
 
-  function parseAttacksFromNotes(notes) {
-    // Attack: NAME | HIT | DAMAGE/TYPE | NOTES
-    const out = [];
-    for (const line of notes) {
-      if (!/^Attack:\s*/.test(line)) continue;
-      out.push(line.replace(/^Attack:\s*/i, "").trim());
+    function add(value = "") {
+      const { row, input, del } = listRow(value);
+      input.addEventListener("input", sync);
+      del.addEventListener("click", () => {
+        row.remove();
+        sync();
+      });
+      listEl.appendChild(row);
+      sync();
     }
-    return out;
-  }
 
-  function filterNotesRemainder(notes) {
-    // remove Meta:, Spell:, Attack: and show rest
-    return (notes || []).filter((x) => {
-      const s = String(x || "");
-      if (/^Meta:\s*/i.test(s)) return false;
-      if (/^Spell:\s*/i.test(s)) return false;
-      if (/^Attack:\s*/i.test(s)) return false;
-      return s.trim().length > 0;
+    addBtn.addEventListener("click", () => add(""));
+    clearBtn.addEventListener("click", () => {
+      listEl.innerHTML = "";
+      sync();
     });
+
+    // default 1 row cho dễ dùng
+    if (listEl.children.length === 0) add("");
   }
 
-  // ===== render chips =====
-  function renderChips(id, arr) {
-    const box = $(id);
-    if (!box) return;
-    box.innerHTML = "";
-    const a = (arr || []).map((x) => String(x || "").trim()).filter(Boolean);
-    if (!a.length) {
-      box.innerHTML = `<span class="ch-chip" style="opacity:.7;">—</span>`;
-      return;
-    }
-    for (const x of a) {
-      const el = document.createElement("span");
-      el.className = "ch-chip";
-      el.textContent = x;
-      box.appendChild(el);
-    }
+  // ===== spells editor =====
+  function writeSpellsHidden() {
+    const hidden = $("spellsJson");
+    if (hidden) hidden.value = JSON.stringify(STATE.spells);
   }
 
-  // ===== abilities UI =====
-  function buildAbilitiesGrid() {
-    const grid = $("abilitiesGrid");
-    if (!grid) return;
-    grid.innerHTML = "";
-
-    for (const [k, label] of ABILS) {
-      const card = document.createElement("div");
-      card.className = "ab";
-      card.innerHTML = `
-        <div class="ab__k">${label}</div>
-        <div class="ab__score" id="ab_score_${k}">10</div>
-        <div class="ab__mod" id="ab_mod_${k}">+0</div>
-        <input id="ab_inp_${k}" type="number" min="1" max="30" disabled />
-      `;
-      grid.appendChild(card);
-    }
-  }
-
-  function buildSaveList() {
-    const box = $("savingList");
-    if (!box) return;
-    box.innerHTML = "";
-
-    for (const [k, label] of SAVE_NAMES) {
-      const row = document.createElement("div");
-      row.className = "li";
-      row.innerHTML = `
-        <div class="li__left">
-          <label class="li__chk">
-            <input type="checkbox" id="save_prof_${k}" />
-            Prof
-          </label>
-          <div class="li__k">${esc(label)}</div>
-        </div>
-        <div class="li__v" id="save_val_${k}">+0</div>
-      `;
-      box.appendChild(row);
-    }
-  }
-
-  function buildSkillsList() {
-    const box = $("skillsList");
-    if (!box) return;
-    box.innerHTML = "";
-
-    for (const [key, label] of SKILLS) {
-      const row = document.createElement("div");
-      row.className = "li";
-      row.innerHTML = `
-        <div class="li__left">
-          <label class="li__chk">
-            <input type="checkbox" id="skill_prof_${key}" />
-            Prof
-          </label>
-          <div class="li__k">${esc(label)}</div>
-        </div>
-        <div class="li__v" id="skill_val_${key}">+0</div>
-      `;
-      box.appendChild(row);
-    }
-  }
-
-  function setProfCheckboxesDisabled(disabled) {
-    // disables/enables prof checkboxes in lists
-    for (const [k] of SAVE_NAMES) {
-      const cb = $(`save_prof_${k}`);
-      if (cb) cb.disabled = !!disabled;
-    }
-    for (const [key] of SKILLS) {
-      const cb = $(`skill_prof_${key}`);
-      if (cb) cb.disabled = !!disabled;
-    }
-  }
-
-  // ===== compute derived numbers =====
-  function getLevel() {
-    const lv = Number($("inp_level")?.value ?? CHAR?.level ?? 1);
-    return Number.isFinite(lv) ? Math.max(1, Math.min(20, lv)) : 1;
-  }
-
-  function getStats() {
-    const s = {};
-    for (const [k] of ABILS) {
-      const v = Number($(`ab_inp_${k}`)?.value ?? CHAR?.stats?.[k] ?? 10);
-      s[k] = Number.isFinite(v) ? v : 10;
-    }
-    return s;
-  }
-
-  function recalcAll() {
-    if (!CHAR) return;
-
-    const lv = getLevel();
-    const pb = profBonusFromLevel(lv);
-    setText("ch_pb", fmtSigned(pb));
-    setText("q_pb", fmtSigned(pb));
-
-    const stats = getStats();
-
-    // abilities cards + quick mods
-    const modsBox = $("modsBox");
-    if (modsBox) modsBox.innerHTML = "";
-
-    for (const [k, label] of ABILS) {
-      const score = stats[k] ?? 10;
-      const mod = modFromScore(score);
-
-      setText(`ab_score_${k}`, score);
-      setText(`ab_mod_${k}`, `MOD ${fmtSigned(mod)}`);
-
-      // quick mods
-      if (modsBox) {
-        const m = document.createElement("div");
-        m.className = "ch-mod";
-        m.innerHTML = `<div class="ch-mod__k">${label}</div><div class="ch-mod__v">${fmtSigned(mod)}</div>`;
-        modsBox.appendChild(m);
-      }
-    }
-
-    // initiative = DEX mod (simple)
-    const init = modFromScore(stats.dex);
-    setText("ch_init", fmtSigned(init));
-    setText("combatInit", fmtSigned(init));
-
-    // passive perception from input or derive (10 + wis mod + prof if proficient in perception)
-    const paPer = Number($("inp_pa_perception")?.value ?? 0);
-    const computedPP = Number.isFinite(paPer) && paPer > 0
-      ? paPer
-      : (10 + modFromScore(stats.wis) + (PROF_SKILLS.has("perception") ? pb : 0));
-    setText("ch_pp", String(computedPP));
-
-    // saving throws
-    for (const [k] of SAVE_NAMES) {
-      const base = modFromScore(stats[k]);
-      const total = base + (PROF_SAVES.has(k) ? pb : 0);
-      const el = $(`save_val_${k}`);
-      if (el) el.textContent = fmtSigned(total);
-    }
-
-    // skills
-    for (const [key, _label, abilKey] of SKILLS) {
-      const base = modFromScore(stats[abilKey]);
-      const total = base + (PROF_SKILLS.has(key) ? pb : 0);
-      const el = $(`skill_val_${key}`);
-      if (el) el.textContent = fmtSigned(total);
-    }
-
-    // quick from combat inputs
-    const ac = Number($("inp_ac")?.value ?? CHAR.ac ?? 10);
-    const hp = Number($("inp_hp")?.value ?? CHAR.hp ?? 10);
-    const speed = String($("inp_speed")?.value ?? CHAR.speed ?? "30 ft");
-    setText("q_ac", Number.isFinite(ac) ? String(ac) : "—");
-    setText("q_hp", Number.isFinite(hp) ? String(hp) : "—");
-    setText("q_speed", speed || "—");
-  }
-
-  // ===== render tables/notes =====
-  function renderSpells() {
-    const tbody = $("spellsTbody");
+  function readSpellsFromDOM() {
+    const tbody = $("spellTbody");
     if (!tbody) return;
-    tbody.innerHTML = "";
 
-    const spells = parseSpellsFromNotes(NOTES_RAW);
-    if (!spells.length) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="9" style="opacity:.7; padding:14px;">—</td>`;
-      tbody.appendChild(tr);
-      return;
-    }
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    STATE.spells = rows
+      .map((tr) => {
+        const get = (sel) => tr.querySelector(sel);
+        return {
+          prepared: !!get("input[data-k='prepared']")?.checked,
+          level: (get("input[data-k='level']")?.value || "").trim(),
+          name: (get("input[data-k='name']")?.value || "").trim(),
+          saveAtk: (get("input[data-k='saveAtk']")?.value || "").trim(),
+          time: (get("input[data-k='time']")?.value || "").trim(),
+          range: (get("input[data-k='range']")?.value || "").trim(),
+          comp: (get("input[data-k='comp']")?.value || "").trim(),
+          duration: (get("input[data-k='duration']")?.value || "").trim(),
+          notes: (get("input[data-k='notes']")?.value || "").trim(),
+        };
+      })
+      .filter((x) => x.name);
 
-    for (const sp of spells) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="t-xs">${sp.prepared ? "✓" : ""}</td>
-        <td class="t-xs">${esc(sp.level || "")}</td>
-        <td>${esc(sp.name || "")}</td>
-        <td class="t-sm">${esc(sp.saveAtk || "")}</td>
-        <td class="t-sm">${esc(sp.time || "")}</td>
-        <td class="t-sm">${esc(sp.range || "")}</td>
-        <td class="t-sm">${esc(sp.comp || "")}</td>
-        <td class="t-sm">${esc(sp.dur || "")}</td>
-        <td>${esc(sp.notes || "")}</td>
-      `;
-      tbody.appendChild(tr);
-    }
+    writeSpellsHidden();
   }
 
-  function renderAttacks() {
-    const box = $("attacksBox");
-    if (!box) return;
-    box.innerHTML = "";
+  function spellRow(data = {}) {
+    const tr = document.createElement("tr");
 
-    const attacks = parseAttacksFromNotes(NOTES_RAW);
-    if (!attacks.length) {
-      box.innerHTML = `<div class="note" style="opacity:.7;">—</div>`;
-      return;
-    }
-
-    for (const a of attacks) {
-      const div = document.createElement("div");
-      div.className = "note";
-      div.textContent = a;
-      box.appendChild(div);
-    }
-  }
-
-  function renderCoinsAndEquip() {
-    const coins = parseCoinsFromEquipment(CHAR.equipment || []);
-    const coinsBox = $("coinsBox");
-    if (coinsBox) {
-      coinsBox.innerHTML = `
-        <span class="coin">CP ${coins.cp}</span>
-        <span class="coin">SP ${coins.sp}</span>
-        <span class="coin">EP ${coins.ep}</span>
-        <span class="coin">GP ${coins.gp}</span>
-        <span class="coin">PP ${coins.pp}</span>
-      `;
-    }
-
-    EQUIP_LINES = splitEquipment(CHAR.equipment || []);
-    renderEquipList();
-  }
-
-  function renderEquipList() {
-    const list = $("equipList");
-    if (!list) return;
-    list.innerHTML = "";
-
-    if (!EQUIP_LINES.length) {
-      list.innerHTML = `<div class="eqline" style="opacity:.7;">—</div>`;
-      return;
-    }
-
-    for (const line of EQUIP_LINES) {
-      const div = document.createElement("div");
-      div.className = "eqline";
-      div.textContent = line;
-      list.appendChild(div);
-    }
-  }
-
-  function renderEquipEditor() {
-    const box = $("equipEditBox");
-    if (!box) return;
-    box.innerHTML = "";
-
-    for (let i = 0; i < EQUIP_LINES.length; i++) {
-      const row = document.createElement("div");
-      row.className = "eqedit-row";
-      row.innerHTML = `
-        <input type="text" data-idx="${i}" value="${esc(EQUIP_LINES[i])}" />
-        <button type="button" class="eqedit-del" data-idx="${i}">Xoá</button>
-      `;
-      box.appendChild(row);
-    }
-
-    // events
-    box.querySelectorAll("input[data-idx]").forEach((inp) => {
-      inp.addEventListener("input", (e) => {
-        const t = e.target;
-        const idx = Number(t.dataset.idx);
-        EQUIP_LINES[idx] = String(t.value || "");
-      });
-    });
-
-    box.querySelectorAll("button.eqedit-del").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const idx = Number(btn.dataset.idx);
-        EQUIP_LINES.splice(idx, 1);
-        renderEquipEditor();
-        renderEquipList();
-      });
-    });
-  }
-
-  function renderFeatures() {
-    FEATURE_LINES = Array.isArray(CHAR.feature_lines) ? CHAR.feature_lines.slice() : [];
-    const list = $("featuresList");
-    if (list) {
-      list.innerHTML = "";
-      if (!FEATURE_LINES.length) {
-        list.innerHTML = `<div class="note" style="opacity:.7;">—</div>`;
-      } else {
-        for (const f of FEATURE_LINES) {
-          const div = document.createElement("div");
-          div.className = "note";
-          div.textContent = f;
-          list.appendChild(div);
-        }
-      }
-    }
-
-    renderFeaturesEditor();
-  }
-
-  function renderFeaturesEditor() {
-    const box = $("featuresEditBox");
-    if (!box) return;
-    box.innerHTML = "";
-
-    if (!EDIT) return;
-
-    for (let i = 0; i < FEATURE_LINES.length; i++) {
-      const row = document.createElement("div");
-      row.className = "eqedit-row";
-      row.innerHTML = `
-        <input type="text" data-idx="${i}" value="${esc(FEATURE_LINES[i])}" />
-        <button type="button" class="eqedit-del" data-idx="${i}">Xoá</button>
-      `;
-      box.appendChild(row);
-    }
-
-    box.querySelectorAll("input[data-idx]").forEach((inp) => {
-      inp.addEventListener("input", (e) => {
-        const t = e.target;
-        const idx = Number(t.dataset.idx);
-        FEATURE_LINES[idx] = String(t.value || "");
-      });
-    });
-
-    box.querySelectorAll("button.eqedit-del").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const idx = Number(btn.dataset.idx);
-        FEATURE_LINES.splice(idx, 1);
-        renderFeaturesEditor();
-        renderFeatures();
-      });
-    });
-  }
-
-  function renderNotesRemainder() {
-    const list = $("notesList");
-    if (!list) return;
-    list.innerHTML = "";
-
-    const rest = filterNotesRemainder(NOTES_RAW);
-    if (!rest.length) {
-      list.innerHTML = `<div class="note" style="opacity:.7;">—</div>`;
-      return;
-    }
-    for (const x of rest) {
-      const div = document.createElement("div");
-      div.className = "note";
-      div.textContent = x;
-      list.appendChild(div);
-    }
-  }
-
-  // ===== top meta render =====
-  function renderHero() {
-    const name = CHAR?.name || "Unknown";
-    const race = CHAR?.race || "—";
-    const cls = CHAR?.class_name || "—";
-    const lv = CHAR?.level ?? 1;
-
-    setText("ch_name", name);
-    setText("ch_subline", `${race} • ${cls} • Level ${lv}`);
-
-    // badge
-    const pub = !!CHAR?.is_public;
-    const badge = $("ch_publicBadge");
-    if (badge) {
-      badge.textContent = pub ? "PUBLIC" : "PRIVATE";
-      badge.style.opacity = pub ? "1" : ".75";
-    }
-
-    // tags
-    const tags = $("ch_tags");
-    if (tags) {
-      tags.innerHTML = "";
-      const items = [
-        CHAR?.alignment ? `Alignment: ${CHAR.alignment}` : "",
-        CHAR?.background ? `Background: ${CHAR.background}` : "",
-      ].filter(Boolean);
-
-      if (!items.length) {
-        const t = document.createElement("span");
-        t.className = "ch-tag";
-        t.style.opacity = ".75";
-        t.textContent = "—";
-        tags.appendChild(t);
-      } else {
-        for (const x of items) {
-          const t = document.createElement("span");
-          t.className = "ch-tag";
-          t.textContent = x;
-          tags.appendChild(t);
-        }
-      }
-    }
-  }
-
-  // ===== set inputs from char =====
-  function fillInputs() {
-    setVal("inp_name", CHAR?.name || "");
-    setVal("inp_race", CHAR?.race || "");
-    setVal("inp_class", CHAR?.class_name || "");
-    setVal("inp_level", CHAR?.level ?? 1);
-    setVal("inp_alignment", CHAR?.alignment || "");
-    setVal("inp_background", CHAR?.background || "");
-    setVal("inp_description", CHAR?.description || "");
-
-    // senses
-    setVal("inp_pa_perception", CHAR?.senses?.passivePerception ?? 0);
-    setVal("inp_pa_insight", CHAR?.senses?.passiveInsight ?? 0);
-    setVal("inp_pa_investigation", CHAR?.senses?.passiveInvestigation ?? 0);
-
-    // combat
-    setVal("inp_ac", CHAR?.ac ?? 10);
-    setVal("inp_hp", CHAR?.hp ?? 10);
-    setVal("inp_speed", CHAR?.speed ?? "30 ft");
-
-    // abilities inputs
-    for (const [k] of ABILS) {
-      setVal(`ab_inp_${k}`, CHAR?.stats?.[k] ?? 10);
-    }
-  }
-
-  // ===== prof from db =====
-  function initProficiencies() {
-    // From DB you saved:
-    // - CHAR.skills[] => names ("Perception", "Acrobatics", ...)
-    // - Meta: SaveProficiencies=str,dex,...
-    // We map them to keys in our UI
-    PROF_SKILLS = new Set();
-    const skillNames = Array.isArray(CHAR?.skills) ? CHAR.skills : [];
-    const nameToKey = new Map(SKILLS.map(([key, label]) => [label.toLowerCase(), key]));
-    for (const s of skillNames) {
-      const k = nameToKey.get(String(s).toLowerCase().trim());
-      if (k) PROF_SKILLS.add(k);
-    }
-
-    PROF_SAVES = new Set();
-    const meta = parseMeta(NOTES_RAW);
-    if (meta.SaveProficiencies) {
-      meta.SaveProficiencies.split(",").map((x) => x.trim().toLowerCase()).filter(Boolean).forEach((k) => PROF_SAVES.add(k));
-    }
-
-    // set checkboxes states
-    for (const [k] of SAVE_NAMES) {
-      const cb = $(`save_prof_${k}`);
-      if (cb) cb.checked = PROF_SAVES.has(k);
-    }
-    for (const [key] of SKILLS) {
-      const cb = $(`skill_prof_${key}`);
-      if (cb) cb.checked = PROF_SKILLS.has(key);
-    }
-  }
-
-  // ===== edit mode =====
-  function enterEdit() {
-    EDIT = true;
-
-    $("editBtn").style.display = "none";
-    $("saveBtn").style.display = "inline-flex";
-    $("cancelBtn").style.display = "inline-flex";
-
-    // enable editable inputs
-    setDisabled([
-      "inp_name","inp_race","inp_class","inp_level","inp_alignment","inp_background","inp_description",
-      "inp_pa_perception","inp_pa_insight","inp_pa_investigation",
-      "inp_ac","inp_hp","inp_speed",
-      "ab_inp_str","ab_inp_dex","ab_inp_con","ab_inp_int","ab_inp_wis","ab_inp_cha",
-    ], false);
-
-    setProfCheckboxesDisabled(false);
-
-    // show equip editor
-    $("equipEditBox").classList.add("is-on");
-    $("equipActions").style.display = "flex";
-    renderEquipEditor();
-
-    // show feature editor
-    $("featureActions").style.display = "flex";
-    renderFeaturesEditor();
-
-    showMsg("Đang ở chế độ chỉnh sửa. Tick prof, sửa thông tin rồi bấm Lưu.", "");
-  }
-
-  function exitEdit(reset = false) {
-    EDIT = false;
-
-    $("editBtn").style.display = "inline-flex";
-    $("saveBtn").style.display = "none";
-    $("cancelBtn").style.display = "none";
-
-    setDisabled([
-      "inp_name","inp_race","inp_class","inp_level","inp_alignment","inp_background","inp_description",
-      "inp_pa_perception","inp_pa_insight","inp_pa_investigation",
-      "inp_ac","inp_hp","inp_speed",
-      "ab_inp_str","ab_inp_dex","ab_inp_con","ab_inp_int","ab_inp_wis","ab_inp_cha",
-    ], true);
-
-    setProfCheckboxesDisabled(true);
-
-    $("equipEditBox").classList.remove("is-on");
-    $("equipActions").style.display = "none";
-
-    $("featureActions").style.display = "none";
-    const fedit = $("featuresEditBox");
-    if (fedit) fedit.innerHTML = "";
-
-    if (reset) {
-      // reset UI back to CHAR
-      fillInputs();
-      initProficiencies();
-      renderCoinsAndEquip();
-      renderFeatures();
-      recalcAll();
-    }
-
-    showMsg("", "");
-  }
-
-  // ===== payload build =====
-  function collectProfFromUI() {
-    const saves = new Set();
-    for (const [k] of SAVE_NAMES) {
-      const cb = $(`save_prof_${k}`);
-      if (cb && cb.checked) saves.add(k);
-    }
-
-    const skills = [];
-    // keep DB's skills as labels (capitalized)
-    for (const [key, label] of SKILLS) {
-      const cb = $(`skill_prof_${key}`);
-      if (cb && cb.checked) skills.push(label);
-    }
-
-    return { saves, skills };
-  }
-
-  function buildUpdatedNotes() {
-    // keep old notes, but update Meta: SaveProficiencies and allow other lines stay
-    const { saves } = collectProfFromUI();
-    const keep = (NOTES_RAW || []).filter((x) => !/^Meta:\s*SaveProficiencies=/i.test(String(x || "")));
-
-    keep.push(`Meta: SaveProficiencies=${Array.from(saves).join(",")}`);
-    return keep;
-  }
-
-  function buildUpdatedEquipment() {
-    // keep coins line from CHAR.equipment and replace equipment lines with EQUIP_LINES
-    const original = Array.isArray(CHAR.equipment) ? CHAR.equipment.map((x) => String(x || "").trim()).filter(Boolean) : [];
-    const coinLine = original.find((x) => /CP\s*=\s*\d+/i.test(x));
-    const out = [];
-    if (coinLine) out.push(coinLine);
-    EQUIP_LINES.map((x) => String(x || "").trim()).filter(Boolean).forEach((x) => out.push(x));
-    return out;
-  }
-
-  function buildPayload() {
-    const level = Number($("inp_level")?.value ?? CHAR.level ?? 1);
-    const stats = {};
-    for (const [k] of ABILS) {
-      const v = Number($(`ab_inp_${k}`)?.value ?? CHAR.stats?.[k] ?? 10);
-      stats[k] = Number.isFinite(v) ? v : (CHAR.stats?.[k] ?? 10);
-    }
-
-    const { skills } = collectProfFromUI();
-
-    return {
-      name: String($("inp_name")?.value ?? CHAR.name ?? "").trim(),
-      race: String($("inp_race")?.value ?? CHAR.race ?? "").trim(),
-      class_name: String($("inp_class")?.value ?? CHAR.class_name ?? "").trim(),
-      level: Number.isFinite(level) ? Math.max(1, Math.min(20, level)) : (CHAR.level ?? 1),
-      alignment: String($("inp_alignment")?.value ?? CHAR.alignment ?? "").trim(),
-      background: String($("inp_background")?.value ?? CHAR.background ?? "").trim(),
-      description: String($("inp_description")?.value ?? CHAR.description ?? "").trim(),
-
-      stats,
-      ac: Number($("inp_ac")?.value ?? CHAR.ac ?? 10) || 0,
-      hp: Number($("inp_hp")?.value ?? CHAR.hp ?? 10) || 0,
-      speed: String($("inp_speed")?.value ?? CHAR.speed ?? "30 ft").trim(),
-
-      senses: {
-        passivePerception: Number($("inp_pa_perception")?.value ?? CHAR.senses?.passivePerception ?? 0) || 0,
-        passiveInsight: Number($("inp_pa_insight")?.value ?? CHAR.senses?.passiveInsight ?? 0) || 0,
-        passiveInvestigation: Number($("inp_pa_investigation")?.value ?? CHAR.senses?.passiveInvestigation ?? 0) || 0,
-      },
-
-      skills,
-      equipment: buildUpdatedEquipment(),
-      feature_lines: FEATURE_LINES.map((x) => String(x || "").trim()).filter(Boolean),
-      notes: buildUpdatedNotes(),
-
-      // keep defenses as-is (you can add UI later)
-      resistances: Array.isArray(CHAR.resistances) ? CHAR.resistances : [],
-      immunities: Array.isArray(CHAR.immunities) ? CHAR.immunities : [],
-      vulnerabilities: Array.isArray(CHAR.vulnerabilities) ? CHAR.vulnerabilities : [],
-      is_public: !!CHAR.is_public,
+    const mkTd = (child, cls = "") => {
+      const td = document.createElement("td");
+      if (cls) td.className = cls;
+      td.appendChild(child);
+      return td;
     };
-  }
 
-  // ===== API =====
-  async function fetchPublic(id) {
-    const res = await fetch(`/api/characters/public/${encodeURIComponent(id)}`);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-    return data;
-  }
+    const mkText = (k, val = "", ph = "") => {
+      const i = document.createElement("input");
+      i.type = "text";
+      i.dataset.k = k;
+      i.value = val;
+      if (ph) i.placeholder = ph;
+      i.addEventListener("input", readSpellsFromDOM);
+      return i;
+    };
 
-  async function fetchPrivate(id) {
-    const t = token();
-    if (!t) throw new Error("Bạn cần đăng nhập để xem bản private.");
-    const res = await fetch(`/api/characters/${encodeURIComponent(id)}`, {
-      headers: { Authorization: `Bearer ${t}` },
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-    return data;
-  }
+    const prep = document.createElement("input");
+    prep.type = "checkbox";
+    prep.dataset.k = "prepared";
+    prep.checked = !!data.prepared;
+    prep.addEventListener("change", readSpellsFromDOM);
 
-  async function updateCharacter(id, payload) {
-    const t = token();
-    if (!t) throw new Error("Bạn cần đăng nhập để chỉnh sửa.");
-    const res = await fetch(`/api/characters/${encodeURIComponent(id)}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${t}`,
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
-    return data;
-  }
-
-  // ===== UI wiring =====
-  function wireTabs() {
-    const tabs = document.querySelectorAll(".ch-tab");
-    tabs.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        tabs.forEach((b) => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-
-        const tab = btn.dataset.tab;
-        document.querySelectorAll(".ch-panel").forEach((p) => p.classList.remove("ch-panel--active"));
-        document.querySelector(`.ch-panel[data-panel="${tab}"]`)?.classList.add("ch-panel--active");
-      });
-    });
-  }
-
-  function wireRecalc() {
-    // when editing stats/level/senses changes, recalc
-    ["inp_level","inp_pa_perception","inp_pa_insight","inp_pa_investigation"].forEach((id) => {
-      $(id)?.addEventListener("input", recalcAll);
-    });
-    ["ab_inp_str","ab_inp_dex","ab_inp_con","ab_inp_int","ab_inp_wis","ab_inp_cha"].forEach((id) => {
-      $(id)?.addEventListener("input", recalcAll);
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "cc-delbtn";
+    del.textContent = "✕";
+    del.addEventListener("click", () => {
+      tr.remove();
+      readSpellsFromDOM();
     });
 
-    // save/skill prof checkboxes
-    for (const [k] of SAVE_NAMES) {
-      $(`save_prof_${k}`)?.addEventListener("change", () => {
-        const cb = $(`save_prof_${k}`);
-        if (cb?.checked) PROF_SAVES.add(k);
-        else PROF_SAVES.delete(k);
-        recalcAll();
-      });
+    tr.appendChild(mkTd(prep, "cc-center"));
+    tr.appendChild(mkTd(mkText("level", data.level ?? "", "0"), "cc-center"));
+    tr.appendChild(mkTd(mkText("name", data.name ?? "", "Spell name")));
+    tr.appendChild(mkTd(mkText("saveAtk", data.saveAtk ?? "", "DEX save / +5")));
+    tr.appendChild(mkTd(mkText("time", data.time ?? "", "1A")));
+    tr.appendChild(mkTd(mkText("range", data.range ?? "", "60 ft")));
+    tr.appendChild(mkTd(mkText("comp", data.comp ?? "", "V,S,M")));
+    tr.appendChild(mkTd(mkText("duration", data.duration ?? "", "Instant")));
+    tr.appendChild(mkTd(mkText("notes", data.notes ?? "", "...")));
+    tr.appendChild(mkTd(del, "cc-center"));
+
+    return tr;
+  }
+
+  function bindSpells() {
+    const tbody = $("spellTbody");
+    const addSpell = $("addSpellRowBtn");
+    const addCantrip = $("addCantripRowBtn");
+    const clear = $("clearSpellsBtn");
+
+    if (!tbody || !addSpell || !addCantrip || !clear) return;
+
+    function addRow(level = "1") {
+      tbody.appendChild(spellRow({ level }));
+      readSpellsFromDOM();
     }
-    for (const [key] of SKILLS) {
-      $(`skill_prof_${key}`)?.addEventListener("change", () => {
-        const cb = $(`skill_prof_${key}`);
-        if (cb?.checked) PROF_SKILLS.add(key);
-        else PROF_SKILLS.delete(key);
-        recalcAll();
+
+    addSpell.addEventListener("click", () => addRow("1"));
+    addCantrip.addEventListener("click", () => addRow("0"));
+    clear.addEventListener("click", () => {
+      tbody.innerHTML = "";
+      readSpellsFromDOM();
+    });
+
+    // default 1 row
+    if (tbody.children.length === 0) addRow("0");
+  }
+
+  // ===== attacks editor =====
+  function writeAttacksHidden() {
+    const hidden = $("attacksJson");
+    if (hidden) hidden.value = JSON.stringify(STATE.attacks);
+  }
+
+  function readAttacksFromDOM() {
+    const box = $("attackRows");
+    if (!box) return;
+
+    const rows = Array.from(box.querySelectorAll(".cc-attack-row"));
+    STATE.attacks = rows
+      .map((row) => {
+        const get = (k) => row.querySelector(`input[data-k='${k}']`)?.value || "";
+        return {
+          name: get("name").trim(),
+          hit: get("hit").trim(),
+          damage: get("damage").trim(),
+          notes: get("notes").trim(),
+        };
+      })
+      .filter((x) => x.name);
+
+    writeAttacksHidden();
+  }
+
+  function attackRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "cc-attack-row";
+
+    const mk = (k, val = "", ph = "") => {
+      const i = document.createElement("input");
+      i.type = "text";
+      i.dataset.k = k;
+      i.value = val;
+      if (ph) i.placeholder = ph;
+      i.addEventListener("input", readAttacksFromDOM);
+      return i;
+    };
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "cc-attack-del";
+    del.textContent = "✕";
+    del.addEventListener("click", () => {
+      row.remove();
+      readAttacksFromDOM();
+    });
+
+    row.appendChild(mk("name", data.name ?? "", "Longsword"));
+    row.appendChild(mk("hit", data.hit ?? "", "+5"));
+    row.appendChild(mk("damage", data.damage ?? "", "1d8+3 slashing"));
+    row.appendChild(mk("notes", data.notes ?? "", "Versatile..."));
+    row.appendChild(del);
+
+    return row;
+  }
+
+  function bindAttacks() {
+    const box = $("attackRows");
+    const add = $("addAttackRowBtn");
+    const clear = $("clearAttacksBtn");
+
+    if (!box || !add || !clear) return;
+
+    const addRow = () => {
+      box.appendChild(attackRow({}));
+      readAttacksFromDOM();
+    };
+
+    add.addEventListener("click", addRow);
+    clear.addEventListener("click", () => {
+      box.innerHTML = "";
+      readAttacksFromDOM();
+    });
+
+    // default
+    if (box.children.length === 0) addRow();
+  }
+
+  // ===== equipment editor =====
+  function toEquipObj(container) {
+    const rows = Array.from(container.querySelectorAll(".cc-equip-row"));
+    return rows
+      .map((row) => {
+        const name = (row.querySelector("input[data-k='name']")?.value || "").trim();
+        const qty = num(row.querySelector("input[data-k='qty']")?.value, 0);
+        const weight = num(row.querySelector("input[data-k='weight']")?.value, 0);
+        return { name, qty: Math.max(0, qty), weight: Math.max(0, weight) };
+      })
+      .filter((x) => x.name);
+  }
+
+  function calcWeightCarried() {
+    const colA = $("equipColA");
+    const att = $("equipAttuned");
+    if (!colA || !att) return 0;
+
+    const a = toEquipObj(colA);
+    const b = toEquipObj(att);
+    const total = [...a, ...b].reduce((sum, it) => sum + (num(it.qty, 0) || 0) * (num(it.weight, 0) || 0), 0);
+    return Math.round(total * 10) / 10;
+  }
+
+  function renderCarryMetrics() {
+    const str = num($("str")?.value, 10);
+    const enc = 5 * str;
+    const pdl = 30 * str;
+    const w = calcWeightCarried();
+
+    const set = (id, v) => {
+      const el = $(id);
+      if (el) el.textContent = String(v);
+    };
+
+    set("weightCarried", w);
+    set("encumberedAt", enc);
+    set("pushDragLift", pdl);
+  }
+
+  function equipRow(data = {}) {
+    const row = document.createElement("div");
+    row.className = "cc-equip-row";
+
+    const name = document.createElement("input");
+    name.type = "text";
+    name.dataset.k = "name";
+    name.placeholder = "Item";
+    name.value = data.name ?? "";
+
+    const qty = document.createElement("input");
+    qty.type = "number";
+    qty.min = "0";
+    qty.step = "1";
+    qty.dataset.k = "qty";
+    qty.value = String(num(data.qty, 1));
+
+    const weight = document.createElement("input");
+    weight.type = "number";
+    weight.min = "0";
+    weight.step = "0.1";
+    weight.dataset.k = "weight";
+    weight.value = String(num(data.weight, 0));
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "cc-delbtn";
+    del.textContent = "✕";
+
+    const onChange = () => renderCarryMetrics();
+    name.addEventListener("input", onChange);
+    qty.addEventListener("input", onChange);
+    weight.addEventListener("input", onChange);
+
+    del.addEventListener("click", () => {
+      row.remove();
+      renderCarryMetrics();
+    });
+
+    row.appendChild(name);
+    row.appendChild(qty);
+    row.appendChild(weight);
+    row.appendChild(del);
+    return row;
+  }
+
+  function bindEquipment() {
+    const colA = $("equipColA");
+    const att = $("equipAttuned");
+    const addA = $("addEquipA");
+    const addAtt = $("addEquipAttuned");
+    const clearAll = $("clearEquipAll");
+
+    if (!colA || !att || !addA || !addAtt || !clearAll) return;
+
+    const addRow = (container) => {
+      container.appendChild(equipRow({ qty: 1, weight: 0 }));
+      renderCarryMetrics();
+    };
+
+    addA.addEventListener("click", () => addRow(colA));
+    addAtt.addEventListener("click", () => addRow(att));
+    clearAll.addEventListener("click", () => {
+      colA.innerHTML = "";
+      att.innerHTML = "";
+      addRow(colA);
+      renderCarryMetrics();
+    });
+
+    // default rows
+    if (colA.children.length === 0) addRow(colA);
+    if (att.children.length === 0) addRow(att);
+
+    renderCarryMetrics();
+  }
+
+  // ===== defenses checkboxes =====
+  function bindDefensesClear() {
+    const btn = $("defAllClear");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      ["resistancesBox", "immunitiesBox", "vulnerabilitiesBox"].forEach((id) => {
+        const box = $(id);
+        if (!box) return;
+        $$("input[type='checkbox']", box).forEach((c) => (c.checked = false));
       });
+    });
+  }
+
+  // ===== derived calcs =====
+  function calcAll() {
+    // Ability mods
+    const mods = {};
+    for (const [k] of ABILS) {
+      mods[k] = modFromScore($(k)?.value);
+      const out = $(`mod_${k}`);
+      if (out) out.textContent = signed(mods[k]);
     }
+
+    // Proficiency bonus
+    const level = num($("level")?.value, 1);
+    const pbAuto = profBonusFromLevel(level);
+    const pbEl = $("proficiencyBonus");
+    if (pbEl && !STATE.manualPB) pbEl.value = String(pbAuto);
+    const pb = num(pbEl?.value, pbAuto);
+
+    // Saving throws
+    for (const [k] of ABILS) {
+      const prof = !!$("saveProf_" + k)?.checked;
+      const v = mods[k] + (prof ? pb : 0);
+      const out = $("save_" + k);
+      if (out) out.value = String(v);
+    }
+
+    // Skills
+    for (const [skillKey, abilKey] of SKILLS) {
+      const prof = !!$("p_" + skillKey)?.checked;
+      const v = mods[abilKey] + (prof ? pb : 0);
+      const out = $(skillKey);
+      if (out) out.value = String(v);
+    }
+
+    // Initiative (default = DEX mod)
+    const initEl = $("initiative");
+    if (initEl && !STATE.manualInitiative) initEl.value = String(mods.dex);
+
+    // Passives (10 + skill)
+    const pPerEl = $("pa_perception");
+    const pInsEl = $("pa_insight");
+    const pInvEl = $("pa_investigation");
+
+    const skillVal = (id) => num($(id)?.value, 0);
+    if (pPerEl && !STATE.manualPassives.perception) pPerEl.value = String(10 + skillVal("perception"));
+    if (pInsEl && !STATE.manualPassives.insight) pInsEl.value = String(10 + skillVal("insight"));
+    if (pInvEl && !STATE.manualPassives.investigation) pInvEl.value = String(10 + skillVal("investigation"));
+
+    // Carry metrics
+    renderCarryMetrics();
   }
 
-  function wireEditButtons() {
-    $("editBtn")?.addEventListener("click", () => enterEdit());
-    $("cancelBtn")?.addEventListener("click", () => exitEdit(true));
+  function bindManualFlags() {
+    $("initiative")?.addEventListener("input", () => (STATE.manualInitiative = true));
+    $("proficiencyBonus")?.addEventListener("input", () => (STATE.manualPB = true));
 
-    $("saveBtn")?.addEventListener("click", async () => {
-      try {
-        showMsg("Đang lưu…", "");
-        const id = getId();
-        const payload = buildPayload();
-        const updated = await updateCharacter(id, payload);
+    $("pa_perception")?.addEventListener("input", () => (STATE.manualPassives.perception = true));
+    $("pa_insight")?.addEventListener("input", () => (STATE.manualPassives.insight = true));
+    $("pa_investigation")?.addEventListener("input", () => (STATE.manualPassives.investigation = true));
+  }
 
-        // refresh with returned data if server returns full object,
-        // otherwise merge payload into CHAR
-        CHAR = updated && updated.id ? updated : { ...CHAR, ...payload };
-        NOTES_RAW = Array.isArray(CHAR.notes) ? CHAR.notes.slice() : payload.notes.slice();
-
-        renderAll();
-        exitEdit(false);
-        showMsg("Đã lưu thay đổi.", "ok");
-      } catch (e) {
-        showMsg(String(e?.message || e || "Lưu thất bại"), "err");
-      }
+  function bindRecalc() {
+    [...ABILS.map(([k]) => k), "level"].forEach((id) => {
+      $(id)?.addEventListener("input", calcAll);
+      $(id)?.addEventListener("change", calcAll);
     });
 
-    // inventory add line
-    $("addEquipLineBtn")?.addEventListener("click", () => {
-      EQUIP_LINES.push("");
-      renderEquipEditor();
-      renderEquipList();
+    ABILS.forEach(([k]) => {
+      $("saveProf_" + k)?.addEventListener("change", calcAll);
     });
 
-    // feature add
-    $("addFeatureBtn")?.addEventListener("click", () => {
-      FEATURE_LINES.push("");
-      renderFeaturesEditor();
-      renderFeatures();
+    SKILLS.forEach(([skillKey]) => {
+      $("p_" + skillKey)?.addEventListener("change", calcAll);
     });
   }
 
-  // ===== render all =====
-  function renderAll() {
-    renderHero();
-    fillInputs();
-
-    // defenses chips
-    renderChips("chips_res", CHAR.resistances);
-    renderChips("chips_imm", CHAR.immunities);
-    renderChips("chips_vul", CHAR.vulnerabilities);
-
-    // coins / equip / features / notes / spells / attacks
-    renderCoinsAndEquip();
-    renderFeatures();
-    renderNotesRemainder();
-    renderSpells();
-    renderAttacks();
-
-    // init profs based on db/meta
-    initProficiencies();
-
-    // derived numbers
-    recalcAll();
+  // ===== gather payload =====
+  function selectedValues(boxId) {
+    const box = $(boxId);
+    if (!box) return [];
+    return $$("input[type='checkbox']", box)
+      .filter((c) => c.checked)
+      .map((c) => String(c.value || "").trim())
+      .filter(Boolean);
   }
 
-  // ===== boot =====
-  async function boot() {
-    const id = getId();
-    if (!id) {
-      showMsg("Thiếu id nhân vật. Mở theo dạng: character.html?id=123", "err");
+  function buildEquipmentPayload() {
+    const coins = {
+      cp: num($("coin_cp")?.value, 0),
+      sp: num($("coin_sp")?.value, 0),
+      ep: num($("coin_ep")?.value, 0),
+      gp: num($("coin_gp")?.value, 0),
+      pp: num($("coin_pp")?.value, 0),
+    };
+
+    const equipLines = [];
+    equipLines.push(`Coins: CP=${coins.cp} SP=${coins.sp} EP=${coins.ep} GP=${coins.gp} PP=${coins.pp}`);
+
+    const colA = $("equipColA");
+    const att = $("equipAttuned");
+
+    const a = colA ? toEquipObj(colA) : [];
+    const b = att ? toEquipObj(att) : [];
+
+    a.forEach((it) => {
+      equipLines.push(`Equip: ${it.name} | Qty=${it.qty} | W=${it.weight}`);
+    });
+    b.forEach((it) => {
+      equipLines.push(`Attuned: ${it.name} | Qty=${it.qty} | W=${it.weight}`);
+    });
+
+    return equipLines;
+  }
+
+  function buildNotesPayload() {
+    const notes = [];
+
+    const init = num($("initiative")?.value, 0);
+    const pb = num($("proficiencyBonus")?.value, profBonusFromLevel(num($("level")?.value, 1)));
+
+    notes.push(`Meta: Initiative=${init}`);
+    notes.push(`Meta: ProficiencyBonus=${pb}`);
+
+    const saveProf = ABILS.filter(([k]) => $("saveProf_" + k)?.checked).map(([k]) => k);
+    notes.push(`Meta: SaveProficiencies=${saveProf.join(",")}`);
+
+    const skillProf = SKILLS.filter(([k]) => $("p_" + k)?.checked).map(([k]) => k);
+    notes.push(`Meta: SkillProficiencies=${skillProf.join(",")}`);
+
+    const hitDice = ($("hitDice")?.value || "").trim();
+    const abilitySaveDc = ($("abilitySaveDc")?.value || "").trim();
+    if (hitDice) notes.push(`Meta: HitDice=${hitDice}`);
+    if (abilitySaveDc) notes.push(`Meta: AbilitySaveDC=${abilitySaveDc}`);
+
+    const curHp = ($("currentHp")?.value || "").trim();
+    if (curHp) notes.push(`Meta: CurrentHP=${curHp}`);
+
+    const dsS = ["ds_s1", "ds_s2", "ds_s3"].filter((id) => $(id)?.checked).length;
+    const dsF = ["ds_f1", "ds_f2", "ds_f3"].filter((id) => $(id)?.checked).length;
+    if (dsS || dsF) notes.push(`Meta: DeathSaves=${dsS}/${dsF}`);
+    if ($("heroicInspiration")?.checked) notes.push(`Meta: HeroicInspiration=true`);
+
+    STATE.train.filter(Boolean).forEach((t) => notes.push(`Train: ${t}`));
+    STATE.proficiency.filter(Boolean).forEach((t) => notes.push(`Proficiency: ${t}`));
+    STATE.action.filter(Boolean).forEach((t) => notes.push(`Action: ${t}`));
+    STATE.feature.filter(Boolean).forEach((t) => notes.push(`Feature: ${t}`));
+
+    readSpellsFromDOM();
+    STATE.spells.forEach((s) => {
+      const pfx = s.prepared ? "[P] " : "";
+      const level = s.level || "";
+      const parts = [
+        `${pfx}${s.name}`,
+        `Level:${level}`,
+        `Save/Atk:${s.saveAtk || ""}`,
+        `Time:${s.time || ""}`,
+        `Range:${s.range || ""}`,
+        `Comp:${s.comp || ""}`,
+        `Dur:${s.duration || ""}`,
+        `Notes:${s.notes || ""}`,
+      ];
+      notes.push(`Spell: ${parts.join(" | ")}`);
+    });
+
+    readAttacksFromDOM();
+    STATE.attacks.forEach((a) => {
+      const parts = [
+        a.name,
+        `Hit:${a.hit || ""}`,
+        `Dmg:${a.damage || ""}`,
+        `Notes:${a.notes || ""}`,
+      ];
+      notes.push(`Attack: ${parts.join(" | ")}`);
+    });
+
+    return notes;
+  }
+
+  async function publish() {
+    toast("");
+
+    const Core = ensureCore();
+    const token = Core.getToken?.() || localStorage.getItem("token") || "";
+
+    if (!token) {
+      toast("Bạn cần đăng nhập để tạo nhân vật.");
+      window.openLoginModal?.();
       return;
     }
 
-    buildAbilitiesGrid();
-    buildSaveList();
-    buildSkillsList();
-    wireTabs();
-    wireEditButtons();
-    wireRecalc();
+    readSpellsFromDOM();
+    readAttacksFromDOM();
 
-    // start locked
-    setDisabled([
-      "inp_name","inp_race","inp_class","inp_level","inp_alignment","inp_background","inp_description",
-      "inp_pa_perception","inp_pa_insight","inp_pa_investigation",
-      "inp_ac","inp_hp","inp_speed",
-      "ab_inp_str","ab_inp_dex","ab_inp_con","ab_inp_int","ab_inp_wis","ab_inp_cha",
-    ], true);
-    setProfCheckboxesDisabled(true);
+    const payload = {
+      name: ($("name")?.value || "").trim(),
+      race: ($("race")?.value || "").trim() || "Human",
+      class_name: ($("class")?.value || "").trim() || "Fighter",
+      level: num($("level")?.value, 1),
+      alignment: ($("alignment")?.value || "").trim() || "Neutral",
+      background: ($("background")?.value || "").trim() || "Adventurer",
+      avatar: "",
+      description: "",
+      stats: {
+        str: num($("str")?.value, 10),
+        dex: num($("dex")?.value, 10),
+        con: num($("con")?.value, 10),
+        int: num($("int")?.value, 10),
+        wis: num($("wis")?.value, 10),
+        cha: num($("cha")?.value, 10),
+      },
+      hp: num($("hp")?.value, 10),
+      ac: num($("ac")?.value, 10),
+      speed: ($("speed")?.value || "30 ft").trim() || "30 ft",
+      skills: SKILLS.filter(([k]) => $("p_" + k)?.checked).map(([k]) => k),
+      equipment: buildEquipmentPayload(),
+      notes: buildNotesPayload(),
+      is_public: true,
+      resistances: selectedValues("resistancesBox"),
+      immunities: selectedValues("immunitiesBox"),
+      vulnerabilities: selectedValues("vulnerabilitiesBox"),
+      senses: {
+        passivePerception: num($("pa_perception")?.value, 0),
+        passiveInsight: num($("pa_insight")?.value, 0),
+        passiveInvestigation: num($("pa_investigation")?.value, 0),
+      },
+      feature_lines: STATE.feature || [],
+    };
+
+    if (!payload.name) {
+      toast("Thiếu Tên nhân vật (Name).", true);
+      $("name")?.focus();
+      return;
+    }
 
     try {
-      // try public first (works for everyone)
-      CHAR = await fetchPublic(id);
-    } catch (e1) {
-      // fallback to private (owner/admin)
-      try {
-        CHAR = await fetchPrivate(id);
-      } catch (e2) {
-        showMsg(String(e2?.message || e2 || "Không thể tải nhân vật"), "err");
-        return;
-      }
+      const created = await Core.apiFetch("/api/characters", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      toast(`✅ Đã tạo nhân vật #${created?.id}.`, false);
+      setTimeout(() => {
+        window.location.href = `character.html?id=${created.id}`;
+      }, 350);
+    } catch (err) {
+      toast(err?.message || "Tạo nhân vật thất bại", true);
     }
-
-    // normalize notes
-    NOTES_RAW = Array.isArray(CHAR.notes) ? CHAR.notes.slice() : [];
-
-    renderAll();
-    showMsg("", "");
   }
 
-  document.addEventListener("DOMContentLoaded", boot);
+  // ===== init =====
+  document.addEventListener("DOMContentLoaded", () => {
+    bindListEditor("train", "trainList", "addTrainBtn", "clearTrainBtn");
+    bindListEditor("proficiency", "proficiencyList", "addProficiencyBtn", "clearProficiencyBtn");
+    bindListEditor("action", "actionList", "addActionBtn", "clearActionBtn");
+    bindListEditor("feature", "featureList", "addFeatureBtn", "clearFeatureBtn");
+
+    bindSpells();
+    bindAttacks();
+    bindEquipment();
+    bindDefensesClear();
+
+    bindManualFlags();
+    bindRecalc();
+
+    $("publishCharacterBtn")?.addEventListener("click", publish);
+
+    calcAll();
+  });
 })();
