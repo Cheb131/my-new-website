@@ -41,7 +41,7 @@
     if (window.Core?.apiFetch) return window.Core;
 
     // fallback (trường hợp trang bị load thiếu core.js)
-    const API_BASE = (location.port === "5500") ? "http://localhost:3000" : "";
+    const API_BASE = location.port === "5500" ? "http://localhost:3000" : "";
     async function apiFetch(path, options = {}) {
       const headers = { ...(options.headers || {}) };
       if (!headers["Content-Type"] && options.body) headers["Content-Type"] = "application/json";
@@ -53,6 +53,47 @@
       return data;
     }
     return { API_BASE, apiFetch, getUser: () => null, getToken: () => localStorage.getItem("token") || "" };
+  }
+
+  // ===== NOTE length guard (FIX for <=240) =====
+  const NOTE_MAX = 240;
+
+  function splitByMaxLen(line, maxLen = NOTE_MAX) {
+    const s0 = String(line ?? "").trim();
+    if (!s0) return [];
+    if (s0.length <= maxLen) return [s0];
+
+    const s = s0;
+    const out = [];
+    let i = 0;
+
+    while (i < s.length) {
+      let end = Math.min(i + maxLen, s.length);
+
+      // Try cut at last space for nicer split
+      if (end < s.length) {
+        const lastSpace = s.lastIndexOf(" ", end);
+        // If the last space is too close to i, don't bother (avoid tiny fragments)
+        if (lastSpace > i + 20) end = lastSpace;
+      }
+
+      const chunk = s.slice(i, end).trim();
+      if (chunk) out.push(chunk);
+      i = end;
+    }
+
+    // final safety (never exceed)
+    return out.map((x) => (x.length <= maxLen ? x : x.slice(0, maxLen - 1) + "…"));
+  }
+
+  function pushSafe(arr, line) {
+    splitByMaxLen(line, NOTE_MAX).forEach((x) => arr.push(x));
+  }
+
+  function trimToMax(s, maxLen = NOTE_MAX) {
+    const t = String(s ?? "").trim();
+    if (t.length <= maxLen) return t;
+    return t.slice(0, maxLen - 1) + "…";
   }
 
   // ===== constants =====
@@ -563,6 +604,8 @@
   }
 
   function buildEquipmentPayload() {
+    const lines = [];
+
     const coins = {
       cp: num($("coin_cp")?.value, 0),
       sp: num($("coin_sp")?.value, 0),
@@ -571,8 +614,7 @@
       pp: num($("coin_pp")?.value, 0),
     };
 
-    const equipLines = [];
-    equipLines.push(`Coins: CP=${coins.cp} SP=${coins.sp} EP=${coins.ep} GP=${coins.gp} PP=${coins.pp}`);
+    pushSafe(lines, `Coins: CP=${coins.cp} SP=${coins.sp} EP=${coins.ep} GP=${coins.gp} PP=${coins.pp}`);
 
     const colA = $("equipColA");
     const att = $("equipAttuned");
@@ -581,13 +623,14 @@
     const b = att ? toEquipObj(att) : [];
 
     a.forEach((it) => {
-      equipLines.push(`Equip: ${it.name} | Qty=${it.qty} | W=${it.weight}`);
+      pushSafe(lines, `Equip: ${it.name} | Qty=${it.qty} | W=${it.weight}`);
     });
     b.forEach((it) => {
-      equipLines.push(`Attuned: ${it.name} | Qty=${it.qty} | W=${it.weight}`);
+      pushSafe(lines, `Attuned: ${it.name} | Qty=${it.qty} | W=${it.weight}`);
     });
 
-    return equipLines;
+    // backend cũng có thể validate equipment line length -> đảm bảo <=240
+    return lines.map((x) => trimToMax(x, NOTE_MAX));
   }
 
   function buildNotesPayload() {
@@ -596,33 +639,35 @@
     const init = num($("initiative")?.value, 0);
     const pb = num($("proficiencyBonus")?.value, profBonusFromLevel(num($("level")?.value, 1)));
 
-    notes.push(`Meta: Initiative=${init}`);
-    notes.push(`Meta: ProficiencyBonus=${pb}`);
+    pushSafe(notes, `Meta: Initiative=${init}`);
+    pushSafe(notes, `Meta: ProficiencyBonus=${pb}`);
 
     const saveProf = ABILS.filter(([k]) => $("saveProf_" + k)?.checked).map(([k]) => k);
-    notes.push(`Meta: SaveProficiencies=${saveProf.join(",")}`);
+    pushSafe(notes, `Meta: SaveProficiencies=${saveProf.join(",")}`);
 
     const skillProf = SKILLS.filter(([k]) => $("p_" + k)?.checked).map(([k]) => k);
-    notes.push(`Meta: SkillProficiencies=${skillProf.join(",")}`);
+    pushSafe(notes, `Meta: SkillProficiencies=${skillProf.join(",")}`);
 
     const hitDice = ($("hitDice")?.value || "").trim();
     const abilitySaveDc = ($("abilitySaveDc")?.value || "").trim();
-    if (hitDice) notes.push(`Meta: HitDice=${hitDice}`);
-    if (abilitySaveDc) notes.push(`Meta: AbilitySaveDC=${abilitySaveDc}`);
+    if (hitDice) pushSafe(notes, `Meta: HitDice=${hitDice}`);
+    if (abilitySaveDc) pushSafe(notes, `Meta: AbilitySaveDC=${abilitySaveDc}`);
 
     const curHp = ($("currentHp")?.value || "").trim();
-    if (curHp) notes.push(`Meta: CurrentHP=${curHp}`);
+    if (curHp) pushSafe(notes, `Meta: CurrentHP=${curHp}`);
 
     const dsS = ["ds_s1", "ds_s2", "ds_s3"].filter((id) => $(id)?.checked).length;
     const dsF = ["ds_f1", "ds_f2", "ds_f3"].filter((id) => $(id)?.checked).length;
-    if (dsS || dsF) notes.push(`Meta: DeathSaves=${dsS}/${dsF}`);
-    if ($("heroicInspiration")?.checked) notes.push(`Meta: HeroicInspiration=true`);
+    if (dsS || dsF) pushSafe(notes, `Meta: DeathSaves=${dsS}/${dsF}`);
+    if ($("heroicInspiration")?.checked) pushSafe(notes, `Meta: HeroicInspiration=true`);
 
-    STATE.train.filter(Boolean).forEach((t) => notes.push(`Train: ${t}`));
-    STATE.proficiency.filter(Boolean).forEach((t) => notes.push(`Proficiency: ${t}`));
-    STATE.action.filter(Boolean).forEach((t) => notes.push(`Action: ${t}`));
-    STATE.feature.filter(Boolean).forEach((t) => notes.push(`Feature: ${t}`));
+    // Lists
+    STATE.train.filter(Boolean).forEach((t) => pushSafe(notes, `Train: ${t}`));
+    STATE.proficiency.filter(Boolean).forEach((t) => pushSafe(notes, `Proficiency: ${t}`));
+    STATE.action.filter(Boolean).forEach((t) => pushSafe(notes, `Action: ${t}`));
+    STATE.feature.filter(Boolean).forEach((t) => pushSafe(notes, `Feature: ${t}`));
 
+    // Spells
     readSpellsFromDOM();
     STATE.spells.forEach((s) => {
       const pfx = s.prepared ? "[P] " : "";
@@ -637,21 +682,21 @@
         `Dur:${s.duration || ""}`,
         `Notes:${s.notes || ""}`,
       ];
-      notes.push(`Spell: ${parts.join(" | ")}`);
+      pushSafe(notes, `Spell: ${parts.join(" | ")}`);
     });
 
+    // Attacks
     readAttacksFromDOM();
     STATE.attacks.forEach((a) => {
-      const parts = [
-        a.name,
-        `Hit:${a.hit || ""}`,
-        `Dmg:${a.damage || ""}`,
-        `Notes:${a.notes || ""}`,
-      ];
-      notes.push(`Attack: ${parts.join(" | ")}`);
+      const parts = [a.name, `Hit:${a.hit || ""}`, `Dmg:${a.damage || ""}`, `Notes:${a.notes || ""}`];
+      pushSafe(notes, `Attack: ${parts.join(" | ")}`);
     });
 
-    return notes;
+    // final safety
+    return notes
+      .map((x) => String(x || "").trim())
+      .filter(Boolean)
+      .map((x) => trimToMax(x, NOTE_MAX));
   }
 
   async function publish() {
