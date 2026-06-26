@@ -1,0 +1,20 @@
+const skillNguHanh = [
+  { name: "An Quốc", desc: "Giai đoạn hành động 1 lần, bạn có thể chọn 1 người chơi khác, lệnh người đó nếu: 1. Bài trên tay ít nhất, người đó rút 1 lá bài; 2. Sinh lực thấp nhất, người đó hồi 1 sinh lực; 3. Bài trong vùng trang bị ít nhất, người đó ngẫu nhiên sử dụng 1 Trang Bị bài từ chồng bài rút."},
+  { name: "An Tuất", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể lựa chọn hai người chơi khác có số bài trên tay không bằng nhau, lệnh người có số bài trên tay ít hơn thu lấy một lá bài trên tay của người có số bài trên tay nhiều hơn và mở nó ra: Nếu bài này hông phải chất ♠, bạn rút một lá bài. Nếu vì điều này mà số bài trên tay của họ bằng nhau, thì bạn hồi phục 1 điểm sinh lực."},
+  { name: "Bật Chính", desc: "Cuối giai đoạn rút bài bạn có thể người chơi khác rút 2 thẻ bài. Sau đó bạn cùng với người đó ai có lượng bài trên tay nhiều hơn giới hạn sinh lực thì phải bỏ đi 2 thẻ bài."},
+  { name: "Bỉnh Nhất", desc: "Mỗi lượt một lần Sau khi bài của bạn bị bỏ đi bạn có thể mở toàn bộ bài trên tay. Nếu tất cả đều cùng màu, bạn cùng tối đa X người chơi khác mỗi người rút 1 thẻ bài (X là số bài trên tay bạn)."},
+  { name: "Chế Hành", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể bỏ đi tùy ý lá bài, sau đó rút cùng lượng bài. Nếu bằng cách này bỏ đi tất cả bài trên tay, thì bạn rút thêm một lá bài."},
+  { name: "Kết Minh", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể lựa chọn hai người chơi khác và bỏ đi X lá bài (X là số bài trên tay chênh lệch của hai người đó), sau đó lệnh hai người chơi đó hoán đổi bài trên tay với nhau."},
+  { name: "Thận Hành", desc: "Giai đoạn hành động, bạn có thể bỏ 2 lá và rút 1 lá."},
+  { name: "Hưng Học", desc: "Giai đoạn kết thúc, bạn có thể lệnh tối đa X người chơi (X là sinh lực hiện tại của bạn) tuần tự rút 1 là từ chồng bài rút. Sau đó những người này ai có bài trên tay nhiều hơn sinh lực hiện tại thì đem 1 lá đặt lên đầu chồng bài rút. Nếu bạn đã sửa Yến Tru, kỹ năng này sửa X là giới hạn sinh lực."},
+  { name: "Giới Huấn", desc: "Giai đoạn kết thúc, bạn có thể lệnh 1 người chơi khác rút bài bằng với số lá bài ♦ trên bàn chơi, sau đó tự bỏ X lá bài (X là số lần phát động qua kỹ năng này trước đó). Nếu có người chơi vì phương pháp này mà bỏ đi toàn bộ bài sở hữu của họ thì bạn mất kỹ năng này"},
+  { name: "Hạ Thư", desc: "Khi mở đầu giai đoạn hành động, bạn có thể đem tất cả bài trên tay giao cho một người chơi khác, sau đó người này mở ra tùy ý một lượng bài trên tay, bạn lựa chọn một hạng mục: 1. Thu lấy lượng bài trên tay họ mở ra; 2. Thu lấy lượng bài trên tay họ không mở ra."},
+  { name: "Lan Cương", desc: "Giai đoạn kết thúc của bạn, bạn có thể lệnh tất cả người chơi có số bài trên tay lớn hơn hoặc bằng bạn lần lượt chọn Có cho bạn rút 1 lá bài hay Không. Sau khi hoàn tất xong các lựa chọn, bạn có thể gây 1 sát thương cho 1 trong số những mục tiêu của Lan Cương có số bài trên tay bằng bạn, nếu bạn làm vậy thì sau đó lệnh 1 trong số những mục tiêu của Lan Cương có số bài trên tay ít hơn bạn rút 1 lá bài."},
+  { name: "Hoằng viện", desc: "Mỗi giai đoạn giới hạn 1 lần, sau khi bạn nhận ít nhất 2 lá bài cùng lúc, bạn có thể chọn tối đa 2 người chơi khác, giao 1 lá cho mỗi người trong số đó"},
+  { name: "Quan Vi", desc: "Kết thúc giai đoạn ra bài của 1 người chơi, nếu người đó sử dụng qua số bài nhiều hơn 1 và sử dụng bài có chất giống nhau trong lượt hiện tại và bạn chưa phát động qua kỹ năng này trong lượt hiện tại, bạn có thể bỏ đi 1 lá bài, lệnh người đó rút 2 lá bài và có thêm 1 giai đoạn ra bài."},
+  { name: "Dụ Địch", desc: "Giai đoạn kết thúc, bạn có thể lệnh 1 người chơi khác bỏ đi 1 lá trên tay của bạn, nếu lá bỏ đi không phải là [Sát], thì bạn thu lấy 1 lá của mục tiêu; nếu lá bỏ đi không phải màu Đen, thì bạn rút 1 lá."},
+  { name: "Điều Độ", desc: "Giai đoạn chuẩn bị, bạn có thể di chuyển 1 lá từ khu trang bị của 1 người sang vùng trống tương ứng của 1 người khác ngoài họ, sau đó người bị di chuyển trang bị rút 1 lá."},
+
+];
+
+module.exports = skillNguHanh;

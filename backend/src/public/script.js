@@ -1,11 +1,8 @@
-let currentSkillElement = null; // Biến lưu vết ô kỹ năng đang được click
-let currentSkillName = "";      // Lưu tên kỹ năng gốc để hiển thị lúc chọn xong
+let currentSkillElement = null; 
+let currentSkillName = "";      
 
 /**
- * HÀM GỘP CHUNG: Xử lý cơ chế Rút 3 chọn 1 cho bất kỳ kỹ năng nào
- * @param {HTMLElement} element - Ô kỹ năng vừa được click
- * @param {string} originalName - Tên kỹ năng gốc (Độn Thế, Bác Lãm...)
- * @param {string} apiUrl - Đường dẫn API tương ứng để lấy dữ liệu pool
+ * HÀM CŨ: Xử lý cơ chế Rút 3 chọn 1 (Cho Độn Thế & Bác Lãm)
  */
 async function trigger3pick1(element, originalName, apiUrl) {
     currentSkillElement = element;
@@ -13,18 +10,21 @@ async function trigger3pick1(element, originalName, apiUrl) {
     
     const panel = document.getElementById('choicesPanel');
     const list = document.getElementById('choicesList');
+    const titleElement = panel.querySelector('h3');
     
     panel.style.display = "block";
     list.innerHTML = '<p class="status-msg" style="font-size:12px;">Đang bốc 3 quẻ bùa...</p>';
     
-    // Cuộn màn hình mượt xuống khu vực bốc chọn trên mobile
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
 
     try {
-        // Gọi API động tùy thuộc vào tham số truyền vào từ thẻ bài tướng
         const response = await fetch(apiUrl);
         const skills = await response.json();
         
+        if (titleElement) {
+            titleElement.innerText = `🔮 Chọn 1 trong 3 kỹ năng để lĩnh hội 🔮`;
+        }
+
         list.innerHTML = '';
         skills.forEach(skill => {
             const option = document.createElement('div');
@@ -38,10 +38,46 @@ async function trigger3pick1(element, originalName, apiUrl) {
     }
 }
 
-// Hàm xử lý khi người dùng ấn chọn 1 kỹ năng
+/**
+ * HÀM MỚI TÁCH RIÊNG: Xử lý cơ chế Rút 4 chọn 1 (Dành riêng cho phe Thần)
+ */
+async function trigger4pick1(element, originalName, apiUrl) {
+    currentSkillElement = element;
+    currentSkillName = originalName; 
+    
+    const panel = document.getElementById('choicesPanel');
+    const list = document.getElementById('choicesList');
+    const titleElement = panel.querySelector('h3');
+    
+    panel.style.display = "block";
+    list.innerHTML = '<p class="status-msg" style="font-size:12px;">Đang triệu gọi 4 quẻ thần bùa...</p>';
+    
+    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
+
+    try {
+        const response = await fetch(apiUrl);
+        const skills = await response.json();
+        
+        if (titleElement) {
+            titleElement.innerText = `⚡ Chọn 1 trong 4 bí kỹ Thần tối cao ⚡`;
+        }
+
+        list.innerHTML = '';
+        skills.forEach(skill => {
+            const option = document.createElement('div');
+            option.className = 'choice-item';
+            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span> ${skill.desc}`;
+            option.onclick = () => selectSkill(skill.name, skill.desc);
+            list.appendChild(option);
+        });
+    } catch (err) {
+        list.innerHTML = '<p style="color:#ff4444; font-size:12px;">Lỗi triệu hồi thần lực!</p>';
+    }
+}
+
+// Hàm xử lý khi người dùng ấn chọn 1 kỹ năng để đưa vào Box lưu trữ
 function selectSkill(name, desc) {
     const selectedList = document.getElementById('selectedList');
-    
     const emptyMsg = selectedList.querySelector('.empty-msg');
     if (emptyMsg) emptyMsg.remove();
 
@@ -53,7 +89,6 @@ function selectSkill(name, desc) {
     `;
     
     selectedList.appendChild(item);
-    
     document.getElementById('choicesPanel').style.display = "none";
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -76,13 +111,14 @@ async function loadGenerals() {
         const generals = await response.json();
         
         resultDiv.innerHTML = '';
-        generals.forEach(gen => {
+        generals.forEach((gen, index) => {
             const card = document.createElement('div');
             card.className = 'card donthe-effect';
             
             const baseColor = gen.bg_color || '#4a3525';
             card.style.backgroundColor = baseColor;
             card.style.setProperty('--theme-color', baseColor);
+            card.style.zIndex = generals.length - index; 
             
             const wrapper = document.createElement('div');
             wrapper.className = 'skills-wrapper';
@@ -90,17 +126,21 @@ async function loadGenerals() {
             gen.skillPool.forEach(s => {
                 const skillBox = document.createElement('div');
                 
-                // MẸO ĐƠN GIẢN: Phân phối API động ngay tại lúc dựng thẻ bài bằng cách ánh xạ tên kỹ năng
-                let targetApi = null;
-                if (s.name === "Độn Thế") targetApi = '/api/random-three-skills';
-                if (s.name === "Bác Lãm") targetApi = '/api/random-baclam-skills';
-                
-                // Nếu nằm trong danh sách kỹ năng có API bốc bài, biến nó thành ô bấm được
-                if (targetApi) {
+                // ĐÃ SỬA: Kiểm tra chính xác theo tên kỹ năng thực tế trên DB
+                if (s.name === "Độn Thế") {
                     skillBox.className = 'skill-box clickable-donthe';
-                    // Gọi hàm gộp trigger3pick1 và truyền chính xác endpoint API vào làm đối số thứ 3
-                    skillBox.setAttribute('onclick', `trigger3pick1(this, '${s.name}', '${targetApi}')`);
-                } else {
+                    skillBox.setAttribute('onclick', `trigger3pick1(this, '${s.name}', '/api/random-three-skills')`);
+                } 
+                else if (s.name === "Bác Lãm") {
+                    skillBox.className = 'skill-box clickable-donthe';
+                    skillBox.setAttribute('onclick', `trigger3pick1(this, '${s.name}', '/api/random-baclam-skills')`);
+                } 
+                // ĐÃ SỬA: Chuyển từ Quy Tâm thành Ngự Hành và trỏ đúng đường dẫn API mới
+                else if (s.name === "Ngự Hành") {
+                    skillBox.className = 'skill-box clickable-donthe';
+                    skillBox.setAttribute('onclick', `trigger4pick1(this, '${s.name}', '/api/random-nguhanh-skills')`);
+                } 
+                else {
                     skillBox.className = 'skill-box';
                 }
                 

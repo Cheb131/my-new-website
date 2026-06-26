@@ -1,20 +1,26 @@
-/* Tối ưu nền tảng & Chống tràn trên iPhone 15 */
+/* ==========================================================================
+   1. CẤU HÌNH NỀN TẢNG CHỐNG TRÀN
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background: radial-gradient(circle, #2c1e1a 0%, #110b0a 100%);
     color: #f0eae1;
-    margin: 0;
     padding: 20px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
-    box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 500px; /* Bóp gọn bề ngang chuẩn danh sách */
     width: 100%;
     text-align: center;
     display: flex;
@@ -22,9 +28,8 @@ body {
     align-items: center;
 }
 
-/* Responsive Title cho Mobile */
 h1 {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     color: #ffcc00;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -33,254 +38,319 @@ h1 {
 }
 
 .subtitle {
-    font-size: 0.9rem;
-    color: #b5a494;
+    font-size: 11px;
+    color: #a69282;
     margin-bottom: 25px;
-    font-style: italic;
+    letter-spacing: 1px;
 }
 
-.card-container {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    margin-bottom: 25px;
-}
-
-/* Thẻ tướng tối ưu kích thước chuẩn màn hình dọc iPhone 15 */
-.card {
-    background: #221815;
-    border: 3px solid #4a3525;
-    border-radius: 14px;
-    padding: 20px;
-    width: 100%;
-    max-width: 340px;
-    min-height: 380px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-    text-align: left;
-    position: relative;
-    box-sizing: border-box;
+/* ==========================================================================
+   2. DANH SÁCH TƯỚNG NÂNG CẤP MÀU SẮC (ĐẬM CHẤT PHE PHÁI)
+   ========================================================================== */
+#result {
     display: flex;
     flex-direction: column;
+    width: 100%;
+    gap: 8px; /* Tăng khoảng cách một chút để lộ rõ viền phát quang */
+    margin-bottom: 25px;
 }
 
-.card.donthe-effect {
-    animation: borderGlow 2s infinite alternate;
+.card {
+    /* NỀN ĐỔI MỚI: Gradient chuyển từ màu đen sang 20% màu chủ đạo của phe tạo chiều sâu */
+    background: linear-gradient(135deg, #141414 60%, var(--theme-color) 250%); 
+    
+    /* VIỀN ĐỔI MỚI: Đổi sang màu sáng của hệ màu phe, tăng độ dày viền */
+    border: 2px solid var(--theme-color, #4a3525);
+    border-left: 6px solid var(--theme-color, #4a3525); /* Viền trái dày hẳn làm điểm nhấn */
+    border-radius: 10px;
+    
+    padding: 15px 40px 15px 15px;
+    width: 100%;
+    min-height: auto;
+    
+    /* ĐỔ BÓNG PHÁT QUANG: Giúp thẻ nổi bần bật trên nền tối */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 0, 0, 0.5);
+    
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
 }
 
-@keyframes borderGlow {
-    0% { border-color: #4a3525; }
-    100% { border-color: #66726a; box-shadow: 0 0 20px rgba(46, 164, 79, 0.4); }
+/* HOVER EFFECT: Sáng bừng hào quang phe phái khi chạm vào */
+.card:hover {
+    transform: translateY(-2px);
+    /* Tăng cường độ phát quang theo màu phe */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8), 0 0 15px var(--theme-color);
+    filter: brightness(1.15); /* Làm sáng tổng thể thanh tướng lên */
 }
 
-.kingdom {
+/* MŨI TÊN (>) ĐỊNH DẠNG SẮC NÉT */
+.card::after {
+    content: "〉";
     position: absolute;
-    top: 15px;
-    right: 15px;
-    font-weight: 900;
-    text-transform: uppercase;
-    font-size: 11px;
-    background: rgba(0, 0, 0, 0.6);
-    color: #ffcc00;
-    padding: 3px 8px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 204, 0, 0.3);
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--theme-color); /* Mũi tên tự động đổi màu theo màu phe luôn */
+    font-size: 13px;
+    font-weight: bold;
+    opacity: 0.7;
+    transition: opacity 0.2s;
 }
 
+.card:hover::after {
+    opacity: 1;
+}
+
+/* THUỘC TÍNH CHỮ BÊN TRONG */
 .card h2 {
-    margin: 5px 0 2px 0;
-    font-size: 1.6rem;
+    font-size: 1.15rem;
     color: #ffffff;
-    text-shadow: 1px 1px 3px #000;
+    margin: 0 0 2px 0;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
 }
 
 .title-tag {
-    font-size: 0.85rem;
-    color: #a69282;
-    font-style: italic;
-    margin-bottom: 15px;
+    font-size: 12px;
+    color: #999999; /* Tăng độ sáng danh hiệu một chút */
+    margin-bottom: 10px;
     display: block;
 }
 
+/* Nhãn thế lực nhỏ gọn góc phải */
+.kingdom {
+    position: absolute;
+    top: 15px;
+    right: 42px; 
+    font-size: 10px;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    border-left: 2px solid var(--theme-color); /* Vệt màu nhỏ ở nhãn thế lực */
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* ==========================================================================
+   3. CỤM KỸ NĂNG BÊN TRONG
+   ========================================================================== */
 .skills-wrapper {
-    margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
+    width: 100%;
 }
 
 .skill-box {
-    background: rgba(0, 0, 0, 0.4);
-    border-left: 3px solid #ffcc00;
-    padding: 10px;
-    border-radius: 0 6px 6px 0;
-    font-size: 13px;
-    line-height: 1.5;
+    background: rgba(0, 0, 0, 0.4); /* Làm nền ô skill tối xuống để tương phản với chữ */
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    line-height: 1.4;
     color: #ded5ca;
 }
 
-.skill-box.clickable-donthe {
-    border-left-color: #616b64;
-    background: rgba(46, 164, 79, 0.15);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    -webkit-tap-highlight-color: transparent; /* Mượt cảm ứng iOS */
-}
-
-.skill-box.clickable-donthe:active {
-    background: rgba(46, 164, 79, 0.3);
-}
-
 .skill-name {
-    color: #ffcc00;
     font-weight: bold;
-    display: inline-block;
-    margin-right: 5px;
+    color: #ffcc00; /* Màu vàng hoàng kim cho tên skill */
 }
 
-/* KHU VỰC KỸ NĂNG ĐÃ CHỌN */
-.selected-panel {
+/* Kỹ năng kích hoạt đặc biệt (Có viền đứt màu của phe phát sáng nhẹ) */
+.skill-box.clickable-donthe {
+    border: 1px dashed var(--theme-color);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 8px rgba(var(--theme-color), 0.1);
+}
+
+.skill-box.clickable-donthe:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ==========================================================================
+   4. BẢNG HIỂN THỊ 3 LỰA CHỌN & DANH SÁCH LƯU
+   ========================================================================== */
+.choices-panel, .selected-container {
     width: 100%;
-    max-width: 340px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid #3a2a22;
-    border-radius: 12px;
+    background: #161211;
+    border: 1px solid #382c26;
+    border-radius: 10px;
     padding: 15px;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-    text-align: left;
+    margin-top: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.7);
 }
 
-.panel-title {
+.choices-panel h3, .selected-container h3 {
     font-size: 13px;
     color: #ffcc00;
+    margin-bottom: 12px;
     text-transform: uppercase;
-    font-weight: bold;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-    border-bottom: 1px solid #3a2a22;
-    padding-bottom: 5px;
+    letter-spacing: 0.5px;
 }
 
-.selected-list {
+.choices-list, .selected-list {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.selected-item {
-    background: rgba(46, 164, 79, 0.1);
-    border: 1px solid rgba(46, 164, 79, 0.3);
+.choice-item {
+    background: #211916;
+    border: 1px solid #3a2e28;
     border-radius: 6px;
-    padding: 10px;
-    font-size: 12.5px;
-    position: relative;
+    padding: 10px 12px;
+    font-size: 11.5px;
     line-height: 1.4;
-    padding-right: 35px; /* Tránh đè chữ vào nút Xóa */
+    text-align: left;
+    transition: all 0.15s;
+}
+
+.choice-item:hover {
+    background: #2e231f;
+    border-color: #ffcc00;
+}
+
+.selected-item {
+    background: #1c1513;
+    border-left: 3px solid var(--theme-color, #ffcc00);
+    border-radius: 4px;
+    padding: 10px 35px 10px 12px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
 .delete-btn {
     position: absolute;
-    top: 5px;
-    right: 8px;
-    background: none;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: transparent;
     border: none;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.delete-btn:hover {
     color: #ff4444;
-    font-size: 16px;
-    cursor: pointer;
-    padding: 5px;
-    font-weight: bold;
-    -webkit-tap-highlight-color: transparent;
 }
 
-/* BẢNG CHỨA 3 LỰA CHỌN POP-UP */
-.choices-panel {
+.status-msg { font-size: 12px; color: #888; animation: pulse 1.5s infinite; }
+.empty-msg { font-size: 11.5px; color: #555; font-style: italic; }
+
+@keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+/* ==========================================================================
+   5. BẢNG KẾT QUẢ KỸ NĂNG ĐÃ CHỌN (CHIẾC BOX CHỨA LIST ĐẶC BIỆT)
+   ========================================================================== */
+.selected-container {
     width: 100%;
-    max-width: 340px;
-    background: rgba(20, 14, 12, 0.95);
-    border: 2px dashed #708375;
+    max-width: 500px;
+    background: #1c1816; /* Màu nền hộp tối hơn để làm nổi bật các list bên trong */
+    border: 2px solid #3d2f28; /* Viền hộp dày dặn, cứng cáp như chiếc hòm báu */
     border-radius: 12px;
-    padding: 15px;
+    padding: 18px;
+    margin-top: 25px;
+    /* Hiệu ứng đổ bóng nội mạc (inset) tạo độ sâu như một chiếc hộp rỗng chứa đồ */
+    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.8), 0 8px 25px rgba(0, 0, 0, 0.6);
     box-sizing: border-box;
-    display: none;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-    margin-top: 10px;
 }
 
-.choices-title {
-    color: #3b443d;
-    font-weight: bold;
-    margin-bottom: 12px;
-    text-transform: uppercase;
+/* Tiêu đề chiếc Box */
+.selected-container h3 {
     font-size: 13px;
+    color: #ffcc00;
+    margin-bottom: 15px;
+    text-transform: uppercase;
     letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
-.choice-item {
-    background: #2a1e1b;
-    border: 1px solid #5a4535;
-    padding: 12px;
-    margin-bottom: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    text-align: left;
-    font-size: 12.5px;
-    line-height: 1.4;
-    -webkit-tap-highlight-color: transparent;
-}
+/* Thêm icon tượng trưng hai bên tiêu đề cho ra dáng chiếc hộp chứa */
+.selected-container h3::before { content: "📦"; }
+.selected-container h3::after { content: "📦"; }
 
-.choice-item:active {
-    background: #3a2a25;
-    border-color: #ffcc00;
-}
-
-.status-msg {
-    font-size: 1rem;
-    color: #a69282;
-    animation: pulse 1.5s infinite;
-}
-
-.empty-msg {
-    font-size: 12px;
-    color: #7a6b5e;
-    font-style: italic;
-}
-
-@keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
-}
-/* Thẻ tướng tối ưu kích thước chuẩn màn hình dọc */
-.card {
-    background: #221815;
-    /* ĐỔI: Sử dụng biến số --theme-color làm màu viền mặc định */
-    border: 3px solid var(--theme-color, #4a3525);
-    border-radius: 14px;
-    padding: 20px;
-    width: 100%;
-    max-width: 340px;
-    min-height: 380px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-    text-align: left;
-    position: relative;
-    box-sizing: border-box;
+/* List danh sách kỹ năng xếp gọn inside chiếc Box */
+.selected-list {
     display: flex;
     flex-direction: column;
+    gap: 6px; /* Khoảng cách khít nhau giữa các dòng list */
+    background: rgba(0, 0, 0, 0.3); /* Nền lòng hộp trũng xuống */
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    max-height: 250px; /* Giới hạn chiều cao */
+    overflow-y: auto; /* Tự động xuất hiện thanh cuộn nếu quá nhiều kĩ năng */
 }
 
-/* ĐỔI: Hiệu ứng viền phát quang động theo màu của phe */
-.card.donthe-effect {
-    animation: borderGlow 2s infinite alternate;
+/* Từng dòng kĩ năng trong list: Biến thành dạng dòng thanh mảnh, bo góc nhẹ */
+.selected-item {
+    background: #241d1a;
+    border: 1px solid #382c26;
+    border-left: 4px solid var(--theme-color, #ffcc00); /* Vệt màu theo đúng phe của tướng kích hoạt */
+    border-radius: 5px;
+    padding: 10px 35px 10px 12px;
+    font-size: 11.5px;
+    line-height: 1.4;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    transition: background-color 0.15s;
 }
 
-@keyframes borderGlow {
-    0% { 
-        border-color: rgba(255, 255, 255, 0.2); 
-        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
-    }
-    100% { 
-        /* Tự động lấy biến --theme-color để làm màu viền và màu phát quang */
-        border-color: var(--theme-color); 
-        box-shadow: 0 0 20px var(--theme-color); 
-    }
+/* Hiệu ứng khi rê chuột vào từng dòng trong list */
+.selected-item:hover {
+    background: #2c2420;
+}
+
+/* Nút xóa tinh chỉnh nằm gọn gàng ở góc phải dòng */
+.delete-btn {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #8c7365;
+    font-size: 13px;
+    cursor: pointer;
+    transition: color 0.15s, transform 0.15s;
+    padding: 2px;
+}
+
+.delete-btn:hover {
+    color: #ff4444;
+    transform: translateY(-50%) scale(1.2); /* Phóng to nhẹ icon khi hover */
+}
+
+/* ==========================================================================
+   6. TRẠNG THÁI HỆ THỐNG & ANIMATIONS
+   ========================================================================== */
+.status-msg { 
+    font-size: 12px; 
+    color: #888; 
+    animation: pulse 1.5s infinite; 
+}
+
+.empty-msg { 
+    font-size: 11.5px; 
+    color: #66574d; 
+    font-style: italic;
+    text-align: center;
+    padding: 15px 0;
+}
+
+@keyframes pulse { 
+    0%, 100% { opacity: 0.6; } 
+    50% { opacity: 1; } 
 }

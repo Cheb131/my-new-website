@@ -2,9 +2,10 @@ const express = require('express');
 const path = require('path');
 require('dotenv').config();
 
-// Nhập mảng kỹ năng từ file skillDonThe.js
+// Nhập mảng kỹ năng 
 const skillDonThe = require('./skillDonThe');
 const skillBacLam = require('./skillBacLam');
+const skillNguHanh = require('./skillNguHanh');
 
 const app = express();
 app.use(express.json());
@@ -41,7 +42,18 @@ const rollGenerals = [
     skillPool: [
       { name: "Bác Lãm", desc: "Khi bắt đầu giai đoạn hành động hoặc giai đoạn hành động của người khác giới hạn 1 lần, người chơi đang có lượt có thể mất 1 sinh lực (nếu người đang có lượt là bạn thì không cần mất sinh lực), lệnh bạn chọn 1 trong 3 kỹ năng có mô tả (Một lần trong giai đoạn hành động), người đang có lượt xem như sở hữu kỹ năng này." },     
     ]
+  },
+  {
+    id: "than_ton_quyen",
+    name: "Thần Tôn Quyền",
+    title: "Tọa Đoạn Đông Nam",
+    kingdom: "Thần",
+    bg_color: "#cc9900", 
+    skillPool: [
+      { name: "Ngự Hành", desc: "Tỏa định kĩ Đầu lượt của bạn, bạn bỏ tùy ý bài có chất khác nhau, ngẫu nhiên đạt được lượng kỹ năng tương ứng của thế lực Ngô; Kết thúc lượt, bạn mất toàn bộ kỹ năng đã nhận bằng cách này, sau đó rút lượng bài tương đương." },     
+    ]
   }
+
 ];
 
 app.get('/api/generals', (req, res) => {
@@ -90,6 +102,29 @@ app.get('/api/random-baclam-skills', (req, res) => {
     res.json(chosenSkills);
   } catch (error) {
     console.error("Lỗi xử lý bốc kỹ năng Bác Lãm:", error.message);
+    res.status(500).json({ error: "Lỗi xử lý hệ thống Backend!" });
+  }
+});
+
+// Hàm skill Ngự Hành
+app.get('/api/random-nguhanh-skills', (req, res) => {
+  try {
+    if (!skillNguHanh || skillNguHanh.length < 4) {
+      return res.status(500).json({ error: "Kho dữ liệu Bác Lãm phải có ít nhất 3 kỹ năng!" });
+    }
+    
+    const chosenSkills = [];
+    const poolCopy = skillNguHanh.slice(0); 
+
+    while (chosenSkills.length < 3 && poolCopy.length > 0) {
+      const randomIndex = Math.floor(Math.random() * poolCopy.length);
+      const skill = poolCopy.splice(randomIndex, 1)[0];
+      chosenSkills.push(skill);
+    }
+
+    res.json(chosenSkills);
+  } catch (error) {
+    console.error("Lỗi xử lý bốc kỹ năng Ngự Hành:", error.message);
     res.status(500).json({ error: "Lỗi xử lý hệ thống Backend!" });
   }
 });
