@@ -1,0 +1,286 @@
+/* Tối ưu nền tảng & Chống tràn trên iPhone 15 */
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(circle, #2c1e1a 0%, #110b0a 100%);
+    color: #f0eae1;
+    margin: 0;
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    max-width: 1000px;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Responsive Title cho Mobile */
+h1 {
+    font-size: 1.8rem;
+    color: #ffcc00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 10px 0 5px 0;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.4), 2px 2px 4px #000;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: #b5a494;
+    margin-bottom: 25px;
+    font-style: italic;
+}
+
+.card-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+/* Thẻ tướng tối ưu kích thước chuẩn màn hình dọc iPhone 15 */
+.card {
+    background: #221815;
+    border: 3px solid #4a3525;
+    border-radius: 14px;
+    padding: 20px;
+    width: 100%;
+    max-width: 340px;
+    min-height: 380px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    text-align: left;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.card.donthe-effect {
+    animation: borderGlow 2s infinite alternate;
+}
+
+@keyframes borderGlow {
+    0% { border-color: #4a3525; }
+    100% { border-color: #66726a; box-shadow: 0 0 20px rgba(46, 164, 79, 0.4); }
+}
+
+.kingdom {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffcc00;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 204, 0, 0.3);
+}
+
+.card h2 {
+    margin: 5px 0 2px 0;
+    font-size: 1.6rem;
+    color: #ffffff;
+    text-shadow: 1px 1px 3px #000;
+}
+
+.title-tag {
+    font-size: 0.85rem;
+    color: #a69282;
+    font-style: italic;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.skills-wrapper {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.skill-box {
+    background: rgba(0, 0, 0, 0.4);
+    border-left: 3px solid #ffcc00;
+    padding: 10px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #ded5ca;
+}
+
+.skill-box.clickable-donthe {
+    border-left-color: #616b64;
+    background: rgba(46, 164, 79, 0.15);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent; /* Mượt cảm ứng iOS */
+}
+
+.skill-box.clickable-donthe:active {
+    background: rgba(46, 164, 79, 0.3);
+}
+
+.skill-name {
+    color: #ffcc00;
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* KHU VỰC KỸ NĂNG ĐÃ CHỌN */
+.selected-panel {
+    width: 100%;
+    max-width: 340px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #3a2a22;
+    border-radius: 12px;
+    padding: 15px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.panel-title {
+    font-size: 13px;
+    color: #ffcc00;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #3a2a22;
+    padding-bottom: 5px;
+}
+
+.selected-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.selected-item {
+    background: rgba(46, 164, 79, 0.1);
+    border: 1px solid rgba(46, 164, 79, 0.3);
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 12.5px;
+    position: relative;
+    line-height: 1.4;
+    padding-right: 35px; /* Tránh đè chữ vào nút Xóa */
+}
+
+.delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #ff4444;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    font-weight: bold;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* BẢNG CHỨA 3 LỰA CHỌN POP-UP */
+.choices-panel {
+    width: 100%;
+    max-width: 340px;
+    background: rgba(20, 14, 12, 0.95);
+    border: 2px dashed #708375;
+    border-radius: 12px;
+    padding: 15px;
+    box-sizing: border-box;
+    display: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+    margin-top: 10px;
+}
+
+.choices-title {
+    color: #3b443d;
+    font-weight: bold;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.choice-item {
+    background: #2a1e1b;
+    border: 1px solid #5a4535;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 12.5px;
+    line-height: 1.4;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.choice-item:active {
+    background: #3a2a25;
+    border-color: #ffcc00;
+}
+
+.status-msg {
+    font-size: 1rem;
+    color: #a69282;
+    animation: pulse 1.5s infinite;
+}
+
+.empty-msg {
+    font-size: 12px;
+    color: #7a6b5e;
+    font-style: italic;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+/* Thẻ tướng tối ưu kích thước chuẩn màn hình dọc */
+.card {
+    background: #221815;
+    /* ĐỔI: Sử dụng biến số --theme-color làm màu viền mặc định */
+    border: 3px solid var(--theme-color, #4a3525);
+    border-radius: 14px;
+    padding: 20px;
+    width: 100%;
+    max-width: 340px;
+    min-height: 380px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    text-align: left;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ĐỔI: Hiệu ứng viền phát quang động theo màu của phe */
+.card.donthe-effect {
+    animation: borderGlow 2s infinite alternate;
+}
+
+@keyframes borderGlow {
+    0% { 
+        border-color: rgba(255, 255, 255, 0.2); 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+    }
+    100% { 
+        /* Tự động lấy biến --theme-color để làm màu viền và màu phát quang */
+        border-color: var(--theme-color); 
+        box-shadow: 0 0 20px var(--theme-color); 
+    }
+}

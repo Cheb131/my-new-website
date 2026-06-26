@@ -1,0 +1,23 @@
+const skillBacLam = [
+  { name: "Ly Gián", desc: "Giai đoạn hành động, bạn có thể bỏ 1 lá bài, sau đó chọn 1 người Nam khác, lệnh người đó xem như sử dụng 1 lá Quyết Đấu lên 1 trong số những người Nam khác còn lại." },
+  { name: "Khu Hổ", desc: "Giai đoạn hành động giới hạn 1 lần, bạn có thể cùng người chơi có sinh lực lớn hơn bạn đấu điểm, nếu bạn: Thắng: người đó gây 1 sát thương cho 1 người chơi trong phạm vi công kích của người đó do bạn chọ; Không thắng: bạn nhận 1 sát thương." },
+  { name: "Thiên Nghĩa", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể đấu điểm cùng với một người chơi:Nếu bạn thắng, bạn có thể sử dụng thêm một lá [Sát] trong lượt hiện tại, sử dụng [Sát] không hạn chế cự ly và có thể chọn thêm một mục tiêu."},
+  { name: "Thương Vũ", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể tiến hành phát xét, sau đó bạn sử dụng [Sát] có điểm số nhỏ hơn kết quả phát xét không hạn chế cự ly, [Sát] có điểm số lớn hơn kết quả phát xét không hạn chế số lần."},
+  { name: "Cường Tập", desc: "Giai đoạn hành động giới hạn 1 lần, bạn có thể giảm 1 sinh lực hoặc bỏ 1 lá vũ khí, sau đó gây sát thương cho 1 người chơi khác trong phạm vi công kích của bạn."},
+  { name: "Đạo Thư", desc: "Giai đoạn hành động giới hạn 1 lần, bạn có thể chọn 1 người chơi khác rồi chọn 1 chất bài, sau đó thu lấy 1 lá bài trên tay người đó. Nếu lá bài thu được cùng chất với chất bài bạn đã chọn, bạn gây 1 sát thương cho người đó đồng thời kỹ năng này số lần phát động +1. Nếu lá bài thu được khác với chất bài bạn đã chọn, bạn giao lại cho người đó 1 lá bài trên tay khác chất với lá đã thu được (nếu không có thì phải mở toàn bộ bài)."},
+  { name: "Mật Chiếu", desc: "Giai đoạn hành động, bạn có thể bỏ 1 lá bài, sau đó chọn 1 người Nam khác, lệnh người đó xem như sử dụng 1 lá Quyết Đấu lên 1 trong số những người Nam khác còn lại."},
+  { name: "Minh Sách", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể đem một lá bài Trang Bị hoặc [Sát] giao cho một người chơi khác, sau đó họ lựa chọn một hạng mục: Xem như sử dụng một lá [Sát] đối với một trong những người chơi còn lại do bạn lựa chọn, nếu [Sát] này gây ra sát thương, chấp hành hạng mục số 2; Bạn cùng họ mỗi người rút một lá bài."},
+  { name: "Tam Trận", desc: "Giai đoạn hành động giới hạn 1 lần, bạn có thể lệnh 1 người rút 3 lá bài, sau đó bỏ 3 lá bài. Nếu người đó theo cách này bỏ bài khác loại nhau, người đó rút 1 lá bài và số lần phát động kỹ năng này lượt này +1 đồng thời lượt này không thể chỉ định tiếp người đó là mục tiêu."},
+  { name: "Chế Hành", desc: "Giai đoạn hành động giới hạn 1 lần, bạn có thể bỏ tùy ý bài, sau đó rút cùng lượng bài. Nếu bằng cách này bạn bỏ đi tất cả bài trên tay thì bạn rút thêm 1 lá."},
+  { name: "Ly Hồn", desc: "Giai đoạn ra bài 1 lần, bạn có thể bỏ 1 lá để xoay mặt võ tướng rồi chọn 1 tướng nam để lấy toàn bộ bài trên tay người chơi đó. Kết thúc giai đoạn dùng bài đó thì bạn phải trả lại 1 lá cho mỗi sinh lực còn lại của người chơi đó."},
+  { name: "Công Tâm", desc: "Giai đoạn hành động giới hạn 1 lần, bạn có thể xem bài trên tay 1 người chơi khác rồi lộ ra 1 lá ♥. Sau đó bạn được chọn bỏ lá ♥ đó đi hoặc đặt nó lên đầu chồng bài rút."},
+  { name: "Quốc Sắc", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể chọn dùng 1 lá ♦ như [Lạc Bất Tư Thục] hoặc bỏ 1 lá ♦ để bỏ đi 1 lá [Lạc Bất Tư Thục] trên bàn. Sau đó bạn rút 1 lá từ chồng bài."},
+  { name: "Khiêu Khích", desc: "Giai đoạn hành động giới hạn 1 lần, bạn có thể chọn 1 người chơi có phạm vi tấn công tới bạn, trừ phi người đó đối với bạn sử dụng 1 lá [Sát] và lá [Sát] này gây sát thương cho bạn, nếu không bạn hủy 1 lá bài của người đó đồng thời kỹ năng này sửa thành (Giai đoạn hành động giới hạn 2 lần) cho đến kết thúc lượt này."},
+  { name: "Trừ Lệ", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể chọn tối đa 3 người chơi khác có thế lực khác nhau hoặc chưa xác định thế lực, sau đó bạn bỏ bài của bạn và mỗi người này 1 lá, người bị bỏ bài bằng cách này là chất ♠ rút 1 lá bài."},
+  { name: "Kết Nhân", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể lựa chọn một người chơi giới tính nam, đồng thời bỏ đi một lá bài trên tay hoặc đem một lá Trang Bị đặt vào khu Trang Bị của họ, sau đó nếu bạn và người đó có sinh lực không bằng nhau, thì bạn và họ người nhiều sinh lực hơn rút một lá bài, người ít sinh lực hơn hồi phục 1 điểm sinh lực."},
+  { name: "Than Nang", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể bỏ đi một lá bài trên tay và lệnh một người chơi hồi phục 1 điểm sinh lực."},
+  { name: "Kỳ Sách", desc: "Giai đoạn hành động 1 lần, bạn có thể dùng tất cả bài trên tay (ít nhất 1 lá) như 1 lá Cẩm Nang bài phổ thông."},
+
+];
+
+module.exports = skillBacLam;
