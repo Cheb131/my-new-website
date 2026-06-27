@@ -126,7 +126,6 @@ async function loadGenerals() {
             gen.skillPool.forEach(s => {
                 const skillBox = document.createElement('div');
                 
-                // ĐÃ SỬA: Kiểm tra chính xác theo tên kỹ năng thực tế trên DB
                 if (s.name === "Độn Thế") {
                     skillBox.className = 'skill-box clickable-donthe';
                     skillBox.setAttribute('onclick', `trigger3pick1(this, '${s.name}', '/api/random-three-skills')`);
@@ -135,10 +134,14 @@ async function loadGenerals() {
                     skillBox.className = 'skill-box clickable-donthe';
                     skillBox.setAttribute('onclick', `trigger3pick1(this, '${s.name}', '/api/random-baclam-skills')`);
                 } 
-                // ĐÃ SỬA: Chuyển từ Quy Tâm thành Ngự Hành và trỏ đúng đường dẫn API mới
                 else if (s.name === "Ngự Hành") {
                     skillBox.className = 'skill-box clickable-donthe';
                     skillBox.setAttribute('onclick', `trigger4pick1(this, '${s.name}', '/api/random-nguhanh-skills')`);
+                }
+                else if (s.name === "Điểm Mặc")
+                {
+                    skillBox.className = 'skill-box clickable-donthe';
+                    skillBox.setAttribute('onclick', `trigger4pick1(this, '${s.name}', '/api/random-diemmac-skills')`);       
                 } 
                 else {
                     skillBox.className = 'skill-box';

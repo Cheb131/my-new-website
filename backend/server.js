@@ -6,6 +6,7 @@ require('dotenv').config();
 const skillDonThe = require('./skillDonThe');
 const skillBacLam = require('./skillBacLam');
 const skillNguHanh = require('./skillNguHanh');
+const skillDiemMac = require('./skillDiemMac');
 
 const app = express();
 app.use(express.json());
@@ -51,6 +52,16 @@ const rollGenerals = [
     bg_color: "#cc9900", 
     skillPool: [
       { name: "Ngự Hành", desc: "Tỏa định kĩ Đầu lượt của bạn, bạn bỏ tùy ý bài có chất khác nhau, ngẫu nhiên đạt được lượng kỹ năng tương ứng của thế lực Ngô; Kết thúc lượt, bạn mất toàn bộ kỹ năng đã nhận bằng cách này, sau đó rút lượng bài tương đương." },     
+    ]
+  },
+  {
+    id: "tran_tho",
+    name: "Trần Thọ",
+    title: "Uyên Nhi Thành Chương",
+    kingdom: "Thục",
+    bg_color: "#b31d1d", 
+    skillPool: [
+      { name: "Điểm Mặc", desc: "Giai đoạn chuẩn bị hoặc sau khi bạn nhận sát thương lần đầu mỗi lượt, bạn có thể xem 2 kỹ năng cho phép chuyển hóa bài, lựa chọn thu lấy 1 trong số đó (tối đa sở hữu 4 kỹ năng) hoặc thay thế một kỹ năng đã thu bằng cách này, sau đó rút 4-X lá bài (X là số kỹ năng đang có bằng cách này)." }
     ]
   }
 
@@ -116,7 +127,7 @@ app.get('/api/random-nguhanh-skills', (req, res) => {
     const chosenSkills = [];
     const poolCopy = skillNguHanh.slice(0); 
 
-    while (chosenSkills.length < 3 && poolCopy.length > 0) {
+    while (chosenSkills.length < 4 && poolCopy.length > 0) {
       const randomIndex = Math.floor(Math.random() * poolCopy.length);
       const skill = poolCopy.splice(randomIndex, 1)[0];
       chosenSkills.push(skill);
@@ -125,6 +136,26 @@ app.get('/api/random-nguhanh-skills', (req, res) => {
     res.json(chosenSkills);
   } catch (error) {
     console.error("Lỗi xử lý bốc kỹ năng Ngự Hành:", error.message);
+    res.status(500).json({ error: "Lỗi xử lý hệ thống Backend!" });
+  }
+});
+
+// Hàm skill Điểm Mặc
+app.get('/api/random-diemmac-skills', (req, res) => {
+  try {
+    if (!skillDiemMac || skillDiemMac.length < 4) {
+      return res.status(500).json({ error: "Kho dữ liệu Điểm Mặc phải có ít nhất 4 kỹ năng!" });
+    }
+    const chosenSkills = [];
+    const poolCopy = skillDiemMac.slice(0);
+
+    while (chosenSkills.length < 4 && poolCopy.length > 0) {
+      const randomIndex = Math.floor(Math.random() * poolCopy.length);
+      chosenSkills.push(poolCopy.splice(randomIndex, 1)[0]);
+    }
+    res.json(chosenSkills);
+  } catch (error) {
+    console.error("Lỗi xử lý bốc kỹ năng Điểm Mặc:", error.message);
     res.status(500).json({ error: "Lỗi xử lý hệ thống Backend!" });
   }
 });
