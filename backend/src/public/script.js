@@ -1,30 +1,22 @@
 let currentSkillElement = null; 
 let currentSkillName = "";      
 
-/**
- * HÀM CŨ: Xử lý cơ chế Rút 3 chọn 1 (Cho Độn Thế & Bác Lãm)
- */
+// HÀM 1: Cơ chế Rút 3 chọn 1
 async function trigger3pick1(element, originalName, apiUrl) {
     currentSkillElement = element;
     currentSkillName = originalName; 
-    
     const panel = document.getElementById('choicesPanel');
     const list = document.getElementById('choicesList');
     const titleElement = panel.querySelector('h3');
     
     panel.style.display = "block";
     list.innerHTML = '<p class="status-msg" style="font-size:12px;">Đang bốc 3 quẻ bùa...</p>';
-    
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
 
     try {
         const response = await fetch(apiUrl);
         const skills = await response.json();
-        
-        if (titleElement) {
-            titleElement.innerText = `🔮 Chọn 1 trong 3 kỹ năng để lĩnh hội 🔮`;
-        }
-
+        if (titleElement) titleElement.innerText = `🔮 Chọn 1 trong 3 kỹ năng để lĩnh hội 🔮`;
         list.innerHTML = '';
         skills.forEach(skill => {
             const option = document.createElement('div');
@@ -33,35 +25,25 @@ async function trigger3pick1(element, originalName, apiUrl) {
             option.onclick = () => selectSkill(skill.name, skill.desc);
             list.appendChild(option);
         });
-    } catch (err) {
-        list.innerHTML = '<p style="color:#ff4444; font-size:12px;">Lỗi kết nối kho báu!</p>';
-    }
+    } catch (err) { list.innerHTML = '<p style="color:#ff4444; font-size:12px;">Lỗi kết nối máy chủ!</p>'; }
 }
 
-/**
- * HÀM MỚI TÁCH RIÊNG: Xử lý cơ chế Rút 4 chọn 1 (Dành riêng cho phe Thần)
- */
+// HÀM 2: Cơ chế Rút 4 chọn 1
 async function trigger4pick1(element, originalName, apiUrl) {
     currentSkillElement = element;
     currentSkillName = originalName; 
-    
     const panel = document.getElementById('choicesPanel');
     const list = document.getElementById('choicesList');
     const titleElement = panel.querySelector('h3');
     
     panel.style.display = "block";
     list.innerHTML = '<p class="status-msg" style="font-size:12px;">Đang triệu gọi 4 quẻ thần bùa...</p>';
-    
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
 
     try {
         const response = await fetch(apiUrl);
         const skills = await response.json();
-        
-        if (titleElement) {
-            titleElement.innerText = `⚡ Chọn 1 trong 4 bí kỹ Thần tối cao ⚡`;
-        }
-
+        if (titleElement) titleElement.innerText = `⚡ Chọn 1 trong 4 bí kỹ tối cao ⚡`;
         list.innerHTML = '';
         skills.forEach(skill => {
             const option = document.createElement('div');
@@ -70,12 +52,29 @@ async function trigger4pick1(element, originalName, apiUrl) {
             option.onclick = () => selectSkill(skill.name, skill.desc);
             list.appendChild(option);
         });
+    } catch (err) { list.innerHTML = '<p style="color:#ff4444; font-size:12px;">Lỗi triệu hồi thần lực!</p>'; }
+}
+
+// HÀM MỚI: Cơ chế Roll 1 lấy luôn (Dành riêng cho Long Tụng - Không hiển thị bảng chọn)
+async function trigger1pick1(element, originalName, apiUrl) {
+    currentSkillElement = element;
+    currentSkillName = originalName;
+    
+    // Ẩn bảng panel chọn đi (đề phòng người chơi đang mở dở panel từ tướng khác)
+    document.getElementById('choicesPanel').style.display = "none";
+
+    try {
+        const response = await fetch(apiUrl);
+        const skill = await response.json();
+        
+        // Tự động đẩy thẳng vào Box lưu trữ luôn không cần bấm chọn!
+        selectSkill(skill.name, skill.desc);
     } catch (err) {
-        list.innerHTML = '<p style="color:#ff4444; font-size:12px;">Lỗi triệu hồi thần lực!</p>';
+        alert("Lỗi triệu gọi kỹ năng cưỡng ép!");
     }
 }
 
-// Hàm xử lý khi người dùng ấn chọn 1 kỹ năng để đưa vào Box lưu trữ
+// Đưa kỹ năng vào Box chứa list lưu trữ
 function selectSkill(name, desc) {
     const selectedList = document.getElementById('selectedList');
     const emptyMsg = selectedList.querySelector('.empty-msg');
@@ -90,7 +89,6 @@ function selectSkill(name, desc) {
     
     selectedList.appendChild(item);
     document.getElementById('choicesPanel').style.display = "none";
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function deleteSkill(btnElement) {
@@ -101,7 +99,7 @@ function deleteSkill(btnElement) {
     }
 }
 
-// Hàm khởi tạo tải thông tin các tướng từ Backend
+// Hàm render thẻ tướng
 async function loadGenerals() {
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = '<p class="status-msg" style="font-size:14px;">Đang triệu hồi các võ tướng...</p>';
@@ -137,12 +135,16 @@ async function loadGenerals() {
                 else if (s.name === "Ngự Hành") {
                     skillBox.className = 'skill-box clickable-donthe';
                     skillBox.setAttribute('onclick', `trigger4pick1(this, '${s.name}', '/api/random-nguhanh-skills')`);
-                }
-                else if (s.name === "Điểm Mặc")
-                {
-                    skillBox.className = 'skill-box clickable-donthe';
-                    skillBox.setAttribute('onclick', `trigger4pick1(this, '${s.name}', '/api/random-diemmac-skills')`);       
                 } 
+                else if (s.name === "Điểm Mặc") {
+                    skillBox.className = 'skill-box clickable-donthe';
+                    skillBox.setAttribute('onclick', `trigger4pick1(this, '${s.name}', '/api/random-diemmac-skills')`);
+                }
+                // PHÂN PHỐI CHO SKILL MỚI: Long Tụng kích hoạt hàm lấy luôn 1 skill
+                else if (s.name === "Long Tụng") {
+                    skillBox.className = 'skill-box clickable-donthe';
+                    skillBox.setAttribute('onclick', `trigger1pick1(this, '${s.name}', '/api/random-longtung-skill')`);
+                }
                 else {
                     skillBox.className = 'skill-box';
                 }

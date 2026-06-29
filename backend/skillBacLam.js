@@ -17,7 +17,6 @@ const skillBacLam = [
   { name: "Kết Nhân", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể lựa chọn một người chơi giới tính nam, đồng thời bỏ đi một lá bài trên tay hoặc đem một lá Trang Bị đặt vào khu Trang Bị của họ, sau đó nếu bạn và người đó có sinh lực không bằng nhau, thì bạn và họ người nhiều sinh lực hơn rút một lá bài, người ít sinh lực hơn hồi phục 1 điểm sinh lực."},
   { name: "Than Nang", desc: "Giai đoạn hành động giới hạn một lần, bạn có thể bỏ đi một lá bài trên tay và lệnh một người chơi hồi phục 1 điểm sinh lực."},
   { name: "Kỳ Sách", desc: "Giai đoạn hành động 1 lần, bạn có thể dùng tất cả bài trên tay (ít nhất 1 lá) như 1 lá Cẩm Nang bài phổ thông."},
-
 ];
 
 module.exports = skillBacLam;

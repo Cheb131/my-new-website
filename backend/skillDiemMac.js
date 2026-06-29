@@ -20,7 +20,7 @@ const skillDiemMac = [
   { name: "Túc Tật", desc: "Đầu giai đoạn hành động của 1 người không đầy máu, bạn có thể dùng 1 lá Đen như [Sát], sau khi kết toán [Sát] này, nếu [Sát] này gây thiệt hại đối với họ, bạn thu lấy 1 lá của họ."},
   { name: "Phá Trúc", desc: "Giai đoạn hành động, bạn có thể dùng 1 lá trên tay như [Xuất Kỳ Bất Ý]. Nếu lá này không gây thiệt hại, Phá Trúc vô hiệu đến hết lượt."},
   { name: "Tửu Trì", desc: "Bạn có thể dùng lá ♠ trên tay như [Tửu]. Không hạn chế số lần dùng [Tửu] trong lượt."},
-  { name: "Phụ Hồn", desc: "Bạn có thể sử dụng hoặc đánh ra 2 lá trên tay như [Sát]. Sau khi gây sát thương theo cách này trong giai đoạn hành động, bạn nhận <<Võ Thánh>> và <<Bào Hao>> đến hết lượt."},
+  { name: "Phụ Hồn", desc: "Bạn có thể sử dụng hoặc đánh ra 2 lá trên tay như [Sát]. Sau khi gây sát thương theo cách này trong giai đoạn hành động, bạn nhận <Võ Thánh> và <Bào Hao> đến hết lượt."},
   { name: "Giải Huyền", desc: "Hạn định kỹ Chuyển hoán kỹ Bạn có thể dùng lá; Dương: Đỏ như [Thuận Thủ Khiên Dương]; Âm: Đen như [Quá Hà Sách Kiều]."},
   { name: "Kỳ Tập", desc: "Bạn có thể dùng lá Đen như [Quá Hà Sách Kiều]."},
   { name: "Ủy Lâm", desc: "Mỗi lượt 1 lần, khi cần dùng [Sát] hoặc [Tửu], bạn có thể dùng 1 lá như [Sát] xem như [Tửu] và ngược lại, bài trên tay mục tiêu có cùng màu với lá này xem như [Sát] đến hết lượt."},
