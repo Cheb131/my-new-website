@@ -7,6 +7,7 @@ const skillDonThe = require('./skillDonThe');
 const skillBacLam = require('./skillBacLam');
 const skillNguHanh = require('./skillNguHanh');
 const skillDiemMac = require('./skillDiemMac');
+const skillLongTung = require('./skillLongTung');
 
 const app = express();
 app.use(express.json());
@@ -62,6 +63,16 @@ const rollGenerals = [
     bg_color: "#b31d1d", 
     skillPool: [
       { name: "Điểm Mặc", desc: "Giai đoạn chuẩn bị hoặc sau khi bạn nhận sát thương lần đầu mỗi lượt, bạn có thể xem 2 kỹ năng cho phép chuyển hóa bài, lựa chọn thu lấy 1 trong số đó (tối đa sở hữu 4 kỹ năng) hoặc thay thế một kỹ năng đã thu bằng cách này, sau đó rút 4-X lá bài (X là số kỹ năng đang có bằng cách này)." }
+    ]
+  },
+  {
+    id: "quan_ninh",
+    name: "Quan Ninh",
+    title: "Thừa Nghĩa Bỉnh Văn",
+    kingdom: "Thục",
+    bg_color: "#b31d1d",
+    skillPool: [
+      { name: "Long Tụng", desc: "Khi mở đầu giai đoạn hành động, bạn có thể: 1. Giao cho một người chơi khác một lá bài màu Đỏ; 2. Thu lấy của người chơi khác một lá bài màu Đỏ. Sau đó giai đoạn hiện tại bạn nhận được một kỹ năng (Giai đoạn hành động ưu tiên nhận được kỹ năng của người này, chỉ được phát động một lần)." }
     ]
   }
 
@@ -157,6 +168,18 @@ app.get('/api/random-diemmac-skills', (req, res) => {
   } catch (error) {
     console.error("Lỗi xử lý bốc kỹ năng Điểm Mặc:", error.message);
     res.status(500).json({ error: "Lỗi xử lý hệ thống Backend!" });
+  }
+});
+
+// Hàm skill Long Tụng
+app.get('/api/random-longtung-skill', (req, res) => {
+  try {
+    if (!skillLongTung || skillLongTung.length === 0) return res.status(500).json({ error: "Kho Long Tụng trống!" });
+    const randomIndex = Math.floor(Math.random() * skillLongTung.length);
+    // Trả về duy nhất 1 object kỹ năng được bốc trúng
+    res.json(skillLongTung[randomIndex]);
+  } catch (error) {
+    res.status(500).json({ error: "Lỗi hệ thống Backend!" });
   }
 });
 
