@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Thư Viện Bài Đánh - Tam Quốc Sát</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" style="max-width: 1000px; padding: 20px 0;">
+        <h1 style="margin-bottom: 5px;">🃏 THƯ VIỆN BÀI ĐÁNH 🃏</h1>
+        <p style="font-size: 12px; color: #a69282; margin-bottom: 20px;">Tra cứu thuộc tính, điểm số và chất của 52 lá bài</p>
+        
+        <a href="/" class="filter-btn active" style="text-decoration: none; display: inline-block; margin-bottom: 25px; background: #ffcc00; color: #000; font-weight: bold;">
+            ⬅ Quay về Chọn Tướng
+        </a>
+
+        <!-- THANH ĐẶT TÊN ĐÁNH DẤU (MỚI BỔ SUNG) -->
+        <div class="marker-config-panel" style="display: flex; gap: 10px; justify-content: center; align-items: center; background: #161211; border: 1px solid #382c26; padding: 12px; border-radius: 8px; margin-bottom: 20px; width: 100%;">
+            <span style="font-size: 12px; color: #ffcc00; font-weight: bold;">🔮 TÊN ẤN KÝ ĐÁNH DẤU:</span>
+            <input type="text" id="markerNameInput" value="Tiêu Dẫn" placeholder="Nhập tên ấn ký..." style="background: #211916; border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; outline: none; width: 150px;">
+            <span style="font-size: 11px; color: #888;">(Mẹo: Nhập tên ấn ký, rồi click thẳng vào tên lá bài để Đánh dấu / Xóa)</span>
+        </div>
+
+        <div class="filter-container" style="margin-top: 0;">
+            <button class="filter-btn active" onclick="filterMatrix('all')">Tất cả</button>
+            <button class="filter-btn" onclick="filterMatrix('trangbi')">Trang bị</button>
+            <button class="filter-btn" onclick="filterMatrix('congcu')">Công cụ</button>
+            <button class="filter-btn" onclick="filterMatrix('coban')">Cơ bản</button>
+        </div>
+
+        <div class="matrix-wrapper">
+            <table class="poker-matrix-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;"></th> 
+                        <th class="suit-header red-suit">♥</th>
+                        <th class="suit-header red-suit">♦</th>
+                        <th class="suit-header black-suit">♣</th>
+                        <th class="suit-header black-suit">♠</th>
+                    </tr>
+                </thead>
+                <tbody id="matrixBody">
+                    <!-- Javascript tự động đổ dữ liệu vào đây -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="deckScript.js"></script>
+</body>
+</html>

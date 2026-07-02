@@ -20,7 +20,7 @@ body {
 }
 
 .container {
-    max-width: 500px; /* Bóp gọn bề ngang chuẩn danh sách */
+    max-width: 500px;
     width: 100%;
     text-align: center;
     display: flex;
@@ -33,324 +33,234 @@ h1 {
     color: #ffcc00;
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin: 10px 0 5px 0;
+    margin: 25px 0 15px 0;
     text-shadow: 0 0 10px rgba(255, 204, 0, 0.4), 2px 2px 4px #000;
 }
 
-.subtitle {
-    font-size: 11px;
-    color: #a69282;
-    margin-bottom: 25px;
-    letter-spacing: 1px;
-}
-
 /* ==========================================================================
-   2. DANH SÁCH TƯỚNG NÂNG CẤP MÀU SẮC (ĐẬM CHẤT PHE PHÁI)
+   2. DANH SÁCH THẺ TƯỚNG PHÁT QUANG THEO PHE
    ========================================================================== */
 #result {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 8px; /* Tăng khoảng cách một chút để lộ rõ viền phát quang */
+    gap: 12px;
     margin-bottom: 25px;
 }
 
 .card {
-    /* NỀN ĐỔI MỚI: Gradient chuyển từ màu đen sang 20% màu chủ đạo của phe tạo chiều sâu */
     background: linear-gradient(135deg, #141414 60%, var(--theme-color) 250%); 
-    
-    /* VIỀN ĐỔI MỚI: Đổi sang màu sáng của hệ màu phe, tăng độ dày viền */
     border: 2px solid var(--theme-color, #4a3525);
-    border-left: 6px solid var(--theme-color, #4a3525); /* Viền trái dày hẳn làm điểm nhấn */
+    border-left: 6px solid var(--theme-color, #4a3525);
     border-radius: 10px;
-    
-    padding: 15px 40px 15px 15px;
+    padding: 15px;
     width: 100%;
-    min-height: auto;
-    
-    /* ĐỔ BÓNG PHÁT QUANG: Giúp thẻ nổi bần bật trên nền tối */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 10px rgba(0, 0, 0, 0.5);
-    
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
     text-align: left;
     display: flex;
     flex-direction: column;
     position: relative;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
 }
 
-/* HOVER EFFECT: Sáng bừng hào quang phe phái khi chạm vào */
-.card:hover {
-    transform: translateY(-2px);
-    /* Tăng cường độ phát quang theo màu phe */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8), 0 0 15px var(--theme-color);
-    filter: brightness(1.15); /* Làm sáng tổng thể thanh tướng lên */
-}
-
-/* MŨI TÊN (>) ĐỊNH DẠNG SẮC NÉT */
-.card::after {
-    content: "〉";
-    position: absolute;
-    right: 18px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--theme-color); /* Mũi tên tự động đổi màu theo màu phe luôn */
-    font-size: 13px;
-    font-weight: bold;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.card:hover::after {
-    opacity: 1;
-}
-
-/* THUỘC TÍNH CHỮ BÊN TRONG */
 .card h2 {
     font-size: 1.15rem;
     color: #ffffff;
-    margin: 0 0 2px 0;
-    font-weight: bold;
-    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    margin-bottom: 2px;
 }
 
 .title-tag {
-    font-size: 12px;
-    color: #999999; /* Tăng độ sáng danh hiệu một chút */
+    font-size: 11px;
+    color: #999999;
     margin-bottom: 10px;
     display: block;
 }
 
-/* Nhãn thế lực nhỏ gọn góc phải */
 .kingdom {
     position: absolute;
     top: 15px;
-    right: 42px; 
+    right: 15px; 
     font-size: 10px;
     font-weight: bold;
     background: rgba(0, 0, 0, 0.6);
     color: #ffffff;
-    border-left: 2px solid var(--theme-color); /* Vệt màu nhỏ ở nhãn thế lực */
     padding: 2px 6px;
     border-radius: 3px;
 }
 
-/* ==========================================================================
-   3. CỤM KỸ NĂNG BÊN TRONG
-   ========================================================================== */
 .skills-wrapper {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    width: 100%;
 }
 
 .skill-box {
-    background: rgba(0, 0, 0, 0.4); /* Làm nền ô skill tối xuống để tương phản với chữ */
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 6px;
     padding: 8px 10px;
     font-size: 11.5px;
-    line-height: 1.4;
     color: #ded5ca;
 }
 
 .skill-name {
     font-weight: bold;
-    color: #ffcc00; /* Màu vàng hoàng kim cho tên skill */
+    color: #ffcc00;
 }
 
-/* Kỹ năng kích hoạt đặc biệt (Có viền đứt màu của phe phát sáng nhẹ) */
 .skill-box.clickable-donthe {
     border: 1px dashed var(--theme-color);
     background: rgba(0, 0, 0, 0.5);
-    box-shadow: inset 0 0 8px rgba(var(--theme-color), 0.1);
-}
-
-.skill-box.clickable-donthe:hover {
-    background: rgba(255, 255, 255, 0.03);
+    cursor: pointer;
 }
 
 /* ==========================================================================
-   4. BẢNG HIỂN THỊ 3 LỰA CHỌN & DANH SÁCH LƯU
+   4. HỘP HIỂN THỊ DANH SÁCH LỰA CHỌN & LƯU
    ========================================================================== */
-.choices-panel, .selected-container {
+.choices-panel, .selected-panel {
     width: 100%;
     background: #161211;
     border: 1px solid #382c26;
     border-radius: 10px;
     padding: 15px;
     margin-top: 15px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.7);
-}
-
-.choices-panel h3, .selected-container h3 {
-    font-size: 13px;
-    color: #ffcc00;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.choices-list, .selected-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
 .choice-item {
     background: #211916;
     border: 1px solid #3a2e28;
     border-radius: 6px;
-    padding: 10px 12px;
+    padding: 10px;
     font-size: 11.5px;
-    line-height: 1.4;
+    margin-bottom: 6px;
     text-align: left;
-    transition: all 0.15s;
-}
-
-.choice-item:hover {
-    background: #2e231f;
-    border-color: #ffcc00;
+    cursor: pointer;
 }
 
 .selected-item {
     background: #1c1513;
     border-left: 3px solid var(--theme-color, #ffcc00);
-    border-radius: 4px;
-    padding: 10px 35px 10px 12px;
+    padding: 10px;
     font-size: 11.5px;
-    line-height: 1.4;
-    text-align: left;
     position: relative;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    margin-bottom: 6px;
+    text-align: left;
 }
 
 .delete-btn {
     position: absolute;
-    top: 50%;
     right: 10px;
+    top: 50%;
     transform: translateY(-50%);
     background: transparent;
     border: none;
-    color: #666;
-    font-size: 14px;
-    cursor: pointer;
-    transition: color 0.15s;
-}
-
-.delete-btn:hover {
     color: #ff4444;
+    cursor: pointer;
 }
 
-.status-msg { font-size: 12px; color: #888; animation: pulse 1.5s infinite; }
-.empty-msg { font-size: 11.5px; color: #555; font-style: italic; }
-
-@keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 /* ==========================================================================
-   5. BẢNG KẾT QUẢ KỸ NĂNG ĐÃ CHỌN (CHIẾC BOX CHỨA LIST ĐẶC BIỆT)
+   7. BẢNG GRID TRA CỨU 52 LÁ BÀI ĐÁNH (FIX ĐỒ NỀN HÀNG NGANG)
    ========================================================================== */
-.selected-container {
+.filter-container {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0 15px 0;
+    justify-content: center;
     width: 100%;
-    max-width: 500px;
-    background: #1c1816; /* Màu nền hộp tối hơn để làm nổi bật các list bên trong */
-    border: 2px solid #3d2f28; /* Viền hộp dày dặn, cứng cáp như chiếc hòm báu */
-    border-radius: 12px;
-    padding: 18px;
-    margin-top: 25px;
-    /* Hiệu ứng đổ bóng nội mạc (inset) tạo độ sâu như một chiếc hộp rỗng chứa đồ */
-    box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.8), 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.filter-btn {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    color: #888;
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.filter-btn.active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.matrix-wrapper {
+    width: 100%;
+    max-width: 1000px;
+    overflow-x: auto;
+    background: #111111;
+    border: 1px solid #222;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.poker-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ép buộc trình duyệt chia 4 cột cân bằng hoàn hảo */
+}
+
+.poker-matrix-table th, .poker-matrix-table td {
+    border: 1px solid #222;
+    padding: 8px;
+}
+
+.suit-header {
+    font-size: 1.4rem;
+    background: #161616;
+    width: 23%; /* Thiết lập tỉ lệ cân đối ngang */
+}
+
+.red-suit { color: #ff3333; }
+.black-suit { color: #aaaaaa; }
+
+.row-label {
+    width: 80px !important;
+    font-weight: bold;
+    color: #666;
+    background: #141414;
+    vertical-align: middle !important;
+}
+
+.matrix-cell {
+    background: #0f0f0f;
+    vertical-align: top !important;
+}
+
+.cell-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+/* Định dạng nhãn tag bài đánh */
+.card-tag {
+    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    text-align: left;
+    display: block;
+    width: 100%;
     box-sizing: border-box;
 }
 
-/* Tiêu đề chiếc Box */
-.selected-container h3 {
-    font-size: 13px;
-    color: #ffcc00;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
+/* MÀU SẮC ĐẶC TRƯNG TỪNG LOẠI THẺ BÀI */
+.card-tag.trangbi {
+    background: #242212;
+    color: #fde047;
+    border: 1px solid #544c1e;
 }
 
-/* Thêm icon tượng trưng hai bên tiêu đề cho ra dáng chiếc hộp chứa */
-.selected-container h3::before { content: "📦"; }
-.selected-container h3::after { content: "📦"; }
-
-/* List danh sách kỹ năng xếp gọn inside chiếc Box */
-.selected-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px; /* Khoảng cách khít nhau giữa các dòng list */
-    background: rgba(0, 0, 0, 0.3); /* Nền lòng hộp trũng xuống */
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.02);
-    max-height: 250px; /* Giới hạn chiều cao */
-    overflow-y: auto; /* Tự động xuất hiện thanh cuộn nếu quá nhiều kĩ năng */
+.card-tag.coban {
+    background: #121b24;
+    color: #38bdf8;
+    border: 1px solid #1e3a54;
 }
 
-/* Từng dòng kĩ năng trong list: Biến thành dạng dòng thanh mảnh, bo góc nhẹ */
-.selected-item {
-    background: #241d1a;
-    border: 1px solid #382c26;
-    border-left: 4px solid var(--theme-color, #ffcc00); /* Vệt màu theo đúng phe của tướng kích hoạt */
-    border-radius: 5px;
-    padding: 10px 35px 10px 12px;
-    font-size: 11.5px;
-    line-height: 1.4;
-    text-align: left;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-    transition: background-color 0.15s;
-}
-
-/* Hiệu ứng khi rê chuột vào từng dòng trong list */
-.selected-item:hover {
-    background: #2c2420;
-}
-
-/* Nút xóa tinh chỉnh nằm gọn gàng ở góc phải dòng */
-.delete-btn {
-    position: absolute;
-    top: 50%;
-    right: 12px;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #8c7365;
-    font-size: 13px;
-    cursor: pointer;
-    transition: color 0.15s, transform 0.15s;
-    padding: 2px;
-}
-
-.delete-btn:hover {
-    color: #ff4444;
-    transform: translateY(-50%) scale(1.2); /* Phóng to nhẹ icon khi hover */
-}
-
-/* ==========================================================================
-   6. TRẠNG THÁI HỆ THỐNG & ANIMATIONS
-   ========================================================================== */
-.status-msg { 
-    font-size: 12px; 
-    color: #888; 
-    animation: pulse 1.5s infinite; 
-}
-
-.empty-msg { 
-    font-size: 11.5px; 
-    color: #66574d; 
-    font-style: italic;
-    text-align: center;
-    padding: 15px 0;
-}
-
-@keyframes pulse { 
-    0%, 100% { opacity: 0.6; } 
-    50% { opacity: 1; } 
+/* Đã sửa: Gán màu sắc tím hồng huyền bí cho lớp bộ lọc .congcu mới */
+.card-tag.congcu {
+    background: #1b1224; 
+    color: #c084fc;       
+    border: 1px solid #3b1e54;
 }
