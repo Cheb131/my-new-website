@@ -2,13 +2,14 @@ const express = require('express');
 const path = require('path');
 require('dotenv').config();
 
+// Nhập mảng kỹ năng và bộ bài Tây
 const skillDonThe = require('./skillDonThe');
 const skillBacLam = require('./skillBacLam');
 const skillNguHanh = require('./skillNguHanh');
 const skillDiemMac = require('./skillDiemMac');
 const skillLongTung = require('./skillLongTung');
 const skillBinhTai = require('./skillBinhTai');
-const pokerDeck = require('./pokerDeck'); // Khai báo nạp từ file deck gốc
+const pokerDeck = require('./pokerDeck');
 
 const app = express();
 app.use(express.json());
@@ -30,10 +31,12 @@ app.get('/deck', (req, res) => {
 const rollGenerals = [
   { id: "quan_ninh", name: "Quản Ninh", title: "Tích Cảnh Quy Nguyên", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [{ name: "Độn Thế" }] },
   { id: "chung_diem", name: "Chung Diễm", title: "Thông Tuệ Hoàng Nhã", kingdom: "Tấn", bg_color: "#5c2d91", skillPool: [{ name: "Bác Lãm" }] },
-  { id: "than_ton_quyen", name: "Thần Tôn Quyền", title: "Ngự Vũ Thần Cơ", kingdom: "Thần", bg_color: "#cc9900", skillPool: [{ name: "Ngự Hành" }] },
-  { id: "tran_tho", name: "Trần Thọ", title: "Chấp Bút Định Sử", kingdom: "Thục", bg_color: "#b31d1d", skillPool: [{ name: "Điểm Mặc" }] },
-  { id: "quan_ninh_thuc", name: "Quản Ninh", title: "Long Tụng Cửu Châu", kingdom: "Thục", bg_color: "#b31d1d", skillPool: [{ name: "Long Tụng" }] },
-  { id: "hua_thieu", name: "Hứa Thiệu", title: "Bình Đẳng Thiên Hạ", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [{ name: "Bình Tài" }] }
+  { id: "than_ton_quyen", name: "Thần Tôn Quyền", title: "Tọa Đoạn Đông Nam", kingdom: "Thần", bg_color: "#cc9900", skillPool: [{ name: "Ngự Hành" }] },
+  { id: "tran_tho", name: "Trần Thọ", title: "Uyên Văn Thành Chương", kingdom: "Thục", bg_color: "#b31d1d", skillPool: [{ name: "Điểm Mặc" }] },
+  { id: "quan_ninh_thuc", name: "Quản Ninh", title: "Thừa Nghĩa Bỉnh Văn", kingdom: "Thục", bg_color: "#b31d1d", skillPool: [{ name: "Long Tụng" }] },
+  { id: "hua_thieu", name: "Hứa Thiệu", title: "Thức Nhân Độc Tâm", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [{ name: "Bình Tài" }] },
+  { id: "tu_ma_su", name: "Tư Mã Sư", title: "Duy Kỉ Thành Vụ", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Tán Sĩ"}] 
+  }
 ];
 
 app.get('/api/generals', (req, res) => { res.json(rollGenerals); });
@@ -68,13 +71,8 @@ app.get('/api/random-longtung-skill', (req, res) => {
 
 app.get('/api/binhtai-pool', (req, res) => { res.json(skillBinhTai); });
 
-// API Ma trận bài: Đã sửa trỏ đúng vào mảng pokerDeck đã export
 app.get('/api/poker-matrix', (req, res) => {
-  try { 
-    res.json(pokerDeck); 
-  } catch (error) { 
-    res.status(500).json({ error: "Lỗi!" }); 
-  }
+  try { res.json(pokerDeck); } catch (error) { res.status(500).json({ error: "Lỗi!" }); }
 });
 
 const PORT = process.env.PORT || 3000;

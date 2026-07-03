@@ -74,10 +74,63 @@ async function triggerBinhTai(element, originalName) {
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
 }
 
+// LOGIC MỚI: Xử lý kích hoạt trận pháp găm 13 lá của Tư Mã Sư
+async function triggerTuMaSu() {
+    try {
+        // Tải cấu trúc bài từ máy chủ về để lấy tên bài thật
+        const response = await fetch('/api/poker-matrix');
+        const fullDeck = await response.json();
+        
+        const suits = ["Cơ", "Rô", "Chuồn", "Bích"];
+        const autoMarkers = {};
+
+        // Chạy vòng lặp từ hàng 1 (A) đến hàng 13 (K)
+        for (let num = 1; num <= 13; num++) {
+            // Chọn ngẫu nhiên 1 trong 4 chất cho hàng này
+            const randomSuit = suits[Math.floor(Math.random() * suits.length)];
+            
+            // Tìm ô chứa bài tương ứng
+            const cellData = fullDeck.find(c => c.number === num && c.suit === randomSuit);
+            
+            if (cellData && cellData.cards.length > 0) {
+                // Chọn ngẫu nhiên 1 lá bài trong ô đó (vì một ô có nhiều lá trùng điểm/chất)
+                const randomCardIndex = Math.floor(Math.random() * cellData.cards.length);
+                const card = cellData.cards[randomCardIndex];
+                
+                // Tạo chìa khóa định danh cô lập ô giống bên deckScript
+                const cardKey = `${num}_${randomSuit}_${card.name}_${randomCardIndex}`;
+                autoMarkers[cardKey] = "Tán Sĩ"; // Tên ấn ký của Tư Mã Sư
+            }
+        }
+
+        // Đẩy toàn bộ 13 ấn ký này vào bộ nhớ dùng chung của Trình duyệt
+        localStorage.setItem('tuMaSuMarkers', JSON.stringify(autoMarkers));
+        
+        // Đẩy thông báo vào Rương chứa dưới màn hình cho người chơi thấy
+        const selectedList = document.getElementById('selectedList');
+        const emptyMsg = selectedList.querySelector('.empty-msg');
+        if (emptyMsg) emptyMsg.remove();
+        
+        const item = document.createElement('div');
+        item.className = 'selected-item';
+        item.style.borderLeftColor = '#1e3a8a';
+        item.innerHTML = `
+            <span class="skill-name" style="color:#38bdf8">【Tán Sĩ ➔ Phát Động】</span> 
+            Đã đánh dấu 13 thẻ bài, hãy qua danh sách bài để xem
+            <button class="delete-btn" onclick="deleteSkill(this)">✖</button>
+        `;
+        selectedList.appendChild(item);
+        alert("🔮 Kích hoạt Tán Sĩ thành công");
+    } catch (err) {
+        console.error(err);
+        alert("Lỗi bày trận pháp Tư Mã Sư!");
+    }
+}
+
 async function fetchBinhTaiPool(type) {
     const list = document.getElementById('choicesList');
     if (!binhTaiPool || !binhTaiPool[type] || binhTaiPool[type].length === 0) {
-        list.innerHTML = '<p style="color:#ff4444; text-align:center;">⚠️ Giai đoạn này đã cạn kiệt kỹ năng!</p>';
+        list.innerHTML = '<p style="color:#ff4444; text-align:center; font-size:12px;">⚠️ Giai đoạn này đã cạn kiệt kỹ năng!</p>';
         return;
     }
     const targetPool = binhTaiPool[type];
@@ -120,7 +173,6 @@ function selectSkill(name, desc) {
     document.getElementById('choicesPanel').style.display = "none";
 }
 
-// Giữ lại hàm xóa bài trong rương công cộng
 function deleteSkill(btnElement) {
     btnElement.parentElement.remove();
     const selectedList = document.getElementById('selectedList');
@@ -148,6 +200,7 @@ async function loadGenerals() {
                 else if (s.name === "Điểm Mặc") skillBox.setAttribute('onclick', `trigger4pick1(this, '${s.name}', '/api/random-diemmac-skills')`);
                 else if (s.name === "Long Tụng") skillBox.setAttribute('onclick', `trigger1pick1(this, '${s.name}', '/api/random-longtung-skill')`);
                 else if (s.name === "Bình Tài") skillBox.setAttribute('onclick', `triggerBinhTai(this, '${s.name}')`);
+                else if (s.name === "Tán Sĩ") skillBox.setAttribute('onclick', `triggerTuMaSu()`);
                 
                 skillBox.className = 'skill-box clickable-donthe';
                 skillBox.innerHTML = `<span class="skill-name">【${s.name}】</span>${s.desc || ''}`;

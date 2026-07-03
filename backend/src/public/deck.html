@@ -15,11 +15,16 @@
             ⬅ Quay về Chọn Tướng
         </a>
 
-        <!-- THANH ĐẶT TÊN ĐÁNH DẤU (MỚI BỔ SUNG) -->
+        <!-- THANH CẤU HÌNH ĐÁNH DẤU CÓ THÊM NÚT XÓA TOÀN BỘ -->
         <div class="marker-config-panel" style="display: flex; gap: 10px; justify-content: center; align-items: center; background: #161211; border: 1px solid #382c26; padding: 12px; border-radius: 8px; margin-bottom: 20px; width: 100%;">
-            <span style="font-size: 12px; color: #ffcc00; font-weight: bold;">🔮 TÊN ẤN KÝ ĐÁNH DẤU:</span>
-            <input type="text" id="markerNameInput" value="Tiêu Dẫn" placeholder="Nhập tên ấn ký..." style="background: #211916; border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; outline: none; width: 150px;">
-            <span style="font-size: 11px; color: #888;">(Mẹo: Nhập tên ấn ký, rồi click thẳng vào tên lá bài để Đánh dấu / Xóa)</span>
+            <span style="font-size: 12px; color: #ffcc00; font-weight: bold;">🔮 TÊN ẤN KÝ:</span>
+            <input type="text" id="markerNameInput" value="Tiêu Dẫn" placeholder="Nhập tên ấn ký..." style="background: #211916; border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; outline: none; width: 120px;">
+            
+            <!-- NÚT XÓA SẠCHẤN KÝ MỚI BỔ SUNG -->
+            <button onclick="clearAllMarkers()" class="filter-btn" style="background: #ff4444; color: white; border-color: #ff4444; padding: 6px 12px; font-weight: bold; margin: 0; border-radius: 4px;">
+                🗑️ Xóa toàn bộ đánh dấu
+            </button>
+            <span style="font-size: 11px; color: #888;">(Bấm tên lá bài để bật/tắt đánh dấu riêng lẻ)</span>
         </div>
 
         <div class="filter-container" style="margin-top: 0;">
@@ -27,6 +32,7 @@
             <button class="filter-btn" onclick="filterMatrix('trangbi')">Trang bị</button>
             <button class="filter-btn" onclick="filterMatrix('congcu')">Công cụ</button>
             <button class="filter-btn" onclick="filterMatrix('coban')">Cơ bản</button>
+            <span id="dynamicMarkerFilterContainer"></span>
         </div>
 
         <div class="matrix-wrapper">
@@ -41,7 +47,6 @@
                     </tr>
                 </thead>
                 <tbody id="matrixBody">
-                    <!-- Javascript tự động đổ dữ liệu vào đây -->
                 </tbody>
             </table>
         </div>
