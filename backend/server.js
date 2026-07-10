@@ -9,6 +9,7 @@ const skillNguHanh = require('./skillNguHanh');
 const skillDiemMac = require('./skillDiemMac');
 const skillLongTung = require('./skillLongTung');
 const skillBinhTai = require('./skillBinhTai');
+const skillThienThu = require('./skillThienThu');
 const pokerDeck = require('./pokerDeck');
 
 const app = express();
@@ -35,8 +36,8 @@ const rollGenerals = [
   { id: "tran_tho", name: "Trần Thọ", title: "Uyên Văn Thành Chương", kingdom: "Thục", bg_color: "#b31d1d", skillPool: [{ name: "Điểm Mặc" }] },
   { id: "quan_ninh_thuc", name: "Quản Ninh", title: "Thừa Nghĩa Bỉnh Văn", kingdom: "Thục", bg_color: "#b31d1d", skillPool: [{ name: "Long Tụng" }] },
   { id: "hua_thieu", name: "Hứa Thiệu", title: "Thức Nhân Độc Tâm", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [{ name: "Bình Tài" }] },
-  { id: "tu_ma_su", name: "Tư Mã Sư", title: "Duy Kỉ Thành Vụ", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Tán Sĩ"}] 
-  }
+  { id: "tu_ma_su", name: "Tư Mã Sư", title: "Duy Kỉ Thành Vụ", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Tán Sĩ"}] },
+  { id: "nam_hoa_lao_tien", name: "Nam Hoa Lão Tiên", title: "Tiêu Diêu Tiên Du", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [  { name: "Thiên Thư", desc: "Giai đoạn chuẩn bị, bạn có thể kích hoạt [Thiên Thư] để rút ngẫu nhiên 3 Nguyên nhân không trùng tên, chọn lấy 1; sau đó rút ngẫu nhiên 3 Hệ quả, chọn lấy 1 để tạo thành quẻ mệnh thực thi trong lượt." } ]}
 ];
 
 app.get('/api/generals', (req, res) => { res.json(rollGenerals); });
@@ -73,6 +74,47 @@ app.get('/api/binhtai-pool', (req, res) => { res.json(skillBinhTai); });
 
 app.get('/api/poker-matrix', (req, res) => {
   try { res.json(pokerDeck); } catch (error) { res.status(500).json({ error: "Lỗi!" }); }
+});
+
+app.get('/api/thienthu-causes', (req, res) => {
+  try {
+    
+    const uniqueCausesPool = Array.from(new Map(skillThienThu.causes.map(item => [item.name, item])).values());
+
+    if (uniqueCausesPool.length < 3) {
+      return res.status(500).json({ error: "Kho Nguyên nhân sau khi lọc trùng không đủ 3 phần tử!" });
+    }
+
+    const chosenCauses = [];
+    const poolCopy = uniqueCausesPool.slice(0);
+
+    while (chosenCauses.length < 3 && poolCopy.length > 0) {
+      const randomIndex = Math.floor(Math.random() * poolCopy.length);
+      chosenCauses.push(poolCopy.splice(randomIndex, 1)[0]);
+    }
+    res.json(chosenCauses);
+  } catch (error) {
+    res.status(500).json({ error: "Lỗi Backend bốc Nguyên nhân!" });
+  }
+});
+
+app.get('/api/thienthu-effects', (req, res) => {
+  try {
+    if (!skillThienThu.effects || skillThienThu.effects.length < 3) {
+      return res.status(500).json({ error: "Kho Hệ quả không đủ dữ liệu!" });
+    }
+
+    const chosenEffects = [];
+    const poolCopy = skillThienThu.effects.slice(0);
+
+    while (chosenEffects.length < 3 && poolCopy.length > 0) {
+      const randomIndex = Math.floor(Math.random() * poolCopy.length);
+      chosenEffects.push(poolCopy.splice(randomIndex, 1)[0]);
+    }
+    res.json(chosenEffects);
+  } catch (error) {
+    res.status(500).json({ error: "Lỗi Backend bốc Hệ quả!" });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

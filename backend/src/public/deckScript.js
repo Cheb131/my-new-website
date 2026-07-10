@@ -151,7 +151,7 @@ function toggleCardMarker(cardKey) {
 function clearAllMarkers() {
     if (Object.keys(cardMarkers).length === 0) return;
     
-    if (confirm("💥 Bạn có chắc chắn muốn hóa giải toàn bộ Tiêu ký không?")) {
+    if (confirm(" Bạn có chắc chắn muốn hóa giải toàn bộ Tiêu ký không?")) {
         cardMarkers = {}; // Làm rỗng mảng
         localStorage.removeItem('gameCardMarkers'); // Xóa bộ nhớ lâu dài
         localStorage.removeItem('tuMaSuMarkers'); // Xóa bộ nhớ tạm của Tư Mã Sư

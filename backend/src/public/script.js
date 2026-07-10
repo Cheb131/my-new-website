@@ -2,6 +2,8 @@ let currentSkillElement = null;
 let currentSkillName = "";      
 
 let binhTaiPool = null; 
+// Biến tạm để lưu lại Nguyên nhân người chơi vừa bấm chọn trước khi ghép với Hệ quả
+let temporaryCauseName = ""; 
 
 async function initBinhTaiPool() {
     if (!binhTaiPool) {
@@ -14,6 +16,7 @@ async function initBinhTaiPool() {
     }
 }
 
+// HÀM 1: Cơ chế Rút 3 chọn 1 (Giữ nguyên)
 async function trigger3pick1(element, originalName, apiUrl) {
     currentSkillElement = element; currentSkillName = originalName; 
     const panel = document.getElementById('choicesPanel'); const list = document.getElementById('choicesList');
@@ -24,12 +27,13 @@ async function trigger3pick1(element, originalName, apiUrl) {
         list.innerHTML = '';
         skills.forEach(skill => {
             const option = document.createElement('div'); option.className = 'choice-item';
-            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span> ${skill.desc}`;
-            option.onclick = () => selectSkill(skill.name, skill.desc); list.appendChild(option);
+            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span>`;
+            option.onclick = () => selectSkill(skill.name, ""); list.appendChild(option);
         });
     } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
 }
 
+// HÀM 2: Cơ chế Rút 4 chọn 1 (Giữ nguyên)
 async function trigger4pick1(element, originalName, apiUrl) {
     currentSkillElement = element; currentSkillName = originalName; 
     const panel = document.getElementById('choicesPanel'); const list = document.getElementById('choicesList');
@@ -40,21 +44,23 @@ async function trigger4pick1(element, originalName, apiUrl) {
         list.innerHTML = '';
         skills.forEach(skill => {
             const option = document.createElement('div'); option.className = 'choice-item';
-            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span> ${skill.desc}`;
-            option.onclick = () => selectSkill(skill.name, skill.desc); list.appendChild(option);
+            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span>`;
+            option.onclick = () => selectSkill(skill.name, ""); list.appendChild(option);
         });
     } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
 }
 
+// HÀM 3: Cơ chế Rút 1 lấy luôn (Giữ nguyên)
 async function trigger1pick1(element, originalName, apiUrl) {
     currentSkillElement = element; currentSkillName = originalName;
     document.getElementById('choicesPanel').style.display = "none";
     try {
         const response = await fetch(apiUrl); const skill = await response.json();
-        selectSkill(skill.name, skill.desc);
+        selectSkill(skill.name, "");
     } catch (err) { alert("Lỗi kết nối!"); }
 }
 
+// HÀM 4: Giao diện Chọn Giai đoạn của Bình Tài (Giữ nguyên)
 async function triggerBinhTai(element, originalName) {
     currentSkillElement = element; currentSkillName = originalName;
     await initBinhTaiPool();
@@ -74,111 +80,129 @@ async function triggerBinhTai(element, originalName) {
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
 }
 
-// LOGIC MỚI: Xử lý kích hoạt trận pháp găm 13 lá của Tư Mã Sư
+// HÀM CHÍNH CHO THIÊN THƯ - TẦNG 1: Bốc 3 Nguyên Nhân không trùng tên (Đã xóa desc)
+async function triggerThienThuCauses(element, originalName) {
+    currentSkillElement = element; 
+    currentSkillName = originalName; 
+    
+    const panel = document.getElementById('choicesPanel'); 
+    const list = document.getElementById('choicesList');
+    const titleElement = panel.querySelector('.choices-title') || panel.querySelector('h3');
+    
+    panel.style.display = "block"; 
+    list.innerHTML = '<p class="status-msg">🔮 Thiên Thư đang bốc toán Nguyên Nhân...</p>';
+    setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
+
+    try {
+        const response = await fetch('/api/thienthu-causes'); 
+        const causes = await response.json();
+        
+        if (titleElement) titleElement.innerText = `📖 Thiên Thư: Chọn NGUYÊN NHÂN 📖`;
+        
+        list.innerHTML = '';
+        causes.forEach(item => {
+            const option = document.createElement('div'); 
+            option.className = 'choice-item';
+            option.style.borderColor = "#ef4444"; 
+            option.innerHTML = `<span class="skill-name" style="color:#ef4444">【${item.name}】</span>`;
+            
+            option.onclick = () => selectThienThuCause(item.name); 
+            list.appendChild(option);
+        });
+    } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
+}
+
+// HÀM CHUYỂN TIẾP - TẦNG 2: Bốc tiếp 3 Hệ quả ra màn hình (Đã xóa desc)
+async function selectThienThuCause(causeName) {
+    temporaryCauseName = causeName; 
+    
+    const list = document.getElementById('choicesList');
+    const titleElement = document.getElementById('choicesPanel').querySelector('.choices-title') || document.getElementById('choicesPanel').querySelector('h3');
+    
+    list.innerHTML = '<p class="status-msg">⚡ Nguyên nhân đã định! Đang triệu gọi Hệ Quả...</p>';
+
+    try {
+        const response = await fetch('/api/thienthu-effects');
+        const effects = await response.json();
+
+        if (titleElement) titleElement.innerText = `📜 Thiên Thư: Chọn HỆ QUẢ 📜`;
+
+        list.innerHTML = '';
+        effects.forEach(item => {
+            const option = document.createElement('div');
+            option.className = 'choice-item';
+            option.style.borderColor = "#34d399"; 
+            option.innerHTML = `<span class="skill-name" style="color:#34d399">【${item.name}】</span>`;
+            
+            // Ép gộp chuỗi tạo thành quẻ mệnh hoàn chỉnh đưa vào rương
+            option.onclick = () => selectSkill(`Nếu (${temporaryCauseName}) ➔ Sẽ (${item.name})`, "");
+            list.appendChild(option);
+        });
+    } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
+}
+
 async function triggerTuMaSu() {
     try {
-        // Tải cấu trúc bài từ máy chủ về để lấy tên bài thật
-        const response = await fetch('/api/poker-matrix');
-        const fullDeck = await response.json();
-        
-        const suits = ["Cơ", "Rô", "Chuồn", "Bích"];
-        const autoMarkers = {};
-
-        // Chạy vòng lặp từ hàng 1 (A) đến hàng 13 (K)
+        const response = await fetch('/api/poker-matrix'); const fullDeck = await response.json();
+        const suits = ["Cơ", "Rô", "Chuồn", "Bích"]; const autoMarkers = {};
         for (let num = 1; num <= 13; num++) {
-            // Chọn ngẫu nhiên 1 trong 4 chất cho hàng này
             const randomSuit = suits[Math.floor(Math.random() * suits.length)];
-            
-            // Tìm ô chứa bài tương ứng
             const cellData = fullDeck.find(c => c.number === num && c.suit === randomSuit);
-            
             if (cellData && cellData.cards.length > 0) {
-                // Chọn ngẫu nhiên 1 lá bài trong ô đó (vì một ô có nhiều lá trùng điểm/chất)
                 const randomCardIndex = Math.floor(Math.random() * cellData.cards.length);
                 const card = cellData.cards[randomCardIndex];
-                
-                // Tạo chìa khóa định danh cô lập ô giống bên deckScript
                 const cardKey = `${num}_${randomSuit}_${card.name}_${randomCardIndex}`;
-                autoMarkers[cardKey] = "Tán Sĩ"; // Tên ấn ký của Tư Mã Sư
+                autoMarkers[cardKey] = "Tán Sĩ";
             }
         }
-
-        // Đẩy toàn bộ 13 ấn ký này vào bộ nhớ dùng chung của Trình duyệt
         localStorage.setItem('tuMaSuMarkers', JSON.stringify(autoMarkers));
-        
-        // Đẩy thông báo vào Rương chứa dưới màn hình cho người chơi thấy
         const selectedList = document.getElementById('selectedList');
-        const emptyMsg = selectedList.querySelector('.empty-msg');
-        if (emptyMsg) emptyMsg.remove();
-        
-        const item = document.createElement('div');
-        item.className = 'selected-item';
-        item.style.borderLeftColor = '#1e3a8a';
-        item.innerHTML = `
-            <span class="skill-name" style="color:#38bdf8">【Tán Sĩ ➔ Phát Động】</span> 
-            Đã đánh dấu 13 thẻ bài, hãy qua danh sách bài để xem
-            <button class="delete-btn" onclick="deleteSkill(this)">✖</button>
-        `;
-        selectedList.appendChild(item);
-        alert("🔮 Kích hoạt Tán Sĩ thành công");
-    } catch (err) {
-        console.error(err);
-        alert("Lỗi bày trận pháp Tư Mã Sư!");
-    }
+        const emptyMsg = selectedList.querySelector('.empty-msg'); if (emptyMsg) emptyMsg.remove();
+        const item = document.createElement('div'); item.className = 'selected-item'; item.style.borderLeftColor = '#1e3a8a';
+        item.innerHTML = `<span class="skill-name" style="color:#38bdf8">【Tán Sĩ ➔ Phát Động】</span> Đã bày trận găm 13 bài vãng lai. <button class="delete-btn" onclick="deleteSkill(this)">✖</button>`;
+        selectedList.appendChild(item); alert("🔮 Kích hoạt Tán Sĩ thành công!");
+    } catch (err) { alert("Lỗi!"); }
 }
 
 async function fetchBinhTaiPool(type) {
     const list = document.getElementById('choicesList');
     if (!binhTaiPool || !binhTaiPool[type] || binhTaiPool[type].length === 0) {
-        list.innerHTML = '<p style="color:#ff4444; text-align:center; font-size:12px;">⚠️ Giai đoạn này đã cạn kiệt kỹ năng!</p>';
-        return;
+        list.innerHTML = '<p style="color:#ff4444; text-align:center;">⚠️ Giai đoạn này đã cạn kiệt kỹ năng!</p>'; return;
     }
-    const targetPool = binhTaiPool[type];
-    const chosenSkills = [];
+    const targetPool = binhTaiPool[type]; const chosenSkills = [];
     const indices = Array.from({ length: targetPool.length }, (_, i) => i);
     const countToDraw = Math.min(3, targetPool.length);
-
     for (let i = 0; i < countToDraw; i++) {
         const randIdx = Math.floor(Math.random() * indices.length);
         const actualIndexInPool = indices.splice(randIdx, 1)[0];
         chosenSkills.push({ skill: targetPool[actualIndexInPool], originalIndex: actualIndexInPool });
     }
-
     list.innerHTML = '';
     chosenSkills.forEach(item => {
         const option = document.createElement('div'); option.className = 'choice-item';
-        option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${item.skill.name}】</span> ${item.skill.desc}`;
-        option.onclick = () => selectBinhTaiSkill(item.skill.name, item.skill.desc, type, item.originalIndex);
-        list.appendChild(option);
+        option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${item.skill.name}】</span>`;
+        option.onclick = () => selectBinhTaiSkill(item.skill.name, "", type, item.originalIndex); list.appendChild(option);
     });
 }
 
 function selectBinhTaiSkill(name, desc, type, originalIndex) {
-    selectSkill(name, desc);
-    if (binhTaiPool && binhTaiPool[type]) {
-        binhTaiPool[type].splice(originalIndex, 1);
-    }
+    selectSkill(name, desc); if (binhTaiPool && binhTaiPool[type]) binhTaiPool[type].splice(originalIndex, 1);
 }
 
 function selectSkill(name, desc) {
     const selectedList = document.getElementById('selectedList');
-    const emptyMsg = selectedList.querySelector('.empty-msg');
-    if (emptyMsg) emptyMsg.remove();
+    const emptyMsg = selectedList.querySelector('.empty-msg'); if (emptyMsg) emptyMsg.remove();
     const item = document.createElement('div'); item.className = 'selected-item';
     item.innerHTML = `
-        <span class="skill-name" style="color:var(--theme-color)">【${currentSkillName} ➔ ${name}】</span> ${desc}
+        <span class="skill-name" style="color:var(--theme-color)">【${currentSkillName} ➔ ${name}】</span> ${desc || ''}
         <button class="delete-btn" onclick="deleteSkill(this)">✖</button>
     `;
-    selectedList.appendChild(item);
-    document.getElementById('choicesPanel').style.display = "none";
+    selectedList.appendChild(item); document.getElementById('choicesPanel').style.display = "none";
 }
 
 function deleteSkill(btnElement) {
-    btnElement.parentElement.remove();
-    const selectedList = document.getElementById('selectedList');
-    if (selectedList.children.length === 0) {
-        selectedList.innerHTML = '<div class="empty-msg">Chưa có kỹ năng nào được chọn. Hãy nhấn vào ô phía trên.</div>';
-    }
+    btnElement.parentElement.remove(); const selectedList = document.getElementById('selectedList');
+    if (selectedList.children.length === 0) selectedList.innerHTML = '<div class="empty-msg">Chưa có kỹ năng nào được chọn. Hãy nhấn vào ô phía trên.</div>';
 }
 
 async function loadGenerals() {
@@ -201,9 +225,10 @@ async function loadGenerals() {
                 else if (s.name === "Long Tụng") skillBox.setAttribute('onclick', `trigger1pick1(this, '${s.name}', '/api/random-longtung-skill')`);
                 else if (s.name === "Bình Tài") skillBox.setAttribute('onclick', `triggerBinhTai(this, '${s.name}')`);
                 else if (s.name === "Tán Sĩ") skillBox.setAttribute('onclick', `triggerTuMaSu()`);
+                else if (s.name === "Thiên Thư") skillBox.setAttribute('onclick', `triggerThienThuCauses(this, '${s.name}')`);
                 
                 skillBox.className = 'skill-box clickable-donthe';
-                skillBox.innerHTML = `<span class="skill-name">【${s.name}】</span>${s.desc || ''}`;
+                skillBox.innerHTML = `<span class="skill-name">【${s.name}】</span>`;
                 wrapper.appendChild(skillBox);
             });
             card.innerHTML = `<span class="kingdom">${gen.kingdom}</span><h2>${gen.name}</h2><span class="title-tag">Danh hiệu: ${gen.title}</span>`;
