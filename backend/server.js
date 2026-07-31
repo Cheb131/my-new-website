@@ -10,6 +10,7 @@ const skillDiemMac = require('./skillDiemMac');
 const skillLongTung = require('./skillLongTung');
 const skillBinhTai = require('./skillBinhTai');
 const skillThienThu = require('./skillThienThu');
+const skillKhacDanh = require('./skillKhacDanh');
 const pokerDeck = require('./pokerDeck');
 
 const app = express();
@@ -37,7 +38,9 @@ const rollGenerals = [
   { id: "quan_ninh_thuc", name: "Quản Ninh", title: "Thừa Nghĩa Bỉnh Văn", kingdom: "Thục", bg_color: "#b31d1d", skillPool: [{ name: "Long Tụng" }] },
   { id: "hua_thieu", name: "Hứa Thiệu", title: "Thức Nhân Độc Tâm", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [{ name: "Bình Tài" }] },
   { id: "tu_ma_su", name: "Tư Mã Sư", title: "Duy Kỉ Thành Vụ", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Tán Sĩ"}] },
-  { id: "nam_hoa_lao_tien", name: "Nam Hoa Lão Tiên", title: "Tiêu Diêu Tiên Du", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [  { name: "Thiên Thư", desc: "Giai đoạn chuẩn bị, bạn có thể kích hoạt [Thiên Thư] để rút ngẫu nhiên 3 Nguyên nhân không trùng tên, chọn lấy 1; sau đó rút ngẫu nhiên 3 Hệ quả, chọn lấy 1 để tạo thành quẻ mệnh thực thi trong lượt." } ]}
+  { id: "nam_hoa_lao_tien", name: "Nam Hoa Lão Tiên", title: "Tiêu Diêu Tiên Du", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [  { name: "Thiên Thư", desc: "Giai đoạn chuẩn bị, bạn có thể kích hoạt [Thiên Thư] để rút ngẫu nhiên 3 Nguyên nhân không trùng tên, chọn lấy 1; sau đó rút ngẫu nhiên 3 Hệ quả, chọn lấy 1 để tạo thành quẻ mệnh thực thi trong lượt." } ]},
+  { id: "than_tao_phi", name: "Thần Tào Phi", title: "Nguyệt Hối Thư Luân Hồi", kingdom: "Thần", bg_color: "#cc9900", skillPool: [{ name: "Khắc Danh" }]
+  }
 ];
 
 app.get('/api/generals', (req, res) => { res.json(rollGenerals); });
@@ -114,6 +117,16 @@ app.get('/api/thienthu-effects', (req, res) => {
     res.json(chosenEffects);
   } catch (error) {
     res.status(500).json({ error: "Lỗi Backend bốc Hệ quả!" });
+  }
+});
+
+app.get('/api/random-khacdanh-skill', (req, res) => {
+  try {
+    if (!skillKhacDanh || skillKhacDanh.length === 0) return res.status(500).json({ error: "Kho Khắc Danh trống!" });
+    const randomIndex = Math.floor(Math.random() * skillKhacDanh.length);
+    res.json(skillKhacDanh[randomIndex]);
+  } catch (error) {
+    res.status(500).json({ error: "Lỗi Backend!" });
   }
 });
 

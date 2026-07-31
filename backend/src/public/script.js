@@ -2,7 +2,6 @@ let currentSkillElement = null;
 let currentSkillName = "";      
 
 let binhTaiPool = null; 
-// Biến tạm để lưu lại Nguyên nhân người chơi vừa bấm chọn trước khi ghép với Hệ quả
 let temporaryCauseName = ""; 
 
 async function initBinhTaiPool() {
@@ -16,7 +15,7 @@ async function initBinhTaiPool() {
     }
 }
 
-// HÀM 1: Cơ chế Rút 3 chọn 1 (Giữ nguyên)
+// HÀM 1: Cơ chế Rút 3 chọn 1 (Cập nhật hiển thị desc nếu có)
 async function trigger3pick1(element, originalName, apiUrl) {
     currentSkillElement = element; currentSkillName = originalName; 
     const panel = document.getElementById('choicesPanel'); const list = document.getElementById('choicesList');
@@ -27,13 +26,15 @@ async function trigger3pick1(element, originalName, apiUrl) {
         list.innerHTML = '';
         skills.forEach(skill => {
             const option = document.createElement('div'); option.className = 'choice-item';
-            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span>`;
-            option.onclick = () => selectSkill(skill.name, ""); list.appendChild(option);
+            // Cập nhật: Hiển thị mô tả desc bên cạnh tên kỹ năng
+            const descText = skill.desc ? ` - ${skill.desc}` : "";
+            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span>${descText}`;
+            option.onclick = () => selectSkill(skill.name, skill.desc || ""); list.appendChild(option);
         });
     } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
 }
 
-// HÀM 2: Cơ chế Rút 4 chọn 1 (Giữ nguyên)
+// HÀM 2: Cơ chế Rút 4 chọn 1 (Cập nhật hiển thị desc nếu có)
 async function trigger4pick1(element, originalName, apiUrl) {
     currentSkillElement = element; currentSkillName = originalName; 
     const panel = document.getElementById('choicesPanel'); const list = document.getElementById('choicesList');
@@ -44,23 +45,24 @@ async function trigger4pick1(element, originalName, apiUrl) {
         list.innerHTML = '';
         skills.forEach(skill => {
             const option = document.createElement('div'); option.className = 'choice-item';
-            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span>`;
-            option.onclick = () => selectSkill(skill.name, ""); list.appendChild(option);
+            const descText = skill.desc ? ` - ${skill.desc}` : "";
+            option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${skill.name}】</span>${descText}`;
+            option.onclick = () => selectSkill(skill.name, skill.desc || ""); list.appendChild(option);
         });
     } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
 }
 
-// HÀM 3: Cơ chế Rút 1 lấy luôn (Giữ nguyên)
+// HÀM 3: Cơ chế Rút 1 lấy luôn (Dùng cho Long Tụng & Khắc Danh)
 async function trigger1pick1(element, originalName, apiUrl) {
     currentSkillElement = element; currentSkillName = originalName;
     document.getElementById('choicesPanel').style.display = "none";
     try {
         const response = await fetch(apiUrl); const skill = await response.json();
-        selectSkill(skill.name, "");
+        // Cập nhật: Truyền đầy đủ mô tả desc vào rương lưu trữ
+        selectSkill(skill.name, skill.desc || "");
     } catch (err) { alert("Lỗi kết nối!"); }
 }
 
-// HÀM 4: Giao diện Chọn Giai đoạn của Bình Tài (Giữ nguyên)
 async function triggerBinhTai(element, originalName) {
     currentSkillElement = element; currentSkillName = originalName;
     await initBinhTaiPool();
@@ -80,62 +82,44 @@ async function triggerBinhTai(element, originalName) {
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
 }
 
-// HÀM CHÍNH CHO THIÊN THƯ - TẦNG 1: Bốc 3 Nguyên Nhân không trùng tên (Đã xóa desc)
 async function triggerThienThuCauses(element, originalName) {
-    currentSkillElement = element; 
-    currentSkillName = originalName; 
-    
-    const panel = document.getElementById('choicesPanel'); 
-    const list = document.getElementById('choicesList');
+    currentSkillElement = element; currentSkillName = originalName; 
+    const panel = document.getElementById('choicesPanel'); const list = document.getElementById('choicesList');
     const titleElement = panel.querySelector('.choices-title') || panel.querySelector('h3');
-    
-    panel.style.display = "block"; 
-    list.innerHTML = '<p class="status-msg">🔮 Thiên Thư đang bốc toán Nguyên Nhân...</p>';
+    panel.style.display = "block"; list.innerHTML = '<p class="status-msg">🔮 Thiên Thư đang bốc toán Nguyên Nhân...</p>';
     setTimeout(() => { panel.scrollIntoView({ behavior: 'smooth' }); }, 100);
-
     try {
-        const response = await fetch('/api/thienthu-causes'); 
-        const causes = await response.json();
-        
+        const response = await fetch('/api/thienthu-causes'); const causes = await response.json();
         if (titleElement) titleElement.innerText = `📖 Thiên Thư: Chọn NGUYÊN NHÂN 📖`;
-        
         list.innerHTML = '';
         causes.forEach(item => {
-            const option = document.createElement('div'); 
-            option.className = 'choice-item';
+            const option = document.createElement('div'); option.className = 'choice-item';
             option.style.borderColor = "#ef4444"; 
-            option.innerHTML = `<span class="skill-name" style="color:#ef4444">【${item.name}】</span>`;
-            
-            option.onclick = () => selectThienThuCause(item.name); 
-            list.appendChild(option);
+            const descText = item.desc ? ` - ${item.desc}` : "";
+            option.innerHTML = `<span class="skill-name" style="color:#ef4444">【${item.name}】</span>${descText}`;
+            option.onclick = () => selectThienThuCause(item.name, item.desc || ""); list.appendChild(option);
         });
     } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
 }
 
-// HÀM CHUYỂN TIẾP - TẦNG 2: Bốc tiếp 3 Hệ quả ra màn hình (Đã xóa desc)
-async function selectThienThuCause(causeName) {
+async function selectThienThuCause(causeName, causeDesc) {
     temporaryCauseName = causeName; 
-    
     const list = document.getElementById('choicesList');
     const titleElement = document.getElementById('choicesPanel').querySelector('.choices-title') || document.getElementById('choicesPanel').querySelector('h3');
-    
     list.innerHTML = '<p class="status-msg">⚡ Nguyên nhân đã định! Đang triệu gọi Hệ Quả...</p>';
-
     try {
-        const response = await fetch('/api/thienthu-effects');
-        const effects = await response.json();
-
+        const response = await fetch('/api/thienthu-effects'); const effects = await response.json();
         if (titleElement) titleElement.innerText = `📜 Thiên Thư: Chọn HỆ QUẢ 📜`;
-
         list.innerHTML = '';
         effects.forEach(item => {
-            const option = document.createElement('div');
-            option.className = 'choice-item';
+            const option = document.createElement('div'); option.className = 'choice-item';
             option.style.borderColor = "#34d399"; 
-            option.innerHTML = `<span class="skill-name" style="color:#34d399">【${item.name}】</span>`;
+            const descText = item.desc ? ` - ${item.desc}` : "";
+            option.innerHTML = `<span class="skill-name" style="color:#34d399">【${item.name}】</span>${descText}`;
             
-            // Ép gộp chuỗi tạo thành quẻ mệnh hoàn chỉnh đưa vào rương
-            option.onclick = () => selectSkill(`Nếu (${temporaryCauseName}) ➔ Sẽ (${item.name})`, "");
+            // Ghép chuỗi tên và chuỗi mô tả nếu có
+            const combinedDesc = item.desc ? `Hệ quả: ${item.desc}` : "";
+            option.onclick = () => selectSkill(`Nếu (${temporaryCauseName}) ➔ Sẽ (${item.name})`, combinedDesc); 
             list.appendChild(option);
         });
     } catch (err) { list.innerHTML = '<p style="color:#ff4444;">Lỗi kết nối!</p>'; }
@@ -180,8 +164,10 @@ async function fetchBinhTaiPool(type) {
     list.innerHTML = '';
     chosenSkills.forEach(item => {
         const option = document.createElement('div'); option.className = 'choice-item';
-        option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${item.skill.name}】</span>`;
-        option.onclick = () => selectBinhTaiSkill(item.skill.name, "", type, item.originalIndex); list.appendChild(option);
+        const descText = item.skill.desc ? ` - ${item.skill.desc}` : "";
+        option.innerHTML = `<span class="skill-name" style="color:#ffcc00">【${item.skill.name}】</span>${descText}`;
+        option.onclick = () => selectBinhTaiSkill(item.skill.name, item.skill.desc || "", type, item.originalIndex); 
+        list.appendChild(option);
     });
 }
 
@@ -189,12 +175,17 @@ function selectBinhTaiSkill(name, desc, type, originalIndex) {
     selectSkill(name, desc); if (binhTaiPool && binhTaiPool[type]) binhTaiPool[type].splice(originalIndex, 1);
 }
 
+// HÀM CHÍNH LƯU VÀO RƯƠNG CHỨA: TỰ ĐỘNG ĐƯA DESC RA MÀN HÌNH BÊN DƯỚI
 function selectSkill(name, desc) {
     const selectedList = document.getElementById('selectedList');
     const emptyMsg = selectedList.querySelector('.empty-msg'); if (emptyMsg) emptyMsg.remove();
     const item = document.createElement('div'); item.className = 'selected-item';
+    
+    // Nếu có nội dung desc thì nối vào sau tên kỹ năng
+    const displayDesc = desc ? ` - <span style="color:#cccccc">${desc}</span>` : "";
+    
     item.innerHTML = `
-        <span class="skill-name" style="color:var(--theme-color)">【${currentSkillName} ➔ ${name}】</span> ${desc || ''}
+        <span class="skill-name" style="color:var(--theme-color)">【${currentSkillName} ➔ ${name}】</span>${displayDesc}
         <button class="delete-btn" onclick="deleteSkill(this)">✖</button>
     `;
     selectedList.appendChild(item); document.getElementById('choicesPanel').style.display = "none";
@@ -226,6 +217,7 @@ async function loadGenerals() {
                 else if (s.name === "Bình Tài") skillBox.setAttribute('onclick', `triggerBinhTai(this, '${s.name}')`);
                 else if (s.name === "Tán Sĩ") skillBox.setAttribute('onclick', `triggerTuMaSu()`);
                 else if (s.name === "Thiên Thư") skillBox.setAttribute('onclick', `triggerThienThuCauses(this, '${s.name}')`);
+                else if (s.name === "Khắc Danh") skillBox.setAttribute('onclick', `trigger1pick1(this, '${s.name}', '/api/random-khacdanh-skill')`);
                 
                 skillBox.className = 'skill-box clickable-donthe';
                 skillBox.innerHTML = `<span class="skill-name">【${s.name}】</span>`;
