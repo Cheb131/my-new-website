@@ -15,16 +15,24 @@
             ⬅ Quay về Chọn Tướng
         </a>
 
-        <!-- THANH CẤU HÌNH ĐÁNH DẤU CÓ THÊM NÚT XÓA TOÀN BỘ -->
-        <div class="marker-config-panel" style="display: flex; gap: 10px; justify-content: center; align-items: center; background: #161211; border: 1px solid #382c26; padding: 12px; border-radius: 8px; margin-bottom: 20px; width: 100%;">
+        <!-- THANH ĐÁNH DẤU CÓ THÊM NÚT REROLL PHÚ -->
+        <div class="marker-config-panel" style="display: flex; gap: 10px; justify-content: center; align-items: center; background: #161211; border: 1px solid #382c26; padding: 12px; border-radius: 8px; margin-bottom: 20px; width: 100%; flex-wrap: wrap;">
             <span style="font-size: 12px; color: #ffcc00; font-weight: bold;">🔮 TÊN ẤN KÝ:</span>
-            <input type="text" id="markerNameInput" value="Tiêu Dẫn" placeholder="Nhập tên ấn ký..." style="background: #211916; border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; outline: none; width: 120px;">
+            <input type="text" id="markerNameInput" value="Tiêu Dẫn" placeholder="Nhập tên..." style="background: #211916; border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; outline: none; width: 100px;">
             
-            <!-- NÚT XÓA SẠCHẤN KÝ MỚI BỔ SUNG -->
-            <button onclick="clearAllMarkers()" class="filter-btn" style="background: #ff4444; color: white; border-color: #ff4444; padding: 6px 12px; font-weight: bold; margin: 0; border-radius: 4px;">
-                🗑️ Xóa toàn bộ đánh dấu
+            <!-- NÚT BẬT/TẮT CHẾ ĐỘ NHẠC PHÚ -->
+            <button id="toggleNhacPhuBtn" onclick="toggleNhacPhuMode()" class="filter-btn" style="background: #1e3a8a; color: #38bdf8; border-color: #38bdf8; padding: 6px 12px; font-weight: bold; margin: 0; border-radius: 4px;">
+                🎼 Nhạc Phú: TẮT
             </button>
-            <span style="font-size: 11px; color: #888;">(Bấm tên lá bài để bật/tắt đánh dấu riêng lẻ)</span>
+
+            <!-- NÚT REROLL PHÚ (TỰ ĐỘNG BẬT KHI CÓ THẺ PHÚ ĐƯỢC CHỌN) -->
+            <button id="rerollSelectedPhuBtn" onclick="rerollSelectedPhuCards()" class="filter-btn" style="display: none; background: #9333ea; color: #ffffff; border-color: #c084fc; padding: 6px 12px; font-weight: bold; margin: 0; border-radius: 4px; box-shadow: 0 0 10px rgba(192, 132, 252, 0.4);">
+                🎲 Reroll Phú đã chọn (0)
+            </button>
+
+            <button onclick="clearAllMarkers()" class="filter-btn" style="background: #ff4444; color: white; border-color: #ff4444; padding: 6px 12px; font-weight: bold; margin: 0; border-radius: 4px;">
+                🗑️ Xóa tất cả
+            </button>
         </div>
 
         <div class="filter-container" style="margin-top: 0;">

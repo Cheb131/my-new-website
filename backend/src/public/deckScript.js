@@ -1,7 +1,13 @@
 let fullPokerData = [];
 let currentFilter = 'all';
 
-// Khởi tạo: Đọc thẳng kho lưu trữ vĩnh viễn từ localStorage (nếu có) để tránh mất khi chuyển trang
+// Biến trạng thái Bật/Tắt chế độ Nhạc Phú
+let isNhacPhuMode = false;
+
+// Danh sách lưu các chìa khóa (cardKey) lá Phú đang được chọn để Reroll
+let selectedPhuKeys = new Set();
+
+// Đọc dữ liệu ấn ký đã lưu
 let cardMarkers = JSON.parse(localStorage.getItem('gameCardMarkers')) || {};
 
 async function loadPokerMatrix() {
@@ -11,22 +17,96 @@ async function loadPokerMatrix() {
         const response = await fetch('/api/poker-matrix');
         fullPokerData = await response.json();
         
-        // ĐỌC TRẬN PHÁP TỪ TRANG CHỦ: Nếu Tư Mã Sư vừa kích hoạt chiêu Tán Sĩ
         const savedSuMarkers = localStorage.getItem('tuMaSuMarkers');
         if (savedSuMarkers) {
-            // Trộn mảng Tán Sĩ vào dữ liệu tổng của hệ thống
             cardMarkers = Object.assign({}, cardMarkers, JSON.parse(savedSuMarkers));
-            // Lưu lại vào kho lưu trữ lâu dài của game
             localStorage.setItem('gameCardMarkers', JSON.stringify(cardMarkers));
-            // Dọn dẹp cờ kích hoạt tạm thời đi
             localStorage.removeItem('tuMaSuMarkers');
         }
 
         updateMarkerFilterTab();
+        updateRerollBtn();
         renderMatrix(); 
     } catch (err) { 
         console.error("Lỗi nạp ma trận bài:", err); 
     }
+}
+
+// BẬT / TẮT CHẾ ĐỘ NHẠC PHÚ
+function toggleNhacPhuMode() {
+    isNhacPhuMode = !isNhacPhuMode;
+    const btn = document.getElementById('toggleNhacPhuBtn');
+    
+    // Nếu tắt Nhạc Phú thì xóa sạch danh sách chọn reroll dở dang
+    if (!isNhacPhuMode) {
+        selectedPhuKeys.clear();
+    }
+    
+    if (btn) {
+        if (isNhacPhuMode) {
+            btn.innerText = "🎼 Nhạc Phú: BẬT";
+            btn.style.background = "#2563eb";
+            btn.style.color = "#ffffff";
+            btn.style.boxShadow = "0 0 10px #38bdf8";
+        } else {
+            btn.innerText = "🎼 Nhạc Phú: TẮT";
+            btn.style.background = "#1e3a8a";
+            btn.style.color = "#38bdf8";
+            btn.style.boxShadow = "none";
+        }
+    }
+    updateRerollBtn();
+    renderMatrix();
+}
+
+// CẬP NHẬT NÚT REROLL TRÊN GIAO DIỆN
+function updateRerollBtn() {
+    const rerollBtn = document.getElementById('rerollSelectedPhuBtn');
+    if (!rerollBtn) return;
+    
+    if (isNhacPhuMode && selectedPhuKeys.size > 0) {
+        rerollBtn.style.display = "inline-block";
+        rerollBtn.innerText = `🎲 Reroll Phú đã chọn (${selectedPhuKeys.size})`;
+    } else {
+        rerollBtn.style.display = "none";
+    }
+}
+
+// HÀM LẤY NGẪU NHIÊN 1 LÁ BÀI PHI TRANG BỊ
+function getRandomNonEquipmentCard() {
+    const nonEqCards = [];
+    fullPokerData.forEach(cell => {
+        if (cell.cards && cell.cards.length > 0) {
+            cell.cards.forEach(card => {
+                if (card.type !== 'trangbi') {
+                    nonEqCards.push(card.name);
+                }
+            });
+        }
+    });
+
+    if (nonEqCards.length === 0) return "Sát";
+    const randomIndex = Math.floor(Math.random() * nonEqCards.length);
+    return nonEqCards[randomIndex];
+}
+
+// HÀM THỰC HIỆN REROLL CHO TẤT CẢ CÁC THẺ PHÚ ĐÃ CHỌN
+function rerollSelectedPhuCards() {
+    if (selectedPhuKeys.size === 0) return;
+
+    selectedPhuKeys.forEach(cardKey => {
+        if (cardMarkers[cardKey] && cardMarkers[cardKey].startsWith("Phú:")) {
+            const newRandomCard = getRandomNonEquipmentCard();
+            cardMarkers[cardKey] = `Phú: ${newRandomCard}`;
+        }
+    });
+
+    // Reroll xong thì xóa danh sách đã chọn
+    selectedPhuKeys.clear();
+    localStorage.setItem('gameCardMarkers', JSON.stringify(cardMarkers));
+    
+    updateRerollBtn();
+    renderMatrix();
 }
 
 function updateMarkerFilterTab() {
@@ -94,13 +174,24 @@ function renderMatrix() {
                         cardDiv.className = `card-tag ${card.type}`; 
                         
                         if (cardMarkers[cardKey]) {
-                            // Cập nhật tên chuẩn: Tán Sĩ phe Ngụy đổi viền xanh nước biển
-                            const isNguy = cardMarkers[cardKey] === "Tán Sĩ";
-                            const labelBg = isNguy ? "#1e3a8a" : "#ffcc00";
-                            const labelColor = isNguy ? "#fff" : "#000";
-                            const shadowColor = isNguy ? "#38bdf8" : "#ffcc00";
+                            const markerText = cardMarkers[cardKey];
+                            const isNhacPhu = markerText.startsWith("Phú:");
+                            const isNguy = markerText === "Tán Sĩ" || isNhacPhu;
+                            const isSelectedForReroll = selectedPhuKeys.has(cardKey);
+                            
+                            // Tùy biến màu sắc khi thẻ Phú đang được chọn để Reroll
+                            let labelBg = isNhacPhu ? "#2563eb" : (isNguy ? "#1e3a8a" : "#ffcc00");
+                            let shadowColor = isNhacPhu ? "#38bdf8" : (isNguy ? "#38bdf8" : "#ffcc00");
 
-                            cardDiv.innerHTML = `🌟 ${card.name} <span class="marker-label" style="background: ${labelBg}; color: ${labelColor}; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 3px; margin-left: 5px; box-shadow: 0 0 8px ${shadowColor};">[${cardMarkers[cardKey]}]</span>`;
+                            let checkIcon = "";
+                            if (isSelectedForReroll) {
+                                labelBg = "#9333ea"; // Màu tím nổi bật báo hiệu đang chọn reroll
+                                shadowColor = "#e879f9";
+                                cardDiv.style.border = "2px solid #e879f9";
+                                checkIcon = " <b style='color:#f43f5e'>✓ [Chọn Reroll]</b>";
+                            }
+
+                            cardDiv.innerHTML = `🌟 ${card.name} <span class="marker-label" style="background: ${labelBg}; color: #fff; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 3px; margin-left: 5px; box-shadow: 0 0 8px ${shadowColor};">[${markerText}]</span>${checkIcon}`;
                             cardDiv.style.borderColor = shadowColor;
                             cardDiv.style.boxShadow = `inset 0 0 8px ${labelBg}44`;
                         } else {
@@ -124,39 +215,57 @@ function renderMatrix() {
 }
 
 function toggleCardMarker(cardKey) {
-    const inputElement = document.getElementById('markerNameInput');
-    const chosenMarkerName = inputElement ? inputElement.value.trim() : "Đánh Dấu";
-
-    if (!chosenMarkerName) {
-        alert("Vui lòng nhập tên ấn ký cần đánh dấu vào ô phía trên nhé!");
-        return;
+    // 1. KHI CHẾ ĐỘ NHẠC PHÚ ĐANG BẬT:
+    if (isNhacPhuMode) {
+        // Nếu lá bài đã mang nhãn Phú: Click vào để Chọn/Bỏ chọn Reroll
+        if (cardMarkers[cardKey] && cardMarkers[cardKey].startsWith("Phú:")) {
+            if (selectedPhuKeys.has(cardKey)) {
+                selectedPhuKeys.delete(cardKey);
+            } else {
+                selectedPhuKeys.add(cardKey);
+            }
+        } 
+        // Nếu lá bài chưa có ấn ký: Tạo mới một lá Phú
+        else if (!cardMarkers[cardKey]) {
+            const randomNonEqCard = getRandomNonEquipmentCard();
+            cardMarkers[cardKey] = `Phú: ${randomNonEqCard}`;
+        }
+        // Nếu lá bài đang mang ấn ký khác (không phải Phú): Xóa đi
+        else {
+            delete cardMarkers[cardKey];
+        }
+    } 
+    // 2. KHI CHẾ ĐỘ NHẠC PHÚ ĐANG TẮT (Chế độ đánh dấu tay bình thường):
+    else {
+        if (cardMarkers[cardKey]) {
+            delete cardMarkers[cardKey];
+            selectedPhuKeys.delete(cardKey);
+        } else {
+            const inputElement = document.getElementById('markerNameInput');
+            const chosenMarkerName = inputElement ? inputElement.value.trim() : "Đánh Dấu";
+            if (!chosenMarkerName) {
+                alert("Vui lòng nhập tên ấn ký trước nhé!");
+                return;
+            }
+            cardMarkers[cardKey] = chosenMarkerName;
+        }
     }
 
-    if (cardMarkers[cardKey]) {
-        delete cardMarkers[cardKey];
-    } else {
-        cardMarkers[cardKey] = chosenMarkerName;
-    }
-
-    // ĐỒNG BỘ: Ghi đè cập nhật vào bộ nhớ lâu dài để chuyển trang không bị biến mất
     localStorage.setItem('gameCardMarkers', JSON.stringify(cardMarkers));
-
     updateMarkerFilterTab();
+    updateRerollBtn();
     renderMatrix();
 }
 
-/**
- * HÀM MỚI BỔ SUNG: Xóa sạch sành sanh toàn bộ đánh dấu hiện có trên bàn chơi
- */
 function clearAllMarkers() {
     if (Object.keys(cardMarkers).length === 0) return;
     
-    if (confirm(" Bạn có chắc chắn muốn hóa giải toàn bộ Tiêu ký không?")) {
-        cardMarkers = {}; // Làm rỗng mảng
-        localStorage.removeItem('gameCardMarkers'); // Xóa bộ nhớ lâu dài
-        localStorage.removeItem('tuMaSuMarkers'); // Xóa bộ nhớ tạm của Tư Mã Sư
+    if (confirm("💥 Bạn có chắc chắn muốn hóa giải toàn bộ ấn ký trên ma trận bài không?")) {
+        cardMarkers = {};
+        selectedPhuKeys.clear();
+        localStorage.removeItem('gameCardMarkers');
+        localStorage.removeItem('tuMaSuMarkers');
         
-        // Ép quay về bộ lọc 'all' để tránh lỗi trống giao diện
         currentFilter = 'all';
         const buttons = document.querySelectorAll('.filter-btn');
         buttons.forEach(btn => btn.classList.remove('active'));
@@ -164,6 +273,7 @@ function clearAllMarkers() {
         if (allBtn) allBtn.classList.add('active');
 
         updateMarkerFilterTab();
+        updateRerollBtn();
         renderMatrix();
     }
 }

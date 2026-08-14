@@ -218,6 +218,7 @@ async function loadGenerals() {
                 else if (s.name === "Tán Sĩ") skillBox.setAttribute('onclick', `triggerTuMaSu()`);
                 else if (s.name === "Thiên Thư") skillBox.setAttribute('onclick', `triggerThienThuCauses(this, '${s.name}')`);
                 else if (s.name === "Khắc Danh") skillBox.setAttribute('onclick', `trigger1pick1(this, '${s.name}', '/api/random-khacdanh-skill')`);
+                else if (s.name === "Nhạc Phú") skillBox.setAttribute('onclick', `window.location.href='/deck'`);
                 
                 skillBox.className = 'skill-box clickable-donthe';
                 skillBox.innerHTML = `<span class="skill-name">【${s.name}】</span>`;
