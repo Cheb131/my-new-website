@@ -40,8 +40,8 @@ const rollGenerals = [
   { id: "tu_ma_su", name: "Tư Mã Sư", title: "Duy Kỉ Thành Vụ", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Tán Sĩ"}] },
   { id: "nam_hoa_lao_tien", name: "Nam Hoa Lão Tiên", title: "Tiêu Diêu Tiên Du", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [  { name: "Thiên Thư", desc: "Giai đoạn chuẩn bị, bạn có thể kích hoạt [Thiên Thư] để rút ngẫu nhiên 3 Nguyên nhân không trùng tên, chọn lấy 1; sau đó rút ngẫu nhiên 3 Hệ quả, chọn lấy 1 để tạo thành quẻ mệnh thực thi trong lượt." } ]},
   { id: "than_tao_phi", name: "Thần Tào Phi", title: "Nguyệt Hối Thư Luân Hồi", kingdom: "Thần", bg_color: "#cc9900", skillPool: [{ name: "Khắc Danh" }]},
-  { id: "tao_thuc", name: "Tào Thực", title: "Sấu Luật Thành Chương", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Nhạc Phú" }]},,
-  { id: "quan_vu_vo", name: "Quan Vũ", title: "Nghĩa Võ Thiên Thu", kingdom: "Thục", bg_color: "#b31d1d",skillPool: [{ name: "Võ Hữu" }]}
+  { id: "tao_thuc", name: "Tào Thực", title: "Sấu Luật Thành Chương", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Nhạc Phú" }]},
+  { id: "quan_vu_vo", name: "Quan Vũ (Võ)", title: "Nghĩa Võ Thiên Thu", kingdom: "Thục", bg_color: "#b31d1d",skillPool: [{ name: "Võ Hữu" }]}
 ];
 
 app.get('/api/generals', (req, res) => { res.json(rollGenerals); });
