@@ -11,21 +11,34 @@
         <h1 style="margin-bottom: 5px;">🃏 THƯ VIỆN BÀI ĐÁNH 🃏</h1>
         <p style="font-size: 12px; color: #a69282; margin-bottom: 20px;">Tra cứu thuộc tính, điểm số và chất của 52 lá bài</p>
         
-        <a href="/" class="filter-btn active" style="text-decoration: none; display: inline-block; margin-bottom: 25px; background: #ffcc00; color: #000; font-weight: bold;">
-            ⬅ Quay về Chọn Tướng
-        </a>
+        <div style="display: flex; gap: 10px; justify-content: center; align-items: center; margin-bottom: 25px; flex-wrap: wrap;">
+            <a href="/" class="filter-btn active" style="text-decoration: none; display: inline-block; background: #ffcc00; color: #000; font-weight: bold; margin: 0;">
+                ⬅ Quay về Chọn Tướng
+            </a>
+            <!-- NÚT KÍCH HOẠT KỸ NĂNG VÕ HỮU CỦA QUAN VŨ (VÕ) TRỰC TIẾP TẠI TRANG BÀI -->
+            <button onclick="triggerVoHuu()" class="filter-btn" style="background: #b31d1d; color: #ffffff; border-color: #f87171; font-weight: bold; margin: 0; padding: 8px 16px; box-shadow: 0 0 10px rgba(248, 113, 113, 0.4);">
+                ⚔️ Phát Động 【Võ Hữu】 (Quan Vũ)
+            </button>
+        </div>
 
-        <!-- THANH ĐÁNH DẤU CÓ THÊM NÚT REROLL PHÚ -->
+        <!-- POP-UP HIỂN THỊ 5 LÁ BÀI RÕ RÀNG CHO NGƯỜI CHƠI CHỌN -->
+        <div id="voHuuModal" style="display: none; background: #161211; border: 2px solid #b31d1d; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+            <h3 style="color: #f87171; margin-top: 0; margin-bottom: 10px;">⚔️ VÕ HỮU: Chọn 1 trong 5 lá bài phi trang bị dưới đây để găm ấn ký:</h3>
+            <div id="voHuuCardsList" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <!-- Javascript sẽ điền danh sách bài vào đây -->
+            </div>
+            <button onclick="closeVoHuuModal()" class="filter-btn" style="background: #333; color: #aaa; margin-top: 15px; border-color: #555; padding: 4px 10px; font-size: 11px;">Đóng</button>
+        </div>
+
+        <!-- THANH CẤU HÌNH ĐÁNH DẤU -->
         <div class="marker-config-panel" style="display: flex; gap: 10px; justify-content: center; align-items: center; background: #161211; border: 1px solid #382c26; padding: 12px; border-radius: 8px; margin-bottom: 20px; width: 100%; flex-wrap: wrap;">
             <span style="font-size: 12px; color: #ffcc00; font-weight: bold;">🔮 TÊN ẤN KÝ:</span>
-            <input type="text" id="markerNameInput" value="Tiêu Dẫn" placeholder="Nhập tên..." style="background: #211916; border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; outline: none; width: 100px;">
+            <input type="text" id="markerNameInput" value="Võ Hữu" placeholder="Nhập tên..." style="background: #211916; border: 1px solid #ffcc00; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; outline: none; width: 100px;">
             
-            <!-- NÚT BẬT/TẮT CHẾ ĐỘ NHẠC PHÚ -->
             <button id="toggleNhacPhuBtn" onclick="toggleNhacPhuMode()" class="filter-btn" style="background: #1e3a8a; color: #38bdf8; border-color: #38bdf8; padding: 6px 12px; font-weight: bold; margin: 0; border-radius: 4px;">
                 🎼 Nhạc Phú: TẮT
             </button>
 
-            <!-- NÚT REROLL PHÚ (TỰ ĐỘNG BẬT KHI CÓ THẺ PHÚ ĐƯỢC CHỌN) -->
             <button id="rerollSelectedPhuBtn" onclick="rerollSelectedPhuCards()" class="filter-btn" style="display: none; background: #9333ea; color: #ffffff; border-color: #c084fc; padding: 6px 12px; font-weight: bold; margin: 0; border-radius: 4px; box-shadow: 0 0 10px rgba(192, 132, 252, 0.4);">
                 🎲 Reroll Phú đã chọn (0)
             </button>
@@ -39,7 +52,7 @@
             <button class="filter-btn active" onclick="filterMatrix('all')">Tất cả</button>
             <button class="filter-btn" onclick="filterMatrix('trangbi')">Trang bị</button>
             <button class="filter-btn" onclick="filterMatrix('congcu')">Công cụ</button>
-            <button class="filter-btn" onclick="filterMatrix('coban')">Cơ bản</button>
+            <button class="filter-btn" onclick="filterMatrix('coban')"> Cơ bản</button>
             <span id="dynamicMarkerFilterContainer"></span>
         </div>
 

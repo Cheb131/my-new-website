@@ -1,13 +1,8 @@
 let fullPokerData = [];
 let currentFilter = 'all';
 
-// Biến trạng thái Bật/Tắt chế độ Nhạc Phú
 let isNhacPhuMode = false;
-
-// Danh sách lưu các chìa khóa (cardKey) lá Phú đang được chọn để Reroll
 let selectedPhuKeys = new Set();
-
-// Đọc dữ liệu ấn ký đã lưu
 let cardMarkers = JSON.parse(localStorage.getItem('gameCardMarkers')) || {};
 
 async function loadPokerMatrix() {
@@ -32,15 +27,91 @@ async function loadPokerMatrix() {
     }
 }
 
-// BẬT / TẮT CHẾ ĐỘ NHẠC PHÚ
+// ==========================================
+// LOGIC KỸ NĂNG VÕ HỮU CỦA QUAN VŨ (VÕ)
+// ==========================================
+async function triggerVoHuu() {
+    const modal = document.getElementById('voHuuModal');
+    const listDiv = document.getElementById('voHuuCardsList');
+    if (!modal || !listDiv) return;
+
+    modal.style.display = "block";
+    listDiv.innerHTML = '<p style="color: #aaa; font-size: 12px;">Đang rút 5 lá bài phi trang bị từ thiên cơ...</p>';
+    modal.scrollIntoView({ behavior: 'smooth' });
+
+    try {
+        const response = await fetch('/api/vohuu-cards');
+        const cards = await response.json();
+
+        listDiv.innerHTML = '';
+        cards.forEach(card => {
+            const suitSymbol = card.suit === 'Cơ' ? '♥' : card.suit === 'Rô' ? '♦' : card.suit === 'Chuồn' ? '♣' : '♠';
+            const numText = card.number === 1 ? 'A' : card.number === 11 ? 'J' : card.number === 12 ? 'Q' : card.number === 13 ? 'K' : card.number;
+
+            const cardBtn = document.createElement('div');
+            cardBtn.className = `card-tag ${card.type}`;
+            cardBtn.style.cursor = "pointer";
+            cardBtn.style.padding = "8px 12px";
+            cardBtn.style.fontSize = "12px";
+            cardBtn.style.border = "1px solid #f87171";
+            cardBtn.style.background = "#211916";
+            cardBtn.style.color = "#fff";
+            
+            cardBtn.innerHTML = `🌟 <b>${card.name}</b> <span style="color:#ffcc00">(${numText} ${suitSymbol})</span>`;
+            
+            // Khi người chơi bấm chọn 1 trong 5 lá
+            cardBtn.onclick = () => selectVoHuuCard(card);
+            listDiv.appendChild(cardBtn);
+        });
+    } catch (err) {
+        listDiv.innerHTML = '<p style="color: #ff4444;">Lỗi kết nối bốc bài Võ Hữu!</p>';
+    }
+}
+
+function closeVoHuuModal() {
+    const modal = document.getElementById('voHuuModal');
+    if (modal) modal.style.display = "none";
+}
+
+function selectVoHuuCard(card) {
+    const inputElement = document.getElementById('markerNameInput');
+    const chosenMarkerName = inputElement ? inputElement.value.trim() : "Võ Hữu";
+
+    if (!chosenMarkerName) {
+        alert("Vui lòng nhập tên ấn ký trước nhé!");
+        return;
+    }
+
+    // Găm ấn ký vào cardKey tương ứng
+    cardMarkers[cardKeyOf(card)] = chosenMarkerName;
+    
+    localStorage.setItem('gameCardMarkers', JSON.stringify(cardMarkers));
+    
+    updateMarkerFilterTab();
+    renderMatrix();
+    closeVoHuuModal();
+    
+    alert(`⚔️ Đã găm ấn ký [${chosenMarkerName}] lên lá [${card.name}] thành công!`);
+}
+
+// Hàm hỗ trợ tái tạo cardKey chuẩn xác từ đối tượng card
+function cardKeyOf(card) {
+    // Tìm index chính xác của lá bài trong ma trận fullPokerData
+    const cell = fullPokerData.find(c => c.number === card.number && c.suit === card.suit);
+    if (cell && cell.cards) {
+        const idx = cell.cards.findIndex(c => c.name === card.name);
+        if (idx !== -1) return `${card.number}_${card.suit}_${card.name}_${idx}`;
+    }
+    return `${card.number}_${card.suit}_${card.name}_0`;
+}
+
+// ==========================================
+// CÁC HÀM CŨ (NHẠC PHÚ, REROLL, BỘ LỌC)
+// ==========================================
 function toggleNhacPhuMode() {
     isNhacPhuMode = !isNhacPhuMode;
     const btn = document.getElementById('toggleNhacPhuBtn');
-    
-    // Nếu tắt Nhạc Phú thì xóa sạch danh sách chọn reroll dở dang
-    if (!isNhacPhuMode) {
-        selectedPhuKeys.clear();
-    }
+    if (!isNhacPhuMode) selectedPhuKeys.clear();
     
     if (btn) {
         if (isNhacPhuMode) {
@@ -59,11 +130,9 @@ function toggleNhacPhuMode() {
     renderMatrix();
 }
 
-// CẬP NHẬT NÚT REROLL TRÊN GIAO DIỆN
 function updateRerollBtn() {
     const rerollBtn = document.getElementById('rerollSelectedPhuBtn');
     if (!rerollBtn) return;
-    
     if (isNhacPhuMode && selectedPhuKeys.size > 0) {
         rerollBtn.style.display = "inline-block";
         rerollBtn.innerText = `🎲 Reroll Phú đã chọn (${selectedPhuKeys.size})`;
@@ -72,39 +141,28 @@ function updateRerollBtn() {
     }
 }
 
-// HÀM LẤY NGẪU NHIÊN 1 LÁ BÀI PHI TRANG BỊ
 function getRandomNonEquipmentCard() {
     const nonEqCards = [];
     fullPokerData.forEach(cell => {
         if (cell.cards && cell.cards.length > 0) {
             cell.cards.forEach(card => {
-                if (card.type !== 'trangbi') {
-                    nonEqCards.push(card.name);
-                }
+                if (card.type !== 'trangbi') nonEqCards.push(card.name);
             });
         }
     });
-
     if (nonEqCards.length === 0) return "Sát";
-    const randomIndex = Math.floor(Math.random() * nonEqCards.length);
-    return nonEqCards[randomIndex];
+    return nonEqCards[Math.floor(Math.random() * nonEqCards.length)];
 }
 
-// HÀM THỰC HIỆN REROLL CHO TẤT CẢ CÁC THẺ PHÚ ĐÃ CHỌN
 function rerollSelectedPhuCards() {
     if (selectedPhuKeys.size === 0) return;
-
     selectedPhuKeys.forEach(cardKey => {
         if (cardMarkers[cardKey] && cardMarkers[cardKey].startsWith("Phú:")) {
-            const newRandomCard = getRandomNonEquipmentCard();
-            cardMarkers[cardKey] = `Phú: ${newRandomCard}`;
+            cardMarkers[cardKey] = `Phú: ${getRandomNonEquipmentCard()}`;
         }
     });
-
-    // Reroll xong thì xóa danh sách đã chọn
     selectedPhuKeys.clear();
     localStorage.setItem('gameCardMarkers', JSON.stringify(cardMarkers));
-    
     updateRerollBtn();
     renderMatrix();
 }
@@ -112,9 +170,7 @@ function rerollSelectedPhuCards() {
 function updateMarkerFilterTab() {
     const container = document.getElementById('dynamicMarkerFilterContainer');
     if (!container) return;
-
     const totalMarkers = Object.keys(cardMarkers).length;
-
     if (totalMarkers > 0) {
         container.innerHTML = `
             <button id="markerFilterBtn" class="filter-btn ${currentFilter === 'marked' ? 'active' : ''}" 
@@ -179,16 +235,15 @@ function renderMatrix() {
                             const isNguy = markerText === "Tán Sĩ" || isNhacPhu;
                             const isSelectedForReroll = selectedPhuKeys.has(cardKey);
                             
-                            // Tùy biến màu sắc khi thẻ Phú đang được chọn để Reroll
                             let labelBg = isNhacPhu ? "#2563eb" : (isNguy ? "#1e3a8a" : "#ffcc00");
                             let shadowColor = isNhacPhu ? "#38bdf8" : (isNguy ? "#38bdf8" : "#ffcc00");
-
                             let checkIcon = "";
+
                             if (isSelectedForReroll) {
-                                labelBg = "#9333ea"; // Màu tím nổi bật báo hiệu đang chọn reroll
+                                labelBg = "#9333ea";
                                 shadowColor = "#e879f9";
                                 cardDiv.style.border = "2px solid #e879f9";
-                                checkIcon = " <b style='color:#f43f5e'>✓ [Chọn Reroll]</b>";
+                                checkIcon = " <b style='color:#f43f5e'>✓ [Chọn]</b>";
                             }
 
                             cardDiv.innerHTML = `🌟 ${card.name} <span class="marker-label" style="background: ${labelBg}; color: #fff; font-size: 10px; font-weight: bold; padding: 1px 4px; border-radius: 3px; margin-left: 5px; box-shadow: 0 0 8px ${shadowColor};">[${markerText}]</span>${checkIcon}`;
@@ -208,35 +263,21 @@ function renderMatrix() {
             tr.appendChild(tdCell);
         });
 
-        if (currentFilter !== 'marked' || hasValidCardInRow) {
-            tbody.appendChild(tr);
-        }
+        if (currentFilter !== 'marked' || hasValidCardInRow) tbody.appendChild(tr);
     });
 }
 
 function toggleCardMarker(cardKey) {
-    // 1. KHI CHẾ ĐỘ NHẠC PHÚ ĐANG BẬT:
     if (isNhacPhuMode) {
-        // Nếu lá bài đã mang nhãn Phú: Click vào để Chọn/Bỏ chọn Reroll
         if (cardMarkers[cardKey] && cardMarkers[cardKey].startsWith("Phú:")) {
-            if (selectedPhuKeys.has(cardKey)) {
-                selectedPhuKeys.delete(cardKey);
-            } else {
-                selectedPhuKeys.add(cardKey);
-            }
-        } 
-        // Nếu lá bài chưa có ấn ký: Tạo mới một lá Phú
-        else if (!cardMarkers[cardKey]) {
-            const randomNonEqCard = getRandomNonEquipmentCard();
-            cardMarkers[cardKey] = `Phú: ${randomNonEqCard}`;
-        }
-        // Nếu lá bài đang mang ấn ký khác (không phải Phú): Xóa đi
-        else {
+            if (selectedPhuKeys.has(cardKey)) selectedPhuKeys.delete(cardKey);
+            else selectedPhuKeys.add(cardKey);
+        } else if (!cardMarkers[cardKey]) {
+            cardMarkers[cardKey] = `Phú: ${getRandomNonEquipmentCard()}`;
+        } else {
             delete cardMarkers[cardKey];
         }
-    } 
-    // 2. KHI CHẾ ĐỘ NHẠC PHÚ ĐANG TẮT (Chế độ đánh dấu tay bình thường):
-    else {
+    } else {
         if (cardMarkers[cardKey]) {
             delete cardMarkers[cardKey];
             selectedPhuKeys.delete(cardKey);
@@ -259,7 +300,6 @@ function toggleCardMarker(cardKey) {
 
 function clearAllMarkers() {
     if (Object.keys(cardMarkers).length === 0) return;
-    
     if (confirm("💥 Bạn có chắc chắn muốn hóa giải toàn bộ ấn ký trên ma trận bài không?")) {
         cardMarkers = {};
         selectedPhuKeys.clear();
@@ -282,11 +322,7 @@ function filterMatrix(type) {
     currentFilter = type;
     const buttons = document.querySelectorAll('.filter-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
-    
-    if (type !== 'marked' && event) {
-        event.target.classList.add('active');
-    }
-    
+    if (type !== 'marked' && event) event.target.classList.add('active');
     updateMarkerFilterTab();
     renderMatrix();
 }
