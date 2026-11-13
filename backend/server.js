@@ -41,7 +41,6 @@ const rollGenerals = [
   { id: "nam_hoa_lao_tien", name: "Nam Hoa Lão Tiên", title: "Tiêu Diêu Tiên Du", kingdom: "Quần", bg_color: "#4a4a4a", skillPool: [  { name: "Thiên Thư", desc: "Giai đoạn chuẩn bị, bạn có thể kích hoạt [Thiên Thư] để rút ngẫu nhiên 3 Nguyên nhân không trùng tên, chọn lấy 1; sau đó rút ngẫu nhiên 3 Hệ quả, chọn lấy 1 để tạo thành quẻ mệnh thực thi trong lượt." } ]},
   { id: "than_tao_phi", name: "Thần Tào Phi", title: "Nguyệt Hối Thư Luân Hồi", kingdom: "Thần", bg_color: "#cc9900", skillPool: [{ name: "Khắc Danh" }]},
   { id: "tao_thuc", name: "Tào Thực", title: "Sấu Luật Thành Chương", kingdom: "Ngụy", bg_color: "#1e3a8a", skillPool: [{ name: "Nhạc Phú" }]},
-  { id: "quan_vu_vo", name: "Quan Vũ (Võ)", title: "Nghĩa Võ Thiên Thu", kingdom: "Thục", bg_color: "#b31d1d",skillPool: [{ name: "Võ Hữu" }]}
 ];
 
 app.get('/api/generals', (req, res) => { res.json(rollGenerals); });
@@ -135,17 +134,16 @@ app.get('/api/vohuu-cards', (req, res) => {
   try {
     const nonEquipmentPool = [];
     
-    // Duyệt qua toàn bộ ma trận bài, lọc bỏ loại trang bị (trangbi)
+    // Duyệt qua toàn bộ ma trận bài, lọc bỏ loại trang bị (trangbi) và loại bỏ bài "Độc"
     pokerDeck.forEach(cell => {
       if (cell.cards && cell.cards.length > 0) {
         cell.cards.forEach((card, cardIndex) => {
-          if (card.type !== 'trangbi') {
+          if (card.type !== 'trangbi' && card.name !== 'Độc') {
             nonEquipmentPool.push({
               number: cell.number,
               suit: cell.suit,
               name: card.name,
               type: card.type,
-              // Tạo định danh duy nhất (cardKey) khớp với định dạng trong deckScript.js
               cardKey: `${cell.number}_${cell.suit}_${card.name}_${cardIndex}`
             });
           }
@@ -154,10 +152,10 @@ app.get('/api/vohuu-cards', (req, res) => {
     });
 
     if (nonEquipmentPool.length < 5) {
-      return res.status(500).json({ error: "Không đủ bài phi trang bị!" });
+      return res.status(500).json({ error: "Không đủ bài phi trang bị hợp lệ!" });
     }
 
-    // Bốc ngẫu nhiên 5 lá bài không trùng nhau
+    // Bốc ngẫu nhiên 5 lá bài không trùng nhau từ kho đã lọc sạch bài Độc
     const chosenCards = [];
     const poolCopy = nonEquipmentPool.slice(0);
     while (chosenCards.length < 5 && poolCopy.length > 0) {

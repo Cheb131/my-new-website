@@ -146,7 +146,10 @@ function getRandomNonEquipmentCard() {
     fullPokerData.forEach(cell => {
         if (cell.cards && cell.cards.length > 0) {
             cell.cards.forEach(card => {
-                if (card.type !== 'trangbi') nonEqCards.push(card.name);
+                // THÊM ĐIỀU KIỆN: card.name !== "Độc"
+                if (card.type !== 'trangbi' && card.name !== 'Độc') {
+                    nonEqCards.push(card.name);
+                }
             });
         }
     });
